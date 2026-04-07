@@ -91,7 +91,7 @@ Die im Plugin verwendeten Sender-Logos sind eigenerstellt mit **DejaVu Sans Bold
 
 ## Datenquelle
 
-Alle Inhalte werden über die API von [mediathekviewweb.de](https://mediathekviewweb.de) ([GitHub](https://github.com/mediathekviewweb/mediathekviewweb)) abgerufen. Die Nutzung wurde mit den Betreibern abgestimmt.
+Alle Inhalte werden über die API von [mediathekviewweb.de](https://mediathekviewweb.de) ([GitHub](https://github.com/mediathekview/mediathekviewweb)) abgerufen. Die Nutzung wurde mit den Betreibern abgestimmt.
 
 ---
 
