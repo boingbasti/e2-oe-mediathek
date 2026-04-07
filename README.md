@@ -63,7 +63,7 @@ Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsa
 
 ### Per IPK (empfohlen)
 
-Die aktuelle IPK-Datei aus dem [Releases-Bereich](../../releases) herunterladen und auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
+Die aktuelle ZIP-Datei aus dem [Releases-Bereich](../../releases) herunterladen, entpacken und die IPK-Datei auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
 opkg install enigma2-plugin-extensions-oemediathek_1.1_all.ipk
