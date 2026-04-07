@@ -55,7 +55,7 @@ Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsa
 
 - Enigma2-Receiver mit **Python 2** (getestet auf VU+ Uno 4K SE mit VTi 15.0.04)
 - Internetverbindung
-- Auflösung 1920×1080 (FHD) oder 1280×720 (HD) – wird automatisch erkannt
+- Skin mit OSD-Auflösung 1920×1080 (FHD) oder 1280×720 (HD) – wird automatisch erkannt
 
 ---
 
