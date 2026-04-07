@@ -41,7 +41,7 @@ Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsa
 | Rot | Zurück zur Gruppenansicht |
 | Grün | A-Z Sortierung |
 | Gelb | Suche (Bildschirmtastatur) |
-| Blau | Dauerfilter ein/aus (nur Beiträge > 15 Min.) |
+| Blau | Favoriten |
 | CH+ / CH- | Vor-/Zurückblättern (500 Einträge pro Seite) |
 | INFO / EPG | Detailansicht des Beitrags |
 
