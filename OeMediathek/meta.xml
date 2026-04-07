@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin>
+    <name>ÖR Mediathek</name>
+    <description>Streamt alle öffentlich-rechtlichen Mediatheken (ARD, ZDF, Arte, 3sat u.v.m.)</description>
+    <version>1.1</version>
+    <author>BomBasti</author>
+    <category>Video</category>
+    <icon>plugin.png</icon>
+</plugin>

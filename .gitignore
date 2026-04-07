@@ -1,0 +1,16 @@
+# Python
+*.pyc
+*.pyo
+__pycache__/
+
+# Logs
+*.log
+/tmp/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Projektintern
+.claude/
+CLAUDE.md
