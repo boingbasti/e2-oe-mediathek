@@ -1515,20 +1515,20 @@ class OeMediathekDirBrowser(Screen):
     if IS_FHD:
         skin = """
         <screen name="OeMediathekDirBrowser" position="260,140" size="1400,800" flags="wfNoBorder">
-            <eLabel position="0,0" size="1400,800" backgroundColor="#1A1A1A" zPosition="-6" />
+            <eLabel position="0,0" size="1400,800" backgroundColor="#33000000" zPosition="-6" />
             <widget name="title_label" position="40,20" size="1320,60" font="Regular;38" halign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="path_label" position="40,90" size="1320,50" font="Regular;28" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="path_label" position="40,90" size="1320,50" font="Regular;32" foregroundColor="#AAAAAA" transparent="1" />
             <widget name="menu_list" position="40,150" size="1320,560" font="Regular;34" scrollbarMode="showOnDemand" itemHeight="58" backgroundColor="#33000000" transparent="1" />
-            <widget name="hint_label" position="40,730" size="1320,50" font="Regular;28" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="hint_label" position="40,730" size="1320,50" font="Regular;32" halign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
     else:
         skin = """
         <screen name="OeMediathekDirBrowser" position="173,93" size="933,534" flags="wfNoBorder">
-            <eLabel position="0,0" size="933,534" backgroundColor="#1A1A1A" zPosition="-6" />
+            <eLabel position="0,0" size="933,534" backgroundColor="#33000000" zPosition="-6" />
             <widget name="title_label" position="27,13" size="880,40" font="Regular;25" halign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="path_label" position="27,60" size="880,33" font="Regular;19" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="path_label" position="27,60" size="880,33" font="Regular;21" foregroundColor="#AAAAAA" transparent="1" />
             <widget name="menu_list" position="27,100" size="880,373" font="Regular;22" scrollbarMode="showOnDemand" itemHeight="38" backgroundColor="#33000000" transparent="1" />
-            <widget name="hint_label" position="27,487" size="880,33" font="Regular;19" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="hint_label" position="27,487" size="880,33" font="Regular;21" halign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
 
     def __init__(self, session, start_dir=None):
@@ -1650,20 +1650,20 @@ class OeMediathekSettingsScreen(Screen):
     if IS_FHD:
         skin = """
         <screen name="OeMediathekSettingsScreen" position="560,340" size="800,380" flags="wfNoBorder">
-            <eLabel position="0,0" size="800,380" backgroundColor="#1A1A1A" zPosition="-6" />
+            <eLabel position="0,0" size="800,380" backgroundColor="#33000000" zPosition="-6" />
             <widget name="title_label" position="40,30" size="720,60" font="Regular;42" halign="center" foregroundColor="#FFFFFF" transparent="1" />
             <widget name="path_label" position="40,130" size="200,50" font="Regular;32" foregroundColor="#AAAAAA" transparent="1" />
             <widget name="path_value" position="240,120" size="520,130" font="Regular;32" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="hint_label" position="40,300" size="720,50" font="Regular;28" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="hint_label" position="40,300" size="720,50" font="Regular;32" halign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
     else:
         skin = """
         <screen name="OeMediathekSettingsScreen" position="373,233" size="534,267" flags="wfNoBorder">
-            <eLabel position="0,0" size="534,267" backgroundColor="#1A1A1A" zPosition="-6" />
+            <eLabel position="0,0" size="534,267" backgroundColor="#33000000" zPosition="-6" />
             <widget name="title_label" position="27,20" size="480,40" font="Regular;28" halign="center" foregroundColor="#FFFFFF" transparent="1" />
             <widget name="path_label" position="27,87" size="133,33" font="Regular;21" foregroundColor="#AAAAAA" transparent="1" />
             <widget name="path_value" position="160,80" size="347,87" font="Regular;21" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="hint_label" position="27,207" size="480,33" font="Regular;19" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="hint_label" position="27,207" size="480,33" font="Regular;21" halign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
 
     def __init__(self, session):
@@ -1720,7 +1720,7 @@ class OeMediathekDownloadScreen(Screen):
     if IS_FHD:
         skin = """
         <screen name="OeMediathekDownloadScreen" position="460,340" size="1000,400" flags="wfNoBorder">
-            <eLabel position="0,0" size="1000,400" backgroundColor="#1A1A1A" zPosition="-6" />
+            <eLabel position="0,0" size="1000,400" backgroundColor="#33000000" zPosition="-6" />
             <widget name="title_label" position="40,30" size="920,60" font="Regular;36" halign="center" foregroundColor="#FFFFFF" transparent="1" />
             <widget name="status_label" position="40,120" size="920,180" font="Regular;34" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
             <widget name="hint_label" position="40,330" size="920,50" font="Regular;28" halign="center" foregroundColor="#AAAAAA" transparent="1" />
@@ -1728,7 +1728,7 @@ class OeMediathekDownloadScreen(Screen):
     else:
         skin = """
         <screen name="OeMediathekDownloadScreen" position="307,233" size="666,253" flags="wfNoBorder">
-            <eLabel position="0,0" size="666,253" backgroundColor="#1A1A1A" zPosition="-6" />
+            <eLabel position="0,0" size="666,253" backgroundColor="#33000000" zPosition="-6" />
             <widget name="title_label" position="27,20" size="613,40" font="Regular;24" halign="center" foregroundColor="#FFFFFF" transparent="1" />
             <widget name="status_label" position="27,73" size="613,120" font="Regular;22" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
             <widget name="hint_label" position="27,207" size="613,33" font="Regular;19" halign="center" foregroundColor="#AAAAAA" transparent="1" />
