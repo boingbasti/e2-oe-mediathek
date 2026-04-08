@@ -553,7 +553,7 @@ class OeMediathekMainScreen(Screen):
         self["selector"]    = Label("")
         self["hint_green"]  = Label(_b("Einstellungen"))
         self["hint_ok"]     = Label(_b("OK = \xc3\x96ffnen"))
-        self["hint_ch"]     = Label(_b("CH+/- = Seite"))
+        self["hint_ch"]     = Label(_b("CH+/- = Seite blättern"))
         self["hint_nav"]    = Label(_b("EXIT = Beenden"))
         self["page_label"]  = Label("")
 
@@ -1535,10 +1535,10 @@ class OeMediathekDirBrowser(Screen):
         Screen.__init__(self, session)
         self._cur = start_dir or "/"
 
-        self["title_label"] = Label(_b("Ordner auswaehlen"))
+        self["title_label"] = Label(_b("Ordner auswählen"))
         self["path_label"]  = Label(_b(self._cur))
         self["menu_list"]   = MenuList([])
-        self["hint_label"]  = Label(_b("OK = Oeffnen/Waehlen   |   Gelb = Neuer Ordner   |   EXIT = Abbrechen"))
+        self["hint_label"]  = Label(_b("OK = Öffnen/Wählen   |   Gelb = Neuer Ordner   |   EXIT = Abbrechen"))
 
         self["actions"] = ActionMap(
             ["OkCancelActions", "DirectionActions", "ColorActions"],
@@ -1555,21 +1555,36 @@ class OeMediathekDirBrowser(Screen):
         self.onClose.append(self._on_close_cb)
         self._result = None
 
+    @staticmethod
+    def _normalize_path(path):
+        """Pfad immer als UTF-8 Byte-String zurückgeben (Python 2 kompatibel)."""
+        if isinstance(path, unicode):
+            return path.encode("utf-8")
+        return path
+
     def _fill(self, path):
+        path = self._normalize_path(path)
+        self._cur = path  # _cur immer synchron halten
         entries = []
         # ".." falls nicht Wurzel
-        if path != "/":
-            entries.append(("[..] Übergeordnet", None))
+        if path not in (b"/", "/"):
+            entries.append(("[..] Übergeordneter Ordner", None))
+        # "Hier speichern" direkt oben — nicht erst nach Scrollen durch Dateien
+        entries.append(("[Hier speichern]", path))
         try:
             names = sorted(os.listdir(path))
             for name in names:
+                if isinstance(name, unicode):
+                    name = name.encode("utf-8")
                 full = os.path.join(path, name)
                 if os.path.isdir(full):
-                    entries.append(("[" + name + "]", full))
+                    try:
+                        label = "[" + name.decode("utf-8", "replace") + "]"
+                    except Exception:
+                        label = "[" + repr(name) + "]"
+                    entries.append((label, full))
         except Exception:
-            pass
-        # "Diesen Ordner wählen" immer am Ende
-        entries.append(("[Hier speichern]", path))
+            _log("DirBrowser _fill Fehler: " + _fmt_exc())
 
         self._entries = entries
         self["menu_list"].setList([_b(e[0]) for e in entries])
@@ -1582,8 +1597,8 @@ class OeMediathekDirBrowser(Screen):
         label, full = self._entries[idx]
         if full is None:
             # ".." — eine Ebene hoch
-            parent = os.path.dirname(self._cur.rstrip("/")) or "/"
-            self._cur = parent
+            cur = self._cur if isinstance(self._cur, str) else self._cur.decode("utf-8", "replace")
+            parent = os.path.dirname(cur.rstrip("/")) or "/"
             self._fill(parent)
         elif full == self._cur:
             # "Hier speichern"
@@ -1607,7 +1622,7 @@ class OeMediathekDirBrowser(Screen):
         if not name:
             return
         try:
-            new_path = os.path.join(self._cur, name)
+            new_path = os.path.join(self._cur, self._normalize_path(name))
             os.makedirs(new_path)
             self._fill(self._cur)
         except Exception as e:
@@ -1634,21 +1649,21 @@ class OeMediathekDirBrowser(Screen):
 class OeMediathekSettingsScreen(Screen):
     if IS_FHD:
         skin = """
-        <screen name="OeMediathekSettingsScreen" position="560,390" size="800,300" flags="wfNoBorder">
-            <eLabel position="0,0" size="800,300" backgroundColor="#1A1A1A" zPosition="-6" />
+        <screen name="OeMediathekSettingsScreen" position="560,340" size="800,380" flags="wfNoBorder">
+            <eLabel position="0,0" size="800,380" backgroundColor="#1A1A1A" zPosition="-6" />
             <widget name="title_label" position="40,30" size="720,60" font="Regular;42" halign="center" foregroundColor="#FFFFFF" transparent="1" />
             <widget name="path_label" position="40,130" size="200,50" font="Regular;32" foregroundColor="#AAAAAA" transparent="1" />
-            <widget name="path_value" position="240,130" size="520,50" font="Regular;32" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="hint_label" position="40,230" size="720,50" font="Regular;28" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="path_value" position="240,120" size="520,130" font="Regular;32" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="hint_label" position="40,300" size="720,50" font="Regular;28" halign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
     else:
         skin = """
-        <screen name="OeMediathekSettingsScreen" position="373,260" size="534,200" flags="wfNoBorder">
-            <eLabel position="0,0" size="534,200" backgroundColor="#1A1A1A" zPosition="-6" />
+        <screen name="OeMediathekSettingsScreen" position="373,233" size="534,267" flags="wfNoBorder">
+            <eLabel position="0,0" size="534,267" backgroundColor="#1A1A1A" zPosition="-6" />
             <widget name="title_label" position="27,20" size="480,40" font="Regular;28" halign="center" foregroundColor="#FFFFFF" transparent="1" />
             <widget name="path_label" position="27,87" size="133,33" font="Regular;21" foregroundColor="#AAAAAA" transparent="1" />
-            <widget name="path_value" position="160,87" size="347,33" font="Regular;21" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="hint_label" position="27,153" size="480,33" font="Regular;19" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="path_value" position="160,80" size="347,87" font="Regular;21" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="hint_label" position="27,207" size="480,33" font="Regular;19" halign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
 
     def __init__(self, session):
@@ -1656,7 +1671,7 @@ class OeMediathekSettingsScreen(Screen):
         self["title_label"] = Label(_b("Einstellungen"))
         self["path_label"]  = Label(_b("Speicherort:"))
         self["path_value"]  = Label(_b(get_save_dir()))
-        self["hint_label"]  = Label(_b("OK = Ordner waehlen   |   EXIT = Schliessen"))
+        self["hint_label"]  = Label(_b("OK = Ordner wählen   |   EXIT = Schließen"))
 
         self["actions"] = ActionMap(
             ["OkCancelActions"],
@@ -1807,14 +1822,14 @@ class OeMediathekDownloadScreen(Screen):
         if self._dl_err is not None:
             self._poll_timer.stop()
             self["status_label"].setText(_b("Fehler: " + self._dl_err))
-            self["hint_label"].setText(_b("OK / EXIT = Schliessen"))
+            self["hint_label"].setText(_b("OK / EXIT = Schließen"))
             return
 
         if self._dl_done:
             self._poll_timer.stop()
             fname = os.path.basename(self._dl_filepath) if self._dl_filepath else ""
             self["status_label"].setText(_b("Fertig: " + fname))
-            self["hint_label"].setText(_b("OK / EXIT = Schliessen"))
+            self["hint_label"].setText(_b("OK / EXIT = Schließen"))
             return
 
         downloaded = self._dl_downloaded
