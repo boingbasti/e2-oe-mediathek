@@ -189,6 +189,7 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
         else:
             group_key = title if channel else ch + ": " + title
 
+        _log("URL [%s] HD=%s SD=%s" % (ch, url_hd if url_hd else "-", url_sd if url_sd else "-"))
         items.append({
             "title":         _s(title),
             "group":         _s(group_key),

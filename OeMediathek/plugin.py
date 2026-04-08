@@ -57,6 +57,7 @@ from mediathek import (
     _mvw_query,
 )
 from player import play_stream
+from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size
 
 LOGO_DIR = os.path.join(os.path.dirname(__file__), "logos")
 LOG_FILE = "/tmp/oemediathek.log"
@@ -493,28 +494,52 @@ class OeMediathekMainScreen(Screen):
 
         margin = 30 if IS_FHD else 20
 
-        return """
+        if IS_FHD:
+            return """
         <screen name="OeMediathekMainScreen" position="0,0" size="%d,%d" flags="wfNoBorder">
             <eLabel position="0,0" size="%d,%d" backgroundColor="#66000000" zPosition="-6" />
             <eLabel position="%d,%d" size="%d,%d" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
             <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#1A333333" zPosition="-3" />
             %s%s%s
-            <eLabel position="%d,%d" size="%d,%d" backgroundColor="#1A000000" zPosition="-5" />
-            <widget name="hint_label" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
-            <widget name="page_label" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
+            <eLabel position="50,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2" />
+            <widget name="hint_green" position="68,960"   size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ok"    position="468,960"  size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ch"    position="868,960"  size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_nav"   position="1268,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="page_label" position="1668,960" size="202,100" font="Regular;32" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
         </screen>
         """ % (
-            sw, sh,
-            sw, sh,
-            margin, hdr_y, sw - 2 * margin, hdr_h,
-            margin, hdr_y, sw - 2 * margin, hdr_h, font_title,
-            _TX[0], _TY[0], TILE_W, TILE_H,
-            tiles_bg, logos, labels,
-            margin, bar_y, sw - 2 * margin, bar_h,
-            margin, bar_y, hint_w, bar_h, font_hint,
-            page_x, bar_y, page_w, bar_h, font_page,
-        )
+                sw, sh, sw, sh,
+                margin, hdr_y, sw - 2 * margin, hdr_h,
+                margin, hdr_y, sw - 2 * margin, hdr_h, font_title,
+                _TX[0], _TY[0], TILE_W, TILE_H,
+                tiles_bg, logos, labels,
+            )
+        else:
+            return """
+        <screen name="OeMediathekMainScreen" position="0,0" size="%d,%d" flags="wfNoBorder">
+            <eLabel position="0,0" size="%d,%d" backgroundColor="#66000000" zPosition="-6" />
+            <eLabel position="%d,%d" size="%d,%d" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="title_label" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
+            <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#1A333333" zPosition="-3" />
+            %s%s%s
+            <eLabel position="20,640" size="1240,66" backgroundColor="#1A000000" zPosition="-5" />
+            <eLabel position="33,653" size="5,40" backgroundColor="#1A00AA00" zPosition="2" />
+            <widget name="hint_green" position="45,640"  size="233,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ok"    position="312,640" size="233,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ch"    position="578,640" size="233,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_nav"   position="845,640" size="233,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="page_label" position="1112,640" size="134,66" font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
+        </screen>
+        """ % (
+                sw, sh, sw, sh,
+                margin, hdr_y, sw - 2 * margin, hdr_h,
+                margin, hdr_y, sw - 2 * margin, hdr_h, font_title,
+                _TX[0], _TY[0], TILE_W, TILE_H,
+                tiles_bg, logos, labels,
+            )
 
     def __init__(self, session):
         self.skin = self._make_skin()
@@ -524,9 +549,12 @@ class OeMediathekMainScreen(Screen):
         self.selected      = 0
         self.main_page     = 0
 
-        self["title_label"] = Label("ÖR Mediathek")
+        self["title_label"] = Label(_b("\xc3\x96R Mediathek"))
         self["selector"]    = Label("")
-        self["hint_label"]  = Label("Links/Rechts/Hoch/Runter = Navigieren   |   OK = Öffnen   |   CH+/CH- = Seite blättern   |   EXIT = Beenden")
+        self["hint_green"]  = Label(_b("Einstellungen"))
+        self["hint_ok"]     = Label(_b("OK = \xc3\x96ffnen"))
+        self["hint_ch"]     = Label(_b("CH+/- = Seite"))
+        self["hint_nav"]    = Label(_b("EXIT = Beenden"))
         self["page_label"]  = Label("")
 
         for i in range(TILES_PER_PAGE):
@@ -538,7 +566,7 @@ class OeMediathekMainScreen(Screen):
 
         self["actions"] = ActionMap(
             ["OkCancelActions", "DirectionActions", "WizardActions",
-             "ChannelSelectBaseActions"],
+             "ChannelSelectBaseActions", "ColorActions"],
             {
                 "ok":           self.on_ok,
                 "cancel":       self.close,
@@ -548,6 +576,7 @@ class OeMediathekMainScreen(Screen):
                 "right":        self.key_right,
                 "nextBouquet":  self.page_next,
                 "prevBouquet":  self.page_prev,
+                "green":        self.open_settings,
             },
             -1,
         )
@@ -703,6 +732,12 @@ class OeMediathekMainScreen(Screen):
         except Exception:
             _log("on_ok: " + _fmt_exc())
 
+    def open_settings(self):
+        try:
+            self.session.open(OeMediathekSettingsScreen)
+        except Exception:
+            _log("open_settings: " + _fmt_exc())
+
 
 # ------------------------------------------------------------------
 # Inhalts-Screen  (Split-Screen Card Layout mit Deep-Fetch)
@@ -812,8 +847,8 @@ class OeMediathekScreen(Screen):
                 "green":        self.cycle_sort,
                 "yellow":       self.open_search,
                 "blue":         self.on_blue,
-                "info":         self.on_info,
-                "epg":          self.on_info,
+                "info":         self.on_download,
+                "epg":          self.on_download,
                 "nextBouquet":  self.next_page,
                 "prevBouquet":  self.prev_page,
             },
@@ -1113,7 +1148,7 @@ class OeMediathekScreen(Screen):
         self["hint_red"].setText("")
         self["hint_green"].setText(self._next_sort_hint())
         self["hint_yellow"].setText("Suche (Server)")
-        self["hint_blue"].setText("Details")
+        self["hint_blue"].setText("Download")
             
         self._update_page_hint()
         self.last_index = -1
@@ -1134,22 +1169,28 @@ class OeMediathekScreen(Screen):
         except Exception:
             pass
 
-    def on_info(self):
-        if self.mode == MODE_EPISODES:
-            try:
-                idx = self["menu_list"].getSelectedIndex()
-                if idx is not None and idx < len(self.cur_episodes):
-                    item = self.cur_episodes[idx]
-                    self.session.open(
-                        OeMediathekInfoScreen,
-                        item["title"],
-                        item.get("description", _b("Keine Beschreibung verfügbar.")),
-                        item.get("duration", b"Unbekannt")
-                    )
-            except Exception:
-                _log("on_info Fehler: " + _fmt_exc())
-        else:
-            self.toggle_favorite()
+    def on_download(self):
+        if self.mode != MODE_EPISODES:
+            return
+        try:
+            idx = self["menu_list"].getSelectedIndex()
+            if idx is None or idx >= len(self.cur_episodes):
+                return
+            item = self.cur_episodes[idx]
+            url_hd = item.get("stream_url_hd", b"")
+            url_sd = item.get("stream_url_sd", b"")
+            if isinstance(url_hd, bytes):
+                url_hd = url_hd.decode("utf-8", "replace")
+            if isinstance(url_sd, bytes):
+                url_sd = url_sd.decode("utf-8", "replace")
+            url = url_hd if url_hd else url_sd
+            if not url:
+                self["status_label"].setText("Kein Stream verfügbar")
+                return
+            self.session.open(OeMediathekDownloadScreen, item["title"], url)
+        except Exception:
+            _log("on_download Fehler: " + _fmt_exc())
+
 
     def on_ok(self):
         try:
@@ -1345,7 +1386,7 @@ class OeMediathekScreen(Screen):
 
     def _update_blue_hint(self):
         if self.mode == MODE_EPISODES:
-            self["hint_blue"].setText("Details")
+            self["hint_blue"].setText("Download")
             return
         try:
             idx = self["menu_list"].getSelectedIndex()
@@ -1433,7 +1474,7 @@ class OeMediathekScreen(Screen):
 
     def on_blue(self):
         if self.mode == MODE_EPISODES:
-            self.on_info()
+            self.on_download()
         else:
             self.toggle_favorite()
 
@@ -1464,6 +1505,339 @@ class OeMediathekScreen(Screen):
                 self._start_fetch()
         except Exception:
             _log("do_search: " + _fmt_exc())
+
+
+# --------------------------------------------------------------------------
+# Dateibrowser für Ordnerauswahl
+# --------------------------------------------------------------------------
+
+class OeMediathekDirBrowser(Screen):
+    if IS_FHD:
+        skin = """
+        <screen name="OeMediathekDirBrowser" position="260,140" size="1400,800" flags="wfNoBorder">
+            <eLabel position="0,0" size="1400,800" backgroundColor="#1A1A1A" zPosition="-6" />
+            <widget name="title_label" position="40,20" size="1320,60" font="Regular;38" halign="center" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="path_label" position="40,90" size="1320,50" font="Regular;28" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="menu_list" position="40,150" size="1320,560" font="Regular;34" scrollbarMode="showOnDemand" itemHeight="58" backgroundColor="#33000000" transparent="1" />
+            <widget name="hint_label" position="40,730" size="1320,50" font="Regular;28" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+        </screen>"""
+    else:
+        skin = """
+        <screen name="OeMediathekDirBrowser" position="173,93" size="933,534" flags="wfNoBorder">
+            <eLabel position="0,0" size="933,534" backgroundColor="#1A1A1A" zPosition="-6" />
+            <widget name="title_label" position="27,13" size="880,40" font="Regular;25" halign="center" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="path_label" position="27,60" size="880,33" font="Regular;19" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="menu_list" position="27,100" size="880,373" font="Regular;22" scrollbarMode="showOnDemand" itemHeight="38" backgroundColor="#33000000" transparent="1" />
+            <widget name="hint_label" position="27,487" size="880,33" font="Regular;19" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+        </screen>"""
+
+    def __init__(self, session, start_dir=None):
+        Screen.__init__(self, session)
+        self._cur = start_dir or "/"
+
+        self["title_label"] = Label(_b("Ordner auswaehlen"))
+        self["path_label"]  = Label(_b(self._cur))
+        self["menu_list"]   = MenuList([])
+        self["hint_label"]  = Label(_b("OK = Oeffnen/Waehlen   |   Gelb = Neuer Ordner   |   EXIT = Abbrechen"))
+
+        self["actions"] = ActionMap(
+            ["OkCancelActions", "DirectionActions", "ColorActions"],
+            {
+                "ok":     self._on_ok,
+                "cancel": self._on_cancel,
+                "yellow": self._new_folder,
+            },
+            -1,
+        )
+
+        self._entries = []
+        self._fill(self._cur)
+        self.onClose.append(self._on_close_cb)
+        self._result = None
+
+    def _fill(self, path):
+        entries = []
+        # ".." falls nicht Wurzel
+        if path != "/":
+            entries.append(("[..] Übergeordnet", None))
+        try:
+            names = sorted(os.listdir(path))
+            for name in names:
+                full = os.path.join(path, name)
+                if os.path.isdir(full):
+                    entries.append(("[" + name + "]", full))
+        except Exception:
+            pass
+        # "Diesen Ordner wählen" immer am Ende
+        entries.append(("[Hier speichern]", path))
+
+        self._entries = entries
+        self["menu_list"].setList([_b(e[0]) for e in entries])
+        self["path_label"].setText(_b(path))
+
+    def _on_ok(self):
+        idx = self["menu_list"].getSelectedIndex()
+        if idx is None or idx >= len(self._entries):
+            return
+        label, full = self._entries[idx]
+        if full is None:
+            # ".." — eine Ebene hoch
+            parent = os.path.dirname(self._cur.rstrip("/")) or "/"
+            self._cur = parent
+            self._fill(parent)
+        elif full == self._cur:
+            # "Hier speichern"
+            self._result = self._cur
+            self.close()
+        else:
+            self._cur = full
+            self._fill(full)
+
+    def _new_folder(self):
+        try:
+            self.session.openWithCallback(self._create_folder, VirtualKeyBoard,
+                title="Neuer Ordnername:", text="")
+        except Exception:
+            _log("DirBrowser _new_folder: " + _fmt_exc())
+
+    def _create_folder(self, name):
+        if not name:
+            return
+        name = name.strip()
+        if not name:
+            return
+        try:
+            new_path = os.path.join(self._cur, name)
+            os.makedirs(new_path)
+            self._fill(self._cur)
+        except Exception as e:
+            _log("DirBrowser _create_folder: " + str(e))
+
+    def _on_cancel(self):
+        self._result = None
+        self.close()
+
+    def _on_close_cb(self):
+        pass
+
+    def doClose(self):
+        try:
+            Screen.doClose(self)
+        except TypeError:
+            pass
+
+
+# --------------------------------------------------------------------------
+# Settings-Screen
+# --------------------------------------------------------------------------
+
+class OeMediathekSettingsScreen(Screen):
+    if IS_FHD:
+        skin = """
+        <screen name="OeMediathekSettingsScreen" position="560,390" size="800,300" flags="wfNoBorder">
+            <eLabel position="0,0" size="800,300" backgroundColor="#1A1A1A" zPosition="-6" />
+            <widget name="title_label" position="40,30" size="720,60" font="Regular;42" halign="center" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="path_label" position="40,130" size="200,50" font="Regular;32" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="path_value" position="240,130" size="520,50" font="Regular;32" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="hint_label" position="40,230" size="720,50" font="Regular;28" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+        </screen>"""
+    else:
+        skin = """
+        <screen name="OeMediathekSettingsScreen" position="373,260" size="534,200" flags="wfNoBorder">
+            <eLabel position="0,0" size="534,200" backgroundColor="#1A1A1A" zPosition="-6" />
+            <widget name="title_label" position="27,20" size="480,40" font="Regular;28" halign="center" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="path_label" position="27,87" size="133,33" font="Regular;21" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="path_value" position="160,87" size="347,33" font="Regular;21" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="hint_label" position="27,153" size="480,33" font="Regular;19" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+        </screen>"""
+
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        self["title_label"] = Label(_b("Einstellungen"))
+        self["path_label"]  = Label(_b("Speicherort:"))
+        self["path_value"]  = Label(_b(get_save_dir()))
+        self["hint_label"]  = Label(_b("OK = Ordner waehlen   |   EXIT = Schliessen"))
+
+        self["actions"] = ActionMap(
+            ["OkCancelActions"],
+            {
+                "ok":     self._browse,
+                "cancel": self.close,
+            },
+            -1,
+        )
+
+    def _browse(self):
+        try:
+            cur = get_save_dir()
+            # Startverzeichnis: existierendes übergeordnetes Verzeichnis suchen
+            start = cur
+            while start and start != "/" and not os.path.isdir(start):
+                start = os.path.dirname(start)
+            if not start or not os.path.isdir(start):
+                start = "/media"
+            self._browser = self.session.open(OeMediathekDirBrowser, start)
+            self._browser.onClose.append(self._dir_browser_closed)
+        except Exception:
+            _log("Settings _browse: " + _fmt_exc())
+
+    def _dir_browser_closed(self):
+        try:
+            result = self._browser._result
+            if result:
+                set_save_dir(result)
+                self["path_value"].setText(_b(result))
+        except Exception:
+            _log("Settings _dir_browser_closed: " + _fmt_exc())
+
+    def doClose(self):
+        try:
+            Screen.doClose(self)
+        except TypeError:
+            pass
+
+
+# --------------------------------------------------------------------------
+# Download-Screen
+# --------------------------------------------------------------------------
+
+class OeMediathekDownloadScreen(Screen):
+    if IS_FHD:
+        skin = """
+        <screen name="OeMediathekDownloadScreen" position="460,340" size="1000,400" flags="wfNoBorder">
+            <eLabel position="0,0" size="1000,400" backgroundColor="#1A1A1A" zPosition="-6" />
+            <widget name="title_label" position="40,30" size="920,60" font="Regular;36" halign="center" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="status_label" position="40,120" size="920,180" font="Regular;34" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="hint_label" position="40,330" size="920,50" font="Regular;28" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+        </screen>"""
+    else:
+        skin = """
+        <screen name="OeMediathekDownloadScreen" position="307,233" size="666,253" flags="wfNoBorder">
+            <eLabel position="0,0" size="666,253" backgroundColor="#1A1A1A" zPosition="-6" />
+            <widget name="title_label" position="27,20" size="613,40" font="Regular;24" halign="center" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="status_label" position="27,73" size="613,120" font="Regular;22" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="hint_label" position="27,207" size="613,33" font="Regular;19" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+        </screen>"""
+
+    def __init__(self, session, title, url):
+        Screen.__init__(self, session)
+        self._url  = url
+        self._done = False
+        self._err  = None
+
+        # Shared state zwischen Thread und Hauptthread (nur schreiben im Thread, lesen im Timer)
+        self._dl_downloaded = 0
+        self._dl_total      = 0
+        self._dl_done       = False
+        self._dl_err        = None
+        self._dl_filepath   = None
+
+        if isinstance(title, bytes):
+            title_str = title.decode("utf-8", "replace")
+        else:
+            title_str = title
+        self._title_str = title_str
+
+        self["title_label"]  = Label(_b(title_str))
+        self["status_label"] = Label(_b("Starte Download ..."))
+        self["hint_label"]   = Label(_b("EXIT = Abbrechen"))
+
+        self["actions"] = ActionMap(
+            ["OkCancelActions"],
+            {
+                "cancel": self._on_cancel,
+                "ok":     self._on_cancel,
+            },
+            -1,
+        )
+
+        self._downloader = None
+
+        # Einmaliger Start-Timer
+        self._start_timer = eTimer()
+        self._start_timer.callback.append(self._start_download)
+        self._start_timer.start(300, True)
+
+        # Poll-Timer: aktualisiert UI aus dem Hauptthread
+        self._poll_timer = eTimer()
+        self._poll_timer.callback.append(self._poll)
+
+        self.onClose.append(self.__stop_timers)
+
+    def __stop_timers(self):
+        try:
+            self._start_timer.stop()
+        except Exception:
+            pass
+        try:
+            self._poll_timer.stop()
+        except Exception:
+            pass
+
+    def _start_download(self):
+        try:
+            self._downloader = Downloader(
+                self._url,
+                self._title_str,
+                on_progress=self._cb_progress,
+                on_done=self._cb_done,
+                on_error=self._cb_error,
+            )
+            self._downloader.start()
+            # Poll alle 500ms
+            self._poll_timer.start(500, False)
+        except Exception:
+            _log("DownloadScreen _start_download: " + _fmt_exc())
+            self["status_label"].setText("Fehler beim Starten")
+
+    # Callbacks aus dem Background-Thread — NUR einfache Wertzuweisungen, kein UI!
+    def _cb_progress(self, downloaded, total):
+        self._dl_downloaded = downloaded
+        self._dl_total      = total
+
+    def _cb_done(self, filepath):
+        self._dl_filepath = filepath
+        self._dl_done     = True
+
+    def _cb_error(self, msg):
+        self._dl_err = msg
+
+    # Poll läuft im Hauptthread — darf UI anfassen
+    def _poll(self):
+        if self._dl_err is not None:
+            self._poll_timer.stop()
+            self["status_label"].setText(_b("Fehler: " + self._dl_err))
+            self["hint_label"].setText(_b("OK / EXIT = Schliessen"))
+            return
+
+        if self._dl_done:
+            self._poll_timer.stop()
+            fname = os.path.basename(self._dl_filepath) if self._dl_filepath else ""
+            self["status_label"].setText(_b("Fertig: " + fname))
+            self["hint_label"].setText(_b("OK / EXIT = Schliessen"))
+            return
+
+        downloaded = self._dl_downloaded
+        total      = self._dl_total
+        if total > 0:
+            pct = int(downloaded * 100 / total)
+            self["status_label"].setText(_b("%d%% von %s" % (pct, format_size(total))))
+        elif downloaded > 0:
+            self["status_label"].setText(_b("%s heruntergeladen" % format_size(downloaded)))
+
+    def _on_cancel(self):
+        if self._downloader:
+            self._downloader.cancel()
+        self.close()
+
+    def doClose(self):
+        self.__stop_timers()
+        if self._downloader:
+            self._downloader.cancel()
+        try:
+            Screen.doClose(self)
+        except TypeError:
+            pass
 
 
 def main(session, **kwargs):
