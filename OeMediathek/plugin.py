@@ -1570,7 +1570,7 @@ class OeMediathekDirBrowser(Screen):
         if path not in (b"/", "/"):
             entries.append(("[..] Übergeordneter Ordner", None))
         # "Hier speichern" direkt oben — nicht erst nach Scrollen durch Dateien
-        entries.append(("[Hier speichern]", path))
+        entries.append(("»  Hier speichern", path))
         try:
             names = sorted(os.listdir(path))
             for name in names:
