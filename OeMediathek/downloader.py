@@ -60,20 +60,30 @@ def set_save_dir(path):
 # Hilfsfunktionen
 # --------------------------------------------------------------------------
 
-def _make_filename(title, url):
-    """Erstellt einen sicheren Dateinamen aus Titel und URL."""
-    # Dateiendung aus URL holen (immer .mp4)
+def _sanitize(text):
+    """Umlaute ersetzen und Sonderzeichen entfernen für sichere Dateinamen."""
+    if isinstance(text, bytes):
+        text = text.decode("utf-8", "replace")
+    text = text.replace(u"\xe4", "ae").replace(u"\xf6", "oe").replace(u"\xfc", "ue")
+    text = text.replace(u"\xdf", "ss")
+    text = text.replace(u"\xc4", "Ae").replace(u"\xd6", "Oe").replace(u"\xdc", "Ue")
+    text = re.sub(r'[^\w\s\-]', '', text)
+    return text.strip().replace(" ", "_")
+
+
+def _make_filename(title, url, topic=None):
+    """Erstellt einen sicheren Dateinamen aus Titel (und optionalem Seriennamen)."""
     ext = ".mp4"
-    # Titel bereinigen: nur alphanumerisch, Leerzeichen, Bindestrich, Unterstrich
-    if isinstance(title, bytes):
-        title = title.decode("utf-8", "replace")
-    safe = re.sub(r'[^\w\s\-]', '', title, flags=re.UNICODE)
-    safe = safe.strip().replace(" ", "_")
-    if not safe:
-        safe = "download"
-    # Auf 80 Zeichen begrenzen
-    safe = safe[:80]
-    return safe + ext
+    safe_title = _sanitize(title) or "download"
+    if topic:
+        safe_topic = _sanitize(topic)
+        if safe_topic and safe_topic.lower() != safe_title.lower():
+            combined = safe_topic + "_-_" + safe_title
+        else:
+            combined = safe_title
+    else:
+        combined = safe_title
+    return combined[:100] + ext
 
 
 def get_content_length(url):
@@ -120,7 +130,7 @@ class Downloader(object):
 
     CHUNK_SIZE = 256 * 1024  # 256 KB pro Chunk
 
-    def __init__(self, url, title, on_progress=None, on_done=None, on_error=None):
+    def __init__(self, url, title, topic=None, on_progress=None, on_done=None, on_error=None):
         self.url         = url
         self.title       = title
         self.on_progress = on_progress
@@ -131,7 +141,7 @@ class Downloader(object):
         self._thread     = None
 
         save_dir = get_save_dir()
-        filename = _make_filename(title, url)
+        filename = _make_filename(title, url, topic=topic)
         self.filepath = os.path.join(save_dir, filename)
 
     def start(self):

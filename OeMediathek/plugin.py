@@ -64,6 +64,10 @@ LOG_FILE = "/tmp/oemediathek.log"
 PAGE_SIZE = 500
 DEBUG = False
 
+# Hintergrund-Download: aktiver Downloader und ausstehende Benachrichtigung
+_active_downloader  = None
+_bg_download_result = None  # None | "ok:<titel>" | "err:<meldung>"
+
 # Auflösungs-Weiche: True = FHD (1920×1080), False = HD (1280×720)
 try:
     IS_FHD = getDesktop(0).size().width() > 1280
@@ -867,8 +871,9 @@ class OeMediathekScreen(Screen):
         self._desc_timer.callback.append(self._update_desc)
         self._desc_timer.start(250, False)
 
-        self._toast_timer = eTimer()
+        self._toast_timer  = eTimer()
         self._toast_timer.callback.append(self._clear_toast)
+        self._saved_status = None
 
         self.onClose.append(self.__stop_timers)
 
@@ -938,7 +943,7 @@ class OeMediathekScreen(Screen):
             if self._poll_timer:
                 self._poll_timer.start(300, True)
             return
-            
+
         if self._fetch_target == "episodes":
             self._on_episodes_fetch_done()
         elif self._fetch_target == "alpha":
@@ -970,6 +975,14 @@ class OeMediathekScreen(Screen):
         self._show_groups()
 
     def _update_desc(self):
+        global _bg_download_result
+        if _bg_download_result is not None:
+            result = _bg_download_result
+            _bg_download_result = None
+            if result.startswith("ok:"):
+                self._show_toast("Download fertig!", added=True)
+            else:
+                self._show_toast("Download fehlgeschlagen!", added=False)
         try:
             idx = self["menu_list"].getSelectedIndex()
             if idx == self.last_index:
@@ -1171,8 +1184,21 @@ class OeMediathekScreen(Screen):
             pass
 
     def on_download(self):
+        global _active_downloader
         if self.mode != MODE_EPISODES:
             return
+        if _active_downloader is not None:
+            t = _active_downloader._thread
+            if t is not None and t.is_alive():
+                try:
+                    laufender = _active_downloader.title
+                    if isinstance(laufender, bytes):
+                        laufender = laufender.decode("utf-8", "replace")
+                except Exception:
+                    laufender = "?"
+                self._show_toast("Läuft noch: " + laufender, added=False)
+                return
+            _active_downloader = None
         try:
             idx = self["menu_list"].getSelectedIndex()
             if idx is None or idx >= len(self.cur_episodes):
@@ -1188,7 +1214,7 @@ class OeMediathekScreen(Screen):
             if not url:
                 self["status_label"].setText("Kein Stream verfügbar")
                 return
-            self.session.open(OeMediathekDownloadScreen, item["title"], url)
+            self.session.open(OeMediathekDownloadScreen, item["title"], url, topic=self.cur_group_name)
         except Exception:
             _log("on_download Fehler: " + _fmt_exc())
 
@@ -1373,6 +1399,11 @@ class OeMediathekScreen(Screen):
     def _show_toast(self, msg, added=True):
         try:
             self._toast_timer.stop()
+            if self._saved_status is None:
+                try:
+                    self._saved_status = self["status_label"].getText()
+                except Exception:
+                    self._saved_status = ""
             prefix = "[+] " if added else "[-] "
             self["status_label"].setText(_b(prefix + msg))
             self._toast_timer.start(2500, True)
@@ -1381,7 +1412,11 @@ class OeMediathekScreen(Screen):
 
     def _clear_toast(self):
         try:
-            self["status_label"].setText(_b(""))
+            if self._saved_status is not None:
+                self["status_label"].setText(_b(self._saved_status))
+                self._saved_status = None
+            else:
+                self["status_label"].setText(_b(""))
         except Exception:
             pass
 
@@ -1723,23 +1758,28 @@ class OeMediathekDownloadScreen(Screen):
         <screen name="OeMediathekDownloadScreen" position="460,340" size="1000,400" flags="wfNoBorder">
             <eLabel position="0,0" size="1000,400" backgroundColor="#33000000" zPosition="-6" />
             <widget name="title_label" position="40,30" size="920,60" font="Regular;36" halign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="status_label" position="40,120" size="920,180" font="Regular;34" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
-            <widget name="hint_label" position="40,330" size="920,50" font="Regular;28" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="status_label" position="40,110" size="920,180" font="Regular;34" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <eLabel position="200,333" size="8,28" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow" position="216,330" size="260,36" font="Regular;26" halign="left" foregroundColor="#CCCCCC" transparent="1" />
+            <widget name="hint_label" position="520,330" size="280,36" font="Regular;26" halign="left" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
     else:
         skin = """
         <screen name="OeMediathekDownloadScreen" position="307,233" size="666,253" flags="wfNoBorder">
             <eLabel position="0,0" size="666,253" backgroundColor="#33000000" zPosition="-6" />
             <widget name="title_label" position="27,20" size="613,40" font="Regular;24" halign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="status_label" position="27,73" size="613,120" font="Regular;22" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
-            <widget name="hint_label" position="27,207" size="613,33" font="Regular;19" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="status_label" position="27,70" size="613,120" font="Regular;22" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <eLabel position="130,212" size="5,20" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow" position="140,208" size="175,28" font="Regular;19" halign="left" foregroundColor="#CCCCCC" transparent="1" />
+            <widget name="hint_label" position="345,208" size="190,28" font="Regular;19" halign="left" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
 
-    def __init__(self, session, title, url):
+    def __init__(self, session, title, url, topic=None):
         Screen.__init__(self, session)
-        self._url  = url
-        self._done = False
-        self._err  = None
+        self._url   = url
+        self._topic = topic
+        self._done  = False
+        self._err   = None
 
         # Shared state zwischen Thread und Hauptthread (nur schreiben im Thread, lesen im Timer)
         self._dl_downloaded = 0
@@ -1756,13 +1796,15 @@ class OeMediathekDownloadScreen(Screen):
 
         self["title_label"]  = Label(_b(title_str))
         self["status_label"] = Label(_b("Starte Download ..."))
+        self["hint_yellow"]  = Label(_b("Im Hintergrund"))
         self["hint_label"]   = Label(_b("EXIT = Abbrechen"))
 
         self["actions"] = ActionMap(
-            ["OkCancelActions"],
+            ["OkCancelActions", "ColorActions"],
             {
                 "cancel": self._on_cancel,
                 "ok":     self._on_cancel,
+                "yellow": self._to_background,
             },
             -1,
         )
@@ -1795,6 +1837,7 @@ class OeMediathekDownloadScreen(Screen):
             self._downloader = Downloader(
                 self._url,
                 self._title_str,
+                topic=self._topic,
                 on_progress=self._cb_progress,
                 on_done=self._cb_done,
                 on_error=self._cb_error,
@@ -1840,6 +1883,31 @@ class OeMediathekDownloadScreen(Screen):
             self["status_label"].setText(_b("%d%% von %s" % (pct, format_size(total))))
         elif downloaded > 0:
             self["status_label"].setText(_b("%s heruntergeladen" % format_size(downloaded)))
+
+    def _to_background(self):
+        global _active_downloader, _bg_download_result
+        if not self._downloader or self._dl_done or self._dl_err is not None:
+            return
+        title = self._title_str
+
+        def _bg_done(filepath):
+            global _active_downloader, _bg_download_result
+            _active_downloader  = None
+            import os as _os
+            _bg_download_result = "ok:" + _os.path.basename(filepath)
+
+        def _bg_error(msg):
+            global _active_downloader, _bg_download_result
+            _active_downloader  = None
+            _bg_download_result = "err:" + str(msg)
+
+        self._downloader.on_done     = _bg_done
+        self._downloader.on_error    = _bg_error
+        self._downloader.on_progress = lambda *a: None
+
+        _active_downloader = self._downloader
+        self._downloader   = None  # verhindert cancel() in doClose
+        self.close()
 
     def _on_cancel(self):
         if self._downloader:
