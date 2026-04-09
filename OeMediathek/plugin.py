@@ -1222,8 +1222,8 @@ class OeMediathekScreen(Screen):
         self["hint_red"].setText("")
         self["hint_green"].setText(self._next_sort_hint())
         self["hint_yellow"].setText("Suche (Server)")
-        self["hint_blue"].setText("Download")
-            
+        self["hint_blue"].setText(_b("Download"))
+
         self._update_page_hint()
         self.last_index = -1
         self._focus_list(0)
@@ -1260,7 +1260,7 @@ class OeMediathekScreen(Screen):
                 url_sd = url_sd.decode("utf-8", "replace")
             url = url_hd if url_hd else url_sd
             if not url:
-                self["status_label"].setText("Kein Stream verfügbar")
+                self["status_label"].setText(_b("Kein Stream verfügbar"))
                 return
 
             # Läuft bereits ein Download → in Queue einreihen
@@ -1494,7 +1494,7 @@ class OeMediathekScreen(Screen):
 
     def _update_blue_hint(self):
         if self.mode == MODE_EPISODES:
-            self["hint_blue"].setText("Download")
+            self["hint_blue"].setText(_b("Download"))
             return
         try:
             idx = self["menu_list"].getSelectedIndex()
@@ -1919,7 +1919,7 @@ class OeMediathekDownloadScreen(Screen):
             self._poll_timer.start(500, False)
         except Exception:
             _log("DownloadScreen _start_download: " + _fmt_exc())
-            self["status_label"].setText("Fehler beim Starten")
+            self["status_label"].setText(_b("Fehler beim Starten"))
 
     # Callbacks aus dem Background-Thread — NUR einfache Wertzuweisungen, kein UI!
     def _cb_progress(self, downloaded, total):
