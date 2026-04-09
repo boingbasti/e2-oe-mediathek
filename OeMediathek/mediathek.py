@@ -132,6 +132,11 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
 
         if ch in blocked:
             continue
+
+        # Arte: nur deutschsprachige Inhalte (ARTE.DE) behalten.
+        # Die API liefert auch ARTE.FR, ARTE.IT etc. bei channel="ARTE"-Abfragen.
+        if ch.upper().startswith("ARTE") and ch.upper() != "ARTE.DE":
+            continue
         
         # HD und SD getrennt auslesen
         url_hd     = entry.get("url_video_hd") or ""
@@ -189,6 +194,7 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
         else:
             group_key = title if channel else ch + ": " + title
 
+        _log("URL [%s] HD=%s SD=%s" % (ch, url_hd if url_hd else "-", url_sd if url_sd else "-"))
         items.append({
             "title":         _s(title),
             "group":         _s(group_key),
