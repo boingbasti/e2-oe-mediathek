@@ -1274,7 +1274,18 @@ class OeMediathekScreen(Screen):
                     })
                     self._show_toast("Zur Warteschlange hinzugefügt", added=True)
                     return
+                # Thread bereits beendet aber Queue hat noch Items: neuen Download
+                # einreihen und Queue komplett abarbeiten (kein Screen öffnen)
                 _active_downloader = None
+                if _download_queue:
+                    _download_queue.append({
+                        "title": item["title"],
+                        "url":   url,
+                        "topic": self.cur_group_name,
+                    })
+                    self._show_toast("Zur Warteschlange hinzugefügt", added=True)
+                    _queue_next()
+                    return
 
             # Kein laufender Download → Screen öffnen
             self.session.open(OeMediathekDownloadScreen, item["title"], url, topic=self.cur_group_name)
