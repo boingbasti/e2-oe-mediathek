@@ -35,17 +35,29 @@ Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsa
 
 ## Funktionen
 
+### Inhalts-Screen
+
 | Taste | Funktion |
 |-------|----------|
 | OK | Gruppe öffnen / Folge abspielen |
 | Rot | Zurück zur Gruppenansicht |
 | Grün | A-Z Sortierung |
 | Gelb | Suche (Bildschirmtastatur) |
-| Blau | Favoriten |
-| CH+ / CH- | Vor-/Zurückblättern (500 Einträge pro Seite) |
-| INFO / EPG | Detailansicht des Beitrags |
+| Blau | Download (Episodenansicht) / Favoriten (Gruppenansicht) |
+| CH+ / CH- | Seitenweise blättern (bis zu 500 Einträge pro Abruf) |
+
+### Hauptmenü
+
+| Taste | Funktion |
+|-------|----------|
+| Grün | Einstellungen |
+| Gelb | Download-Manager (nur sichtbar wenn Downloads aktiv) |
 
 - **HD/SD-Auswahl:** Wenn ein Beitrag in HD und SD verfügbar ist, wird vor dem Abspielen gefragt
+- **Download:** Episoden direkt auf die Festplatte laden; läuft im Hintergrund weiter wenn der Screen per Gelb geschlossen wird
+- **Download-Warteschlange:** Mehrere Downloads können nacheinander gestartet werden und laufen automatisch der Reihe nach ab
+- **Download-Manager:** Zeigt laufenden Download mit Fortschritt und alle wartenden Downloads; Abbrechen einzeln oder gesamt möglich
+- **Einstellungen:** Speicherort für Downloads konfigurierbar (Standard: `/media/hdd/movie/OeMediathek`)
 - **Favoriten:** Beiträge können als Favoriten gespeichert und über den Favoritenbereich aufgerufen werden
 - **Hintergrundfetch:** Inhalte werden im Hintergrund geladen, die Oberfläche bleibt bedienbar
 
@@ -66,7 +78,7 @@ Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsa
 Die aktuelle ZIP-Datei aus dem [Releases-Bereich](../../releases) herunterladen, entpacken und die IPK-Datei auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.1_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.2_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.
