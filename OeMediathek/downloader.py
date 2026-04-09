@@ -144,7 +144,13 @@ class Downloader(object):
 
         save_dir = get_save_dir()
         filename = _make_filename(title, url, topic=topic)
-        self.filepath = os.path.join(save_dir, filename)
+        base, ext = os.path.splitext(filename)
+        candidate = os.path.join(save_dir, filename)
+        counter = 1
+        while os.path.exists(candidate):
+            candidate = os.path.join(save_dir, "%s_%d%s" % (base, counter, ext))
+            counter += 1
+        self.filepath = candidate
 
     def start(self):
         """Startet den Download in einem Background-Thread."""
