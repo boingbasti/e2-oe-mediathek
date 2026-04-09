@@ -1816,23 +1816,23 @@ class OeMediathekSettingsScreen(Screen):
 class OeMediathekDownloadScreen(Screen):
     if IS_FHD:
         skin = """
-        <screen name="OeMediathekDownloadScreen" position="460,340" size="1000,400" flags="wfNoBorder">
-            <eLabel position="0,0" size="1000,400" backgroundColor="#33000000" zPosition="-6" />
-            <widget name="title_label" position="40,30" size="920,60" font="Regular;36" halign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="status_label" position="40,110" size="920,180" font="Regular;34" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
-            <eLabel position="200,333" size="8,28" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow" position="216,330" size="260,36" font="Regular;26" halign="left" foregroundColor="#CCCCCC" transparent="1" />
-            <widget name="hint_label" position="520,330" size="280,36" font="Regular;26" halign="left" foregroundColor="#AAAAAA" transparent="1" />
+        <screen name="OeMediathekDownloadScreen" position="460,300" size="1000,450" flags="wfNoBorder">
+            <eLabel position="0,0" size="1000,450" backgroundColor="#33000000" zPosition="-6" />
+            <widget name="title_label" position="40,30" size="920,110" font="Regular;36" halign="center" valign="top" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="status_label" position="40,160" size="920,170" font="Regular;34" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <eLabel position="200,383" size="8,28" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow" position="216,380" size="260,36" font="Regular;26" halign="left" foregroundColor="#CCCCCC" transparent="1" />
+            <widget name="hint_label" position="520,380" size="280,36" font="Regular;26" halign="left" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
     else:
         skin = """
-        <screen name="OeMediathekDownloadScreen" position="307,233" size="666,253" flags="wfNoBorder">
-            <eLabel position="0,0" size="666,253" backgroundColor="#33000000" zPosition="-6" />
-            <widget name="title_label" position="27,20" size="613,40" font="Regular;24" halign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="status_label" position="27,70" size="613,120" font="Regular;22" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
-            <eLabel position="130,212" size="5,20" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow" position="140,208" size="175,28" font="Regular;19" halign="left" foregroundColor="#CCCCCC" transparent="1" />
-            <widget name="hint_label" position="345,208" size="190,28" font="Regular;19" halign="left" foregroundColor="#AAAAAA" transparent="1" />
+        <screen name="OeMediathekDownloadScreen" position="307,200" size="666,300" flags="wfNoBorder">
+            <eLabel position="0,0" size="666,300" backgroundColor="#33000000" zPosition="-6" />
+            <widget name="title_label" position="27,20" size="613,76" font="Regular;24" halign="center" valign="top" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="status_label" position="27,106" size="613,120" font="Regular;22" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <eLabel position="130,258" size="5,20" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow" position="140,254" size="175,28" font="Regular;19" halign="left" foregroundColor="#CCCCCC" transparent="1" />
+            <widget name="hint_label" position="345,254" size="190,28" font="Regular;19" halign="left" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
 
     def __init__(self, session, title, url, topic=None):

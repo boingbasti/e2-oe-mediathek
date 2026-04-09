@@ -26,39 +26,39 @@ def _b(s):
 class OeMediathekDownloadManagerScreen(Screen):
     if IS_FHD:
         skin = """
-        <screen name="OeMediathekDownloadManagerScreen" position="360,200" size="1200,680" flags="wfNoBorder">
-            <eLabel position="0,0" size="1200,680" backgroundColor="#33000000" zPosition="-6" />
+        <screen name="OeMediathekDownloadManagerScreen" position="360,200" size="1200,730" flags="wfNoBorder">
+            <eLabel position="0,0" size="1200,730" backgroundColor="#33000000" zPosition="-6" />
             <widget name="title_label"   position="40,30"  size="1120,60"  font="Regular;36" halign="center" foregroundColor="#FFFFFF" transparent="1" />
             <eLabel position="40,110" size="1120,2" backgroundColor="#44FFFFFF" zPosition="1" />
             <widget name="active_head"   position="40,128" size="1120,40"  font="Regular;28" halign="left"   foregroundColor="#AAAAAA" transparent="1" />
-            <widget name="active_label"  position="40,175" size="1120,50"  font="Regular;34" halign="left"   foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="progress_label" position="40,235" size="1120,44" font="Regular;30" halign="left"   foregroundColor="#00BFFF" transparent="1" />
-            <eLabel position="40,295" size="1120,2" backgroundColor="#44FFFFFF" zPosition="1" />
-            <widget name="queue_head"    position="40,313" size="1120,40"  font="Regular;28" halign="left"   foregroundColor="#AAAAAA" transparent="1" />
-            <widget name="queue_label"   position="40,360" size="1120,240" font="Regular;28" halign="left" valign="top" foregroundColor="#CCCCCC" transparent="1" />
-            <eLabel position="40,617" size="8,40" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow"   position="56,610"  size="360,50"  font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
-            <eLabel position="460,617" size="8,40" backgroundColor="#CC0000" zPosition="2" />
-            <widget name="hint_red"      position="476,610" size="360,50"  font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
-            <widget name="hint_exit"     position="880,610" size="280,50"  font="Regular;32" halign="right" valign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="active_label"  position="40,175" size="1120,100" font="Regular;34" halign="left" valign="top" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="progress_label" position="40,285" size="1120,44" font="Regular;30" halign="left"   foregroundColor="#00BFFF" transparent="1" />
+            <eLabel position="40,345" size="1120,2" backgroundColor="#44FFFFFF" zPosition="1" />
+            <widget name="queue_head"    position="40,363" size="1120,40"  font="Regular;28" halign="left"   foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="queue_label"   position="40,410" size="1120,240" font="Regular;28" halign="left" valign="top" foregroundColor="#CCCCCC" transparent="1" />
+            <eLabel position="40,667" size="8,40" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow"   position="56,660"  size="360,50"  font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
+            <eLabel position="460,667" size="8,40" backgroundColor="#CC0000" zPosition="2" />
+            <widget name="hint_red"      position="476,660" size="360,50"  font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
+            <widget name="hint_exit"     position="880,660" size="280,50"  font="Regular;32" halign="right" valign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
     else:
         skin = """
-        <screen name="OeMediathekDownloadManagerScreen" position="240,133" size="800,453" flags="wfNoBorder">
-            <eLabel position="0,0" size="800,453" backgroundColor="#33000000" zPosition="-6" />
+        <screen name="OeMediathekDownloadManagerScreen" position="240,133" size="800,500" flags="wfNoBorder">
+            <eLabel position="0,0" size="800,500" backgroundColor="#33000000" zPosition="-6" />
             <widget name="title_label"   position="27,20"  size="746,40"  font="Regular;24" halign="center" foregroundColor="#FFFFFF" transparent="1" />
             <eLabel position="27,72" size="746,2" backgroundColor="#44FFFFFF" zPosition="1" />
             <widget name="active_head"   position="27,82"  size="746,28"  font="Regular;19" halign="left"   foregroundColor="#AAAAAA" transparent="1" />
-            <widget name="active_label"  position="27,115" size="746,34"  font="Regular;22" halign="left"   foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="progress_label" position="27,155" size="746,30"  font="Regular;20" halign="left"   foregroundColor="#00BFFF" transparent="1" />
-            <eLabel position="27,195" size="746,2" backgroundColor="#44FFFFFF" zPosition="1" />
-            <widget name="queue_head"    position="27,205" size="746,28"  font="Regular;19" halign="left"   foregroundColor="#AAAAAA" transparent="1" />
-            <widget name="queue_label"   position="27,238" size="746,160" font="Regular;19" halign="left" valign="top" foregroundColor="#CCCCCC" transparent="1" />
-            <eLabel position="27,410" size="5,27" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow"   position="38,407"  size="240,33"  font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
-            <eLabel position="307,410" size="5,27" backgroundColor="#CC0000" zPosition="2" />
-            <widget name="hint_red"      position="318,407" size="240,33"  font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
-            <widget name="hint_exit"     position="587,407" size="186,33"  font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="active_label"  position="27,115" size="746,68"  font="Regular;22" halign="left" valign="top" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="progress_label" position="27,190" size="746,30"  font="Regular;20" halign="left"   foregroundColor="#00BFFF" transparent="1" />
+            <eLabel position="27,230" size="746,2" backgroundColor="#44FFFFFF" zPosition="1" />
+            <widget name="queue_head"    position="27,240" size="746,28"  font="Regular;19" halign="left"   foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="queue_label"   position="27,273" size="746,160" font="Regular;19" halign="left" valign="top" foregroundColor="#CCCCCC" transparent="1" />
+            <eLabel position="27,455" size="5,27" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow"   position="38,452"  size="240,33"  font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
+            <eLabel position="307,455" size="5,27" backgroundColor="#CC0000" zPosition="2" />
+            <widget name="hint_red"      position="318,452" size="240,33"  font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
+            <widget name="hint_exit"     position="587,452" size="186,33"  font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
 
     def __init__(self, session, active_downloader_ref, queue_ref):
