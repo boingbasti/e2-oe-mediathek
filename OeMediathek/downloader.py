@@ -139,6 +139,8 @@ class Downloader(object):
 
         self._cancelled  = False
         self._thread     = None
+        self._downloaded = 0
+        self._total      = 0
 
         save_dir = get_save_dir()
         filename = _make_filename(title, url, topic=topic)
@@ -180,6 +182,8 @@ class Downloader(object):
                         break
                     f.write(chunk)
                     downloaded += len(chunk)
+                    self._downloaded = downloaded
+                    self._total      = total
                     if self.on_progress:
                         self.on_progress(downloaded, total)
 

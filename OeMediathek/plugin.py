@@ -58,6 +58,7 @@ from mediathek import (
 )
 from player import play_stream
 from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size
+from download_manager import OeMediathekDownloadManagerScreen
 
 LOGO_DIR = os.path.join(os.path.dirname(__file__), "logos")
 LOG_FILE = "/tmp/oemediathek.log"
@@ -543,11 +544,13 @@ class OeMediathekMainScreen(Screen):
             %s%s%s
             <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
             <eLabel position="50,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_green" position="68,960"   size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ok"    position="468,960"  size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ch"    position="868,960"  size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_nav"   position="1268,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="page_label" position="1668,960" size="202,100" font="Regular;32" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_green"  position="68,960"   size="320,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ok"     position="430,960"  size="320,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ch"     position="792,960"  size="320,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_nav"    position="1154,960" size="280,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="1452,980" size="8,60" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow" position="1468,960" size="220,100" font="Regular;28" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="page_label"  position="1700,960" size="160,100" font="Regular;28" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
         </screen>
         """ % (
                 sw, sh, sw, sh,
@@ -566,11 +569,13 @@ class OeMediathekMainScreen(Screen):
             %s%s%s
             <eLabel position="20,640" size="1240,66" backgroundColor="#1A000000" zPosition="-5" />
             <eLabel position="33,653" size="5,40" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_green" position="45,640"  size="233,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ok"    position="312,640" size="233,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ch"    position="578,640" size="233,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_nav"   position="845,640" size="233,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="page_label" position="1112,640" size="134,66" font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_green"  position="45,640"  size="210,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ok"     position="285,640" size="210,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ch"     position="525,640" size="210,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_nav"    position="765,640" size="190,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="968,653" size="5,40" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow" position="978,640" size="155,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="page_label"  position="1112,640" size="134,66" font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
         </screen>
         """ % (
                 sw, sh, sw, sh,
@@ -588,13 +593,14 @@ class OeMediathekMainScreen(Screen):
         self.selected      = 0
         self.main_page     = 0
 
-        self["title_label"] = Label(_b("\xc3\x96R Mediathek"))
-        self["selector"]    = Label("")
-        self["hint_green"]  = Label(_b("Einstellungen"))
-        self["hint_ok"]     = Label(_b("OK = \xc3\x96ffnen"))
-        self["hint_ch"]     = Label(_b("CH+/- = Seite blättern"))
-        self["hint_nav"]    = Label(_b("EXIT = Beenden"))
-        self["page_label"]  = Label("")
+        self["title_label"]  = Label(_b("\xc3\x96R Mediathek"))
+        self["selector"]     = Label("")
+        self["hint_green"]   = Label(_b("Einstellungen"))
+        self["hint_ok"]      = Label(_b("OK = \xc3\x96ffnen"))
+        self["hint_ch"]      = Label(_b("CH+/- = Seite bl\xc3\xa4ttern"))
+        self["hint_nav"]     = Label(_b("EXIT = Beenden"))
+        self["hint_yellow"]  = Label(_b(""))
+        self["page_label"]   = Label("")
 
         for i in range(TILES_PER_PAGE):
             try:
@@ -616,6 +622,7 @@ class OeMediathekMainScreen(Screen):
                 "nextBouquet":  self.page_next,
                 "prevBouquet":  self.page_prev,
                 "green":        self.open_settings,
+                "yellow":       self.open_download_manager,
             },
             -1,
         )
@@ -627,6 +634,24 @@ class OeMediathekMainScreen(Screen):
             self._refresh_page()
         except Exception as e:
             _log("MainScreen onShow: " + str(e))
+        self._update_download_hint()
+
+    def _update_download_hint(self):
+        t = _active_downloader and _active_downloader._thread
+        if (t and t.is_alive()) or _download_queue:
+            self["hint_yellow"].setText(_b("Downloads"))
+        else:
+            self["hint_yellow"].setText(_b(""))
+
+    def open_download_manager(self):
+        t = _active_downloader and _active_downloader._thread
+        if not ((t and t.is_alive()) or _download_queue):
+            return
+        self.session.open(
+            OeMediathekDownloadManagerScreen,
+            lambda: _active_downloader,
+            lambda: _download_queue,
+        )
 
     def _refresh_page(self):
         """Kacheln und Logos der aktuellen Seite neu befuellen."""
