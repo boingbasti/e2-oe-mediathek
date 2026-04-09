@@ -64,9 +64,10 @@ LOG_FILE = "/tmp/oemediathek.log"
 PAGE_SIZE = 500
 DEBUG = False
 
-# Hintergrund-Download: aktiver Downloader und ausstehende Benachrichtigung
+# Download-Queue: aktiver Downloader, wartende Items, ausstehende Benachrichtigung
 _active_downloader  = None
-_bg_download_result = None  # None | "ok:<titel>" | "err:<meldung>"
+_download_queue     = []    # Liste von {"title": ..., "url": ..., "topic": ...}
+_bg_download_result = None  # None | "ok" | "err:<meldung>"
 
 # Auflösungs-Weiche: True = FHD (1920×1080), False = HD (1280×720)
 try:
@@ -445,6 +446,40 @@ class OeMediathekInfoScreen(Screen):
         except TypeError as e:
             _log("doClose TypeError: " + str(e))
 
+
+
+# ------------------------------------------------------------------
+# Download-Queue
+# ------------------------------------------------------------------
+
+def _queue_next():
+    """Startet den nächsten Download aus der Queue, oder meldet alle fertig."""
+    global _active_downloader, _download_queue, _bg_download_result
+    if not _download_queue:
+        _active_downloader  = None
+        _bg_download_result = "ok"
+        return
+    item = _download_queue.pop(0)
+    try:
+        dl = Downloader(
+            item["url"],
+            item["title"],
+            topic=item.get("topic"),
+            on_done=lambda fp: _queue_next(),
+            on_error=lambda msg: _queue_error(msg),
+        )
+        dl.on_progress = lambda *a: None
+        _active_downloader = dl
+        dl.start()
+    except Exception:
+        _queue_next()
+
+
+def _queue_error(msg):
+    global _active_downloader, _bg_download_result
+    _active_downloader  = None
+    _bg_download_result = "err:" + str(msg)
+    _queue_next()
 
 
 # ------------------------------------------------------------------
@@ -979,8 +1014,8 @@ class OeMediathekScreen(Screen):
         if _bg_download_result is not None:
             result = _bg_download_result
             _bg_download_result = None
-            if result.startswith("ok:"):
-                self._show_toast("Download fertig!", added=True)
+            if result == "ok":
+                self._show_toast("Alle Downloads abgeschlossen!", added=True)
             else:
                 self._show_toast("Download fehlgeschlagen!", added=False)
         try:
@@ -1184,21 +1219,9 @@ class OeMediathekScreen(Screen):
             pass
 
     def on_download(self):
-        global _active_downloader
+        global _active_downloader, _download_queue
         if self.mode != MODE_EPISODES:
             return
-        if _active_downloader is not None:
-            t = _active_downloader._thread
-            if t is not None and t.is_alive():
-                try:
-                    laufender = _active_downloader.title
-                    if isinstance(laufender, bytes):
-                        laufender = laufender.decode("utf-8", "replace")
-                except Exception:
-                    laufender = "?"
-                self._show_toast("Läuft noch: " + laufender, added=False)
-                return
-            _active_downloader = None
         try:
             idx = self["menu_list"].getSelectedIndex()
             if idx is None or idx >= len(self.cur_episodes):
@@ -1214,6 +1237,21 @@ class OeMediathekScreen(Screen):
             if not url:
                 self["status_label"].setText("Kein Stream verfügbar")
                 return
+
+            # Läuft bereits ein Download → in Queue einreihen
+            if _active_downloader is not None:
+                t = _active_downloader._thread
+                if t is not None and t.is_alive():
+                    _download_queue.append({
+                        "title": item["title"],
+                        "url":   url,
+                        "topic": self.cur_group_name,
+                    })
+                    self._show_toast("Zur Warteschlange hinzugefügt", added=True)
+                    return
+                _active_downloader = None
+
+            # Kein laufender Download → Screen öffnen
             self.session.open(OeMediathekDownloadScreen, item["title"], url, topic=self.cur_group_name)
         except Exception:
             _log("on_download Fehler: " + _fmt_exc())
@@ -1885,24 +1923,12 @@ class OeMediathekDownloadScreen(Screen):
             self["status_label"].setText(_b("%s heruntergeladen" % format_size(downloaded)))
 
     def _to_background(self):
-        global _active_downloader, _bg_download_result
+        global _active_downloader
         if not self._downloader or self._dl_done or self._dl_err is not None:
             return
-        title = self._title_str
 
-        def _bg_done(filepath):
-            global _active_downloader, _bg_download_result
-            _active_downloader  = None
-            import os as _os
-            _bg_download_result = "ok:" + _os.path.basename(filepath)
-
-        def _bg_error(msg):
-            global _active_downloader, _bg_download_result
-            _active_downloader  = None
-            _bg_download_result = "err:" + str(msg)
-
-        self._downloader.on_done     = _bg_done
-        self._downloader.on_error    = _bg_error
+        self._downloader.on_done     = lambda fp: _queue_next()
+        self._downloader.on_error    = lambda msg: _queue_error(msg)
         self._downloader.on_progress = lambda *a: None
 
         _active_downloader = self._downloader
