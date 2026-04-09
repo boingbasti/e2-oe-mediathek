@@ -1015,7 +1015,7 @@ class OeMediathekScreen(Screen):
             result = _bg_download_result
             _bg_download_result = None
             if result == "ok":
-                self._show_toast("Alle Downloads abgeschlossen!", added=True)
+                self["status_label"].setText(_b("Alle Downloads abgeschlossen!"))
             else:
                 self._show_toast("Download fehlgeschlagen!", added=False)
         try:
@@ -1423,11 +1423,9 @@ class OeMediathekScreen(Screen):
 
             if is_favorite(gname):
                 remove_favorite(gname)
-                self["status_label"].setText("Favorit entfernt.")
                 self._show_toast("Favorit entfernt", added=False)
             else:
                 add_favorite(gname, channel)
-                self["status_label"].setText("Favorit hinzugefügt!")
                 self._show_toast("Favorit hinzugefügt!", added=True)
             self._update_red_hint()
             self._update_blue_hint()
