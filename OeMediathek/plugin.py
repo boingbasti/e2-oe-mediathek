@@ -990,7 +990,7 @@ class OeMediathekScreen(Screen):
         except Exception:
             pass
 
-    def _show_groups(self):
+    def _show_groups(self, restore_pos=False):
         self.mode = MODE_GROUPS
         self.last_index = -1
         entries = []
@@ -998,19 +998,20 @@ class OeMediathekScreen(Screen):
             # Keine Zahlen mehr in der Vorschau anhängen
             entries.append(gname)
         self["menu_list"].setList(entries)
-        
+
         status_text = "%d Sendungen" % len(self.groups_filtered)
         if self.current_search:
             status_text += " (Suche: %s)" % self.current_search
         self["status_label"].setText(status_text)
-        
+
         self["hint_red"].setText("ABC-Auswahl")
         self["hint_green"].setText(self._next_sort_hint())
         self["hint_yellow"].setText("Suche (Server)")
         self._update_blue_hint()
 
         self._update_page_hint()
-        self._focus_list(0)
+        pos = self.cur_group_idx if restore_pos and self.cur_group_idx is not None else 0
+        self._focus_list(pos)
         self._update_desc()
 
     def _update_page_hint(self):
@@ -1238,14 +1239,14 @@ class OeMediathekScreen(Screen):
     def on_cancel(self):
         if self.mode == MODE_EPISODES:
             self["title_label"].setText(self.source_name)
-            self._show_groups()
+            self._show_groups(restore_pos=True)
         else:
             self.close()
 
     def on_red(self):
         if self.mode == MODE_EPISODES:
             self["title_label"].setText(self.source_name)
-            self._show_groups()
+            self._show_groups(restore_pos=True)
         else:
             self.open_alpha_picker()
 
