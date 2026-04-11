@@ -641,7 +641,7 @@ class OeMediathekMainScreen(Screen):
                 "nextBouquet":  self.page_next,
                 "prevBouquet":  self.page_prev,
                 "red":          self.key_red,
-                "green":        self.open_settings,
+                "green":        self.key_green,
                 "yellow":       self.open_download_manager,
             },
             -1,
@@ -744,18 +744,18 @@ class OeMediathekMainScreen(Screen):
             self["hint_nav"].setText(_b("EXIT = Beenden"))
         elif self._sort_grabbed is None:
             # Sortiermodus, noch nichts gegriffen
-            self["hint_red"].setText(_b("Fertig / Reset"))
-            self["hint_green"].setText(_b(""))
+            self["hint_red"].setText(_b("Fertig"))
+            self["hint_green"].setText(_b("Reset"))
             self["hint_ok"].setText(_b("OK = Greifen"))
             self["hint_ch"].setText(_b("CH+/- = Seite"))
-            self["hint_nav"].setText(_b("Pfeile = Bewegen"))
+            self["hint_nav"].setText(_b("EXIT = Beenden"))
         else:
             # Kachel gegriffen
-            self["hint_red"].setText(_b("Fertig / Reset"))
-            self["hint_green"].setText(_b(""))
+            self["hint_red"].setText(_b("Fertig"))
+            self["hint_green"].setText(_b("Reset"))
             self["hint_ok"].setText(_b("OK = Ablegen"))
             self["hint_ch"].setText(_b("CH+/- = Seite"))
-            self["hint_nav"].setText(_b("Pfeile = Einf\xc3\xbcgen"))
+            self["hint_nav"].setText(_b("EXIT = Beenden"))
 
     # ------------------------------------------------------------------
     # Sortiermodus
@@ -805,22 +805,27 @@ class OeMediathekMainScreen(Screen):
             self._sort_order_backup = list(SOURCES)
             _log("Sortiermodus ein")
         else:
-            if self._sort_grabbed is not None:
-                # Erst ablegen, dann Reset anbieten — langer Druck nicht moeglich,
-                # also: zweiter Rot-Druck waehrend gegriffen = Reset + Beenden
-                SOURCES[:] = self._sort_order_backup
-                self._sort_grabbed = None
-                _log("Sortierung zurueckgesetzt")
-            else:
-                # Sortiermodus verlassen (Reihenfolge speichern)
-                self._sort_mode = False
-                self._sort_grabbed = None
-                self._sort_order_backup = None
-                self._save_order()
-                _log("Sortiermodus aus, Reihenfolge gespeichert")
+            # Sortiermodus verlassen und Reihenfolge speichern
+            self._sort_mode = False
+            self._sort_grabbed = None
+            self._sort_order_backup = None
             self._set_selector_color(False)
+            self._save_order()
+            _log("Sortiermodus aus, Reihenfolge gespeichert")
         self._refresh_page()
         self._update_legend()
+
+    def key_green(self):
+        if self._sort_mode:
+            # Reset auf Ausgangsreihenfolge
+            SOURCES[:] = self._sort_order_backup
+            self._sort_grabbed = None
+            self._set_selector_color(False)
+            self._refresh_page()
+            self._update_legend()
+            _log("Sortierung zurueckgesetzt")
+        else:
+            self.open_settings()
 
     def _sort_move(self, new_idx):
         """Kachel von self._sort_grabbed an new_idx einf\xc3\xbcgen (alle anderen rutschen)."""
