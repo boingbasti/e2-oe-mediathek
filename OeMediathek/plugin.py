@@ -557,16 +557,16 @@ class OeMediathekMainScreen(Screen):
             <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#1A333333" zPosition="-3" />
             %s%s
             <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
-            <eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2" />
-            <widget name="hint_red"    position="68,960"   size="320,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="420,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_green"  position="438,960"  size="270,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ok"     position="738,960"  size="310,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ch"     position="1078,960" size="310,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_nav"    position="1418,960" size="170,100" font="Regular;28" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="1600,980" size="8,60" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow" position="1616,960" size="140,100" font="Regular;28" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="page_label"  position="1770,960" size="120,100" font="Regular;28" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="32,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2" />
+            <widget name="hint_red"    position="44,960"   size="264,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="320,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2" />
+            <widget name="hint_green"  position="332,960"  size="264,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ok"     position="608,960"  size="276,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ch"     position="896,960"  size="276,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_nav"    position="1184,960" size="276,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="1472,980" size="8,60" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow" position="1484,960" size="264,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="page_label"  position="1768,960" size="120,100" font="Regular;28" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
         </screen>
         """ % (
                 sw, sh, sw, sh,
@@ -584,16 +584,16 @@ class OeMediathekMainScreen(Screen):
             <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#1A333333" zPosition="-3" />
             %s%s
             <eLabel position="20,640" size="1240,66" backgroundColor="#1A000000" zPosition="-5" />
-            <eLabel position="33,653" size="5,40" backgroundColor="#1AEE0000" zPosition="2" />
-            <widget name="hint_red"    position="45,640"  size="210,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="275,653" size="5,40" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_green"  position="287,640" size="170,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ok"     position="483,640" size="185,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ch"     position="690,640" size="185,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_nav"    position="893,640" size="120,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="1025,653" size="5,40" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow" position="1035,640" size="100,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="page_label"  position="1146,640" size="100,66" font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="22,653" size="5,40" backgroundColor="#1AEE0000" zPosition="2" />
+            <widget name="hint_red"    position="30,640"  size="171,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="210,653" size="5,40" backgroundColor="#1A00AA00" zPosition="2" />
+            <widget name="hint_green"  position="218,640" size="171,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ok"     position="398,640" size="179,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ch"     position="586,640" size="179,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_nav"    position="774,640" size="179,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="962,653" size="5,40" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow" position="970,640" size="171,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="page_label"  position="1155,640" size="100,66" font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
         </screen>
         """ % (
                 sw, sh, sw, sh,
