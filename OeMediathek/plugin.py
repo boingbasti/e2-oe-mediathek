@@ -492,26 +492,19 @@ class OeMediathekMainScreen(Screen):
     def _make_skin():
         tiles_bg = ""
         logos    = ""
-        labels   = ""
         for r in range(TILE_ROWS):
             for c in range(TILE_COLS):
                 i   = r * TILE_COLS + c
                 tx  = _TX[c]
                 ty  = _TY[r]
-                # Logo zentriert in der Kachel
-                lx  = tx + (TILE_W - (220 if IS_FHD else 146)) // 2
-                ly  = ty + (20 if IS_FHD else 13)
-                lw, lh = (220, 100) if IS_FHD else (146, 66)
-                # Text unterhalb Logo, zentriert in der unteren Hälfte der Kachel
-                label_y = ty + lh + (20 if IS_FHD else 13) + (10 if IS_FHD else 7)
-                label_h = 40 if IS_FHD else 26
-                font    = 28 if IS_FHD else 18
+                # Logo vertikal zentriert in der Kachel (xpicons 220x132 / HD: 146x88)
+                lw, lh = (220, 132) if IS_FHD else (146, 88)
+                lx  = tx + (TILE_W - lw) // 2
+                ly  = ty + (TILE_H - lh) // 2
                 tiles_bg += '<eLabel position="%d,%d" size="%d,%d" backgroundColor="#1A000000" zPosition="-4" />\n' \
                             % (tx, ty, TILE_W, TILE_H)
                 logos    += '<widget name="logo_%d" position="%d,%d" size="%d,%d" alphatest="blend" scale="1" transparent="1" zPosition="1" />\n' \
                             % (i, lx, ly, lw, lh)
-                labels   += '<widget name="tile_%d" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" zPosition="2" />\n' \
-                            % (i, tx, label_y, TILE_W, label_h, font)
 
         if IS_FHD:
             sw, sh    = 1920, 1080
@@ -541,7 +534,7 @@ class OeMediathekMainScreen(Screen):
             <eLabel position="%d,%d" size="%d,%d" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
             <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#1A333333" zPosition="-3" />
-            %s%s%s
+            %s%s
             <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
             <eLabel position="50,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2" />
             <widget name="hint_green"  position="68,960"   size="320,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
@@ -557,7 +550,7 @@ class OeMediathekMainScreen(Screen):
                 margin, hdr_y, sw - 2 * margin, hdr_h,
                 margin, hdr_y, sw - 2 * margin, hdr_h, font_title,
                 _TX[0], _TY[0], TILE_W, TILE_H,
-                tiles_bg, logos, labels,
+                tiles_bg, logos,
             )
         else:
             return """
@@ -566,7 +559,7 @@ class OeMediathekMainScreen(Screen):
             <eLabel position="%d,%d" size="%d,%d" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
             <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#1A333333" zPosition="-3" />
-            %s%s%s
+            %s%s
             <eLabel position="20,640" size="1240,66" backgroundColor="#1A000000" zPosition="-5" />
             <eLabel position="33,653" size="5,40" backgroundColor="#1A00AA00" zPosition="2" />
             <widget name="hint_green"  position="45,640"  size="210,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
@@ -582,7 +575,7 @@ class OeMediathekMainScreen(Screen):
                 margin, hdr_y, sw - 2 * margin, hdr_h,
                 margin, hdr_y, sw - 2 * margin, hdr_h, font_title,
                 _TX[0], _TY[0], TILE_W, TILE_H,
-                tiles_bg, logos, labels,
+                tiles_bg, logos,
             )
 
     def __init__(self, session):
@@ -607,7 +600,6 @@ class OeMediathekMainScreen(Screen):
                 self["logo_%d" % i] = _Pixmap() if _Pixmap else Label("")
             except Exception:
                 self["logo_%d" % i] = Label("")
-            self["tile_%d" % i] = Label("")
 
         self["actions"] = ActionMap(
             ["OkCancelActions", "DirectionActions", "WizardActions",
@@ -657,11 +649,6 @@ class OeMediathekMainScreen(Screen):
         """Kacheln und Logos der aktuellen Seite neu befuellen."""
         offset = self.main_page * TILES_PER_PAGE
         for i in range(TILES_PER_PAGE):
-            src_idx = offset + i
-            if src_idx < len(SOURCES):
-                self["tile_%d" % i].setText(SOURCES[src_idx][0])
-            else:
-                self["tile_%d" % i].setText("")
             # Logo leeren — wird danach neu gesetzt
             try:
                 self["logo_%d" % i].instance.setPixmap(None)
@@ -672,7 +659,6 @@ class OeMediathekMainScreen(Screen):
         self["page_label"].setText("%d / %d" % (self.main_page + 1, total_pages))
 
         self._move_selector()
-        self._update_tile_colors()
         self._load_logos_page(self.main_page)
 
     def _load_logos_page(self, page):
@@ -705,17 +691,6 @@ class OeMediathekMainScreen(Screen):
         except Exception as e:
             _log("selector: " + str(e))
 
-    def _update_tile_colors(self):
-        try:
-            from enigma import gRGB
-            offset = self.main_page * TILES_PER_PAGE
-            for i in range(TILES_PER_PAGE):
-                src_idx = offset + i
-                c = gRGB(0xFF, 0xFF, 0xFF) if src_idx == self.selected else gRGB(0x88, 0x88, 0x88)
-                self["tile_%d" % i].instance.setForegroundColor(c)
-        except Exception as e:
-            _log("tile colors: " + str(e))
-
     def doClose(self):
         try:
             Screen.doClose(self)
@@ -727,7 +702,6 @@ class OeMediathekMainScreen(Screen):
             return
         self.selected = idx
         self._move_selector()
-        self._update_tile_colors()
 
     def page_next(self):
         total_pages = (len(SOURCES) + TILES_PER_PAGE - 1) // TILES_PER_PAGE
