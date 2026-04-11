@@ -729,6 +729,8 @@ class OeMediathekMainScreen(Screen):
             else:
                 col = gRGB(0x33, 0x33, 0x33, 0x1A)  # Grau, leicht transparent
             self["selector"].instance.setBackgroundColor(col)
+            # Neuzeichnen erzwingen durch move() an gleiche Position
+            self._move_selector()
         except Exception as e:
             _log("selector color: " + str(e))
 
