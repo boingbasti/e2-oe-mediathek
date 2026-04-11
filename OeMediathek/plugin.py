@@ -750,14 +750,14 @@ class OeMediathekMainScreen(Screen):
         elif self._sort_grabbed is None:
             # Sortiermodus, noch nichts gegriffen
             self["hint_red"].setText(_b("Fertig"))
-            self["hint_green"].setText(_b("R\xc3\xbckg\xc3\xa4ngig"))
+            self["hint_green"].setText(_b("R\xc3\xbcckg\xc3\xa4ngig"))
             self["hint_ok"].setText(_b("OK = Greifen"))
             self["hint_ch"].setText(_b("CH+/- = Seite"))
             self["hint_nav"].setText(_b("EXIT = Beenden"))
         else:
             # Kachel gegriffen
             self["hint_red"].setText(_b("Fertig"))
-            self["hint_green"].setText(_b("R\xc3\xbckg\xc3\xa4ngig"))
+            self["hint_green"].setText(_b("R\xc3\xbcckg\xc3\xa4ngig"))
             self["hint_ok"].setText(_b("OK = Ablegen"))
             self["hint_ch"].setText(_b("CH+/- = Seite"))
             self["hint_nav"].setText(_b("EXIT = Beenden"))
