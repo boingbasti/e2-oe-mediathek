@@ -854,6 +854,9 @@ class OeMediathekMainScreen(Screen):
         self._refresh_page()
 
     def doClose(self):
+        if self._sort_mode and self._sort_order_backup is not None:
+            SOURCES[:] = self._sort_order_backup
+            _log("doClose: Sortiermodus verworfen")
         try:
             Screen.doClose(self)
         except TypeError as e:
