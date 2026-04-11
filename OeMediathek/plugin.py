@@ -134,6 +134,8 @@ SOURCES = [
     ("tagesschau24",     get_tagesschau24_highlights, "tagesschau24.png"),
     ("DW",               get_dw_highlights,           "dw.png"),
 ]
+# Unveränderliche Kopie der Original-Reihenfolge für den Werksreset
+_SOURCES_DEFAULT = list(SOURCES)
 
 # Kachel-Layout 4×3 (vertikal zentriert zwischen Titel und Legende)
 TILE_COLS = 4
@@ -729,8 +731,11 @@ class OeMediathekMainScreen(Screen):
             else:
                 col = gRGB(0x33, 0x33, 0x33, 0x1A)  # Grau, leicht transparent
             self["selector"].instance.setBackgroundColor(col)
-            # Neuzeichnen erzwingen durch move() an gleiche Position
             self._move_selector()
+            try:
+                self["selector"].instance.invalidate()
+            except Exception:
+                pass
         except Exception as e:
             _log("selector color: " + str(e))
 
@@ -745,14 +750,14 @@ class OeMediathekMainScreen(Screen):
         elif self._sort_grabbed is None:
             # Sortiermodus, noch nichts gegriffen
             self["hint_red"].setText(_b("Fertig"))
-            self["hint_green"].setText(_b("Reset"))
+            self["hint_green"].setText(_b("R\xc3\xbckg\xc3\xa4ngig"))
             self["hint_ok"].setText(_b("OK = Greifen"))
             self["hint_ch"].setText(_b("CH+/- = Seite"))
             self["hint_nav"].setText(_b("EXIT = Beenden"))
         else:
             # Kachel gegriffen
             self["hint_red"].setText(_b("Fertig"))
-            self["hint_green"].setText(_b("Reset"))
+            self["hint_green"].setText(_b("R\xc3\xbckg\xc3\xa4ngig"))
             self["hint_ok"].setText(_b("OK = Ablegen"))
             self["hint_ch"].setText(_b("CH+/- = Seite"))
             self["hint_nav"].setText(_b("EXIT = Beenden"))
@@ -1911,43 +1916,58 @@ class OeMediathekDirBrowser(Screen):
 class OeMediathekSettingsScreen(Screen):
     if IS_FHD:
         skin = """
-        <screen name="OeMediathekSettingsScreen" position="560,340" size="800,380" flags="wfNoBorder">
-            <eLabel position="0,0" size="800,380" backgroundColor="#33000000" zPosition="-6" />
+        <screen name="OeMediathekSettingsScreen" position="560,300" size="800,460" flags="wfNoBorder">
+            <eLabel position="0,0" size="800,460" backgroundColor="#33000000" zPosition="-6" />
             <widget name="title_label" position="40,30" size="720,60" font="Regular;42" halign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="path_label" position="40,130" size="200,50" font="Regular;32" foregroundColor="#AAAAAA" transparent="1" />
-            <widget name="path_value" position="240,120" size="520,130" font="Regular;32" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="hint_label" position="40,300" size="720,50" font="Regular;32" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <eLabel position="40,100" size="720,2" backgroundColor="#44FFFFFF" zPosition="-4" />
+            <widget name="menu_list" position="40,115" size="720,280" font="Regular;34" scrollbarMode="showNever" itemHeight="56" backgroundColor="#33000000" transparent="1" />
+            <eLabel position="40,405" size="720,2" backgroundColor="#44FFFFFF" zPosition="-4" />
+            <widget name="hint_label" position="40,415" size="720,40" font="Regular;28" halign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
     else:
         skin = """
-        <screen name="OeMediathekSettingsScreen" position="373,233" size="534,267" flags="wfNoBorder">
-            <eLabel position="0,0" size="534,267" backgroundColor="#33000000" zPosition="-6" />
+        <screen name="OeMediathekSettingsScreen" position="373,200" size="534,307" flags="wfNoBorder">
+            <eLabel position="0,0" size="534,307" backgroundColor="#33000000" zPosition="-6" />
             <widget name="title_label" position="27,20" size="480,40" font="Regular;28" halign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="path_label" position="27,87" size="133,33" font="Regular;21" foregroundColor="#AAAAAA" transparent="1" />
-            <widget name="path_value" position="160,80" size="347,87" font="Regular;21" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="hint_label" position="27,207" size="480,33" font="Regular;21" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <eLabel position="27,67" size="480,1" backgroundColor="#44FFFFFF" zPosition="-4" />
+            <widget name="menu_list" position="27,76" size="480,187" font="Regular;22" scrollbarMode="showNever" itemHeight="37" backgroundColor="#33000000" transparent="1" />
+            <eLabel position="27,270" size="480,1" backgroundColor="#44FFFFFF" zPosition="-4" />
+            <widget name="hint_label" position="27,277" size="480,27" font="Regular;19" halign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
+
+    # Menüeinträge: (Anzeigetext, Beschreibung)
+    _MENU = [
+        ("Download-Ordner",         "Speicherort f\xc3\xbcr Downloads w\xc3\xa4hlen"),
+        ("Reihenfolge zur\xc3\xbccksetzen", "Kachel-Reihenfolge auf Standard zur\xc3\xbccksetzen"),
+    ]
 
     def __init__(self, session):
         Screen.__init__(self, session)
         self["title_label"] = Label(_b("Einstellungen"))
-        self["path_label"]  = Label(_b("Speicherort:"))
-        self["path_value"]  = Label(_b(get_save_dir()))
-        self["hint_label"]  = Label(_b("OK = Ordner wählen   |   EXIT = Schließen"))
+        self["menu_list"]   = MenuList([_b(e[0]) for e in self._MENU])
+        self["hint_label"]  = Label(_b("OK = Ausw\xc3\xa4hlen   |   EXIT = Schlie\xc3\x9fen"))
 
         self["actions"] = ActionMap(
-            ["OkCancelActions"],
+            ["OkCancelActions", "DirectionActions"],
             {
-                "ok":     self._browse,
+                "ok":     self._on_ok,
                 "cancel": self.close,
+                "up":     self["menu_list"].pageUp,
+                "down":   self["menu_list"].pageDown,
             },
             -1,
         )
 
+    def _on_ok(self):
+        idx = self["menu_list"].getSelectedIndex()
+        if idx == 0:
+            self._browse()
+        elif idx == 1:
+            self._reset_order()
+
     def _browse(self):
         try:
             cur = get_save_dir()
-            # Startverzeichnis: existierendes übergeordnetes Verzeichnis suchen
             start = cur
             while start and start != "/" and not os.path.isdir(start):
                 start = os.path.dirname(start)
@@ -1963,9 +1983,19 @@ class OeMediathekSettingsScreen(Screen):
             result = self._browser._result
             if result:
                 set_save_dir(result)
-                self["path_value"].setText(_b(result))
         except Exception:
             _log("Settings _dir_browser_closed: " + _fmt_exc())
+
+    def _reset_order(self):
+        try:
+            if os.path.exists(OeMediathekMainScreen._ORDER_FILE):
+                os.remove(OeMediathekMainScreen._ORDER_FILE)
+            # SOURCES auf Original-Reihenfolge zurücksetzen
+            SOURCES[:] = _SOURCES_DEFAULT[:]
+            _log("Reihenfolge auf Standard zurückgesetzt")
+        except Exception as e:
+            _log("Settings reset_order: " + str(e))
+        self.close()
 
     def doClose(self):
         try:
