@@ -555,14 +555,16 @@ class OeMediathekMainScreen(Screen):
             <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#1A333333" zPosition="-3" />
             %s%s
             <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
-            <eLabel position="50,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_green"  position="68,960"   size="320,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ok"     position="430,960"  size="320,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ch"     position="792,960"  size="320,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_nav"    position="1154,960" size="280,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="1452,980" size="8,60" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow" position="1468,960" size="220,100" font="Regular;28" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="page_label"  position="1700,960" size="160,100" font="Regular;28" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2" />
+            <widget name="hint_red"    position="68,960"   size="320,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="420,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2" />
+            <widget name="hint_green"  position="438,960"  size="270,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ok"     position="738,960"  size="310,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ch"     position="1078,960" size="310,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_nav"    position="1418,960" size="170,100" font="Regular;28" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="1600,980" size="8,60" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow" position="1616,960" size="140,100" font="Regular;28" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="page_label"  position="1770,960" size="120,100" font="Regular;28" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
         </screen>
         """ % (
                 sw, sh, sw, sh,
@@ -580,14 +582,16 @@ class OeMediathekMainScreen(Screen):
             <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#1A333333" zPosition="-3" />
             %s%s
             <eLabel position="20,640" size="1240,66" backgroundColor="#1A000000" zPosition="-5" />
-            <eLabel position="33,653" size="5,40" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_green"  position="45,640"  size="210,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ok"     position="285,640" size="210,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ch"     position="525,640" size="210,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_nav"    position="765,640" size="190,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="968,653" size="5,40" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow" position="978,640" size="155,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="page_label"  position="1112,640" size="134,66" font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="33,653" size="5,40" backgroundColor="#1AEE0000" zPosition="2" />
+            <widget name="hint_red"    position="45,640"  size="210,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="275,653" size="5,40" backgroundColor="#1A00AA00" zPosition="2" />
+            <widget name="hint_green"  position="287,640" size="170,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ok"     position="483,640" size="185,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ch"     position="690,640" size="185,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_nav"    position="893,640" size="120,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="1025,653" size="5,40" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow" position="1035,640" size="100,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="page_label"  position="1146,640" size="100,66" font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
         </screen>
         """ % (
                 sw, sh, sw, sh,
@@ -604,9 +608,13 @@ class OeMediathekMainScreen(Screen):
         self.session       = session
         self.selected      = 0
         self.main_page     = 0
+        self._sort_mode    = False   # Sortiermodus aktiv?
+        self._sort_grabbed = None    # Index der angefassten Kachel (None = noch nichts gegriffen)
+        self._sort_order_backup = None  # Backup der Reihenfolge fuer Reset
 
         self["title_label"]  = Label(_b("\xc3\x96R Mediathek"))
         self["selector"]     = Label("")
+        self["hint_red"]     = Label(_b("Sortieren"))
         self["hint_green"]   = Label(_b("Einstellungen"))
         self["hint_ok"]      = Label(_b("OK = \xc3\x96ffnen"))
         self["hint_ch"]      = Label(_b("CH+/- = Seite bl\xc3\xa4ttern"))
@@ -632,6 +640,7 @@ class OeMediathekMainScreen(Screen):
                 "right":        self.key_right,
                 "nextBouquet":  self.page_next,
                 "prevBouquet":  self.page_prev,
+                "red":          self.key_red,
                 "green":        self.open_settings,
                 "yellow":       self.open_download_manager,
             },
@@ -646,6 +655,7 @@ class OeMediathekMainScreen(Screen):
         except Exception as e:
             _log("MainScreen onShow: " + str(e))
         self._update_download_hint()
+        self._update_legend()
 
     def _update_download_hint(self):
         t = _active_downloader and _active_downloader._thread
@@ -710,6 +720,127 @@ class OeMediathekMainScreen(Screen):
         except Exception as e:
             _log("selector: " + str(e))
 
+    def _set_selector_color(self, grabbed):
+        """Selektor-Farbe: Gelb-transparent wenn Kachel gegriffen, sonst Grau-transparent."""
+        try:
+            from enigma import gRGB
+            if grabbed:
+                col = gRGB(0xFF, 0xD7, 0x00, 0xE6)  # Gelb, 90% transparent (alpha=0x1A)
+            else:
+                col = gRGB(0x33, 0x33, 0x33, 0xE6)  # Grau, 90% transparent
+            self["selector"].instance.setBackgroundColor(col)
+        except Exception as e:
+            _log("selector color: " + str(e))
+
+    def _update_legend(self):
+        """Legende je nach Modus aktualisieren."""
+        if not self._sort_mode:
+            self["hint_red"].setText(_b("Sortieren"))
+            self["hint_green"].setText(_b("Einstellungen"))
+            self["hint_ok"].setText(_b("OK = \xc3\x96ffnen"))
+            self["hint_ch"].setText(_b("CH+/- = Seite bl\xc3\xa4ttern"))
+            self["hint_nav"].setText(_b("EXIT = Beenden"))
+        elif self._sort_grabbed is None:
+            # Sortiermodus, noch nichts gegriffen
+            self["hint_red"].setText(_b("Fertig / Reset"))
+            self["hint_green"].setText(_b(""))
+            self["hint_ok"].setText(_b("OK = Greifen"))
+            self["hint_ch"].setText(_b("CH+/- = Seite"))
+            self["hint_nav"].setText(_b("Pfeile = Bewegen"))
+        else:
+            # Kachel gegriffen
+            self["hint_red"].setText(_b("Fertig / Reset"))
+            self["hint_green"].setText(_b(""))
+            self["hint_ok"].setText(_b("OK = Ablegen"))
+            self["hint_ch"].setText(_b("CH+/- = Seite"))
+            self["hint_nav"].setText(_b("Pfeile = Einf\xc3\xbcgen"))
+
+    # ------------------------------------------------------------------
+    # Sortiermodus
+    # ------------------------------------------------------------------
+    _ORDER_FILE = "/etc/enigma2/oemediathek_order.json"
+
+    @staticmethod
+    def _save_order():
+        try:
+            import json as _json
+            order = [s[0] for s in SOURCES]
+            with open(OeMediathekMainScreen._ORDER_FILE, "w") as f:
+                _json.dump(order, f)
+            _log("Reihenfolge gespeichert")
+        except Exception as e:
+            _log("Reihenfolge speichern Fehler: " + str(e))
+
+    @staticmethod
+    def load_order():
+        """Gespeicherte Reihenfolge auf SOURCES anwenden (beim Start aufrufen)."""
+        try:
+            import json as _json
+            if not os.path.exists(OeMediathekMainScreen._ORDER_FILE):
+                return
+            with open(OeMediathekMainScreen._ORDER_FILE, "r") as f:
+                order = _json.load(f)
+            name_to_src = {s[0]: s for s in SOURCES}
+            reordered = []
+            for name in order:
+                if name in name_to_src:
+                    reordered.append(name_to_src[name])
+            # Sender die neu dazugekommen sind (nicht in der gespeicherten Reihenfolge) hinten anhaengen
+            existing = set(order)
+            for s in SOURCES:
+                if s[0] not in existing:
+                    reordered.append(s)
+            SOURCES[:] = reordered
+            _log("Reihenfolge geladen")
+        except Exception as e:
+            _log("Reihenfolge laden Fehler: " + str(e))
+
+    def key_red(self):
+        if not self._sort_mode:
+            # Sortiermodus einschalten
+            self._sort_mode = True
+            self._sort_grabbed = None
+            self._sort_order_backup = list(SOURCES)
+            _log("Sortiermodus ein")
+        else:
+            if self._sort_grabbed is not None:
+                # Erst ablegen, dann Reset anbieten — langer Druck nicht moeglich,
+                # also: zweiter Rot-Druck waehrend gegriffen = Reset + Beenden
+                SOURCES[:] = self._sort_order_backup
+                self._sort_grabbed = None
+                _log("Sortierung zurueckgesetzt")
+            else:
+                # Sortiermodus verlassen (Reihenfolge speichern)
+                self._sort_mode = False
+                self._sort_grabbed = None
+                self._sort_order_backup = None
+                self._save_order()
+                _log("Sortiermodus aus, Reihenfolge gespeichert")
+            self._set_selector_color(False)
+        self._refresh_page()
+        self._update_legend()
+
+    def _sort_move(self, new_idx):
+        """Kachel von self._sort_grabbed an new_idx einf\xc3\xbcgen (alle anderen rutschen)."""
+        src = self._sort_grabbed
+        if src == new_idx:
+            self.selected = new_idx
+            new_page = new_idx // TILES_PER_PAGE
+            if new_page != self.main_page:
+                self.main_page = new_page
+                self._refresh_page()
+            else:
+                self._move_selector()
+            return
+        item = SOURCES.pop(src)
+        SOURCES.insert(new_idx, item)
+        self._sort_grabbed = new_idx
+        self.selected = new_idx
+        new_page = new_idx // TILES_PER_PAGE
+        if new_page != self.main_page:
+            self.main_page = new_page
+        self._refresh_page()
+
     def doClose(self):
         try:
             Screen.doClose(self)
@@ -719,23 +850,33 @@ class OeMediathekMainScreen(Screen):
     def _select(self, idx):
         if idx < 0 or idx >= len(SOURCES):
             return
-        self.selected = idx
-        self._move_selector()
+        if self._sort_mode and self._sort_grabbed is not None:
+            self._sort_move(idx)
+        else:
+            self.selected = idx
+            self._move_selector()
 
     def page_next(self):
         total_pages = (len(SOURCES) + TILES_PER_PAGE - 1) // TILES_PER_PAGE
         new_page = (self.main_page + 1) % total_pages
-        self.main_page = new_page
-        # Selektor auf erste Kachel der neuen Seite setzen
-        self.selected = new_page * TILES_PER_PAGE
-        self._refresh_page()
+        new_idx = new_page * TILES_PER_PAGE
+        if self._sort_mode and self._sort_grabbed is not None:
+            self._sort_move(new_idx)
+        else:
+            self.main_page = new_page
+            self.selected = new_idx
+            self._refresh_page()
 
     def page_prev(self):
         total_pages = (len(SOURCES) + TILES_PER_PAGE - 1) // TILES_PER_PAGE
         new_page = (self.main_page - 1) % total_pages
-        self.main_page = new_page
-        self.selected = new_page * TILES_PER_PAGE
-        self._refresh_page()
+        new_idx = new_page * TILES_PER_PAGE
+        if self._sort_mode and self._sort_grabbed is not None:
+            self._sort_move(new_idx)
+        else:
+            self.main_page = new_page
+            self.selected = new_idx
+            self._refresh_page()
 
     def key_right(self):
         new = self.selected + 1
@@ -782,6 +923,19 @@ class OeMediathekMainScreen(Screen):
         self._select(new)
 
     def on_ok(self):
+        if self._sort_mode:
+            if self._sort_grabbed is None:
+                # Kachel greifen
+                self._sort_grabbed = self.selected
+                self._set_selector_color(True)
+                _log("Sortierung: gegriffen idx=%d" % self.selected)
+            else:
+                # Kachel ablegen
+                self._sort_grabbed = None
+                self._set_selector_color(False)
+                _log("Sortierung: abgelegt idx=%d" % self.selected)
+            self._update_legend()
+            return
         try:
             name, loader, _ = SOURCES[self.selected]
             _log("Oeffne: " + name)
@@ -1979,6 +2133,7 @@ class OeMediathekDownloadScreen(Screen):
 
 def main(session, **kwargs):
     _log("Plugin gestartet")
+    OeMediathekMainScreen.load_order()
     session.open(OeMediathekMainScreen)
 
 
