@@ -127,12 +127,12 @@ TILE_COLS = 4
 TILE_ROWS = 3
 TILES_PER_PAGE = TILE_COLS * TILE_ROWS  # 12
 if IS_FHD:
-    TILE_W, TILE_H = 268, 180
-    _TX = [394, 682, 970, 1258]
+    TILE_W, TILE_H = 450, 180
+    _TX = [30, 500, 970, 1440]
     _TY = [245, 445, 645]
 else:
-    TILE_W, TILE_H = 178, 120
-    _TX = [264, 455, 646, 837]
+    TILE_W, TILE_H = 300, 120
+    _TX = [20, 333, 646, 959]
     _TY = [164, 297, 430]
 TILE_POSITIONS = [(_TX[c], _TY[r]) for r in range(TILE_ROWS) for c in range(TILE_COLS)]
 
