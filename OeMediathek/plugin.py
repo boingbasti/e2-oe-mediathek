@@ -752,14 +752,14 @@ class OeMediathekMainScreen(Screen):
             self["hint_red"].setText(_b("Fertig"))
             self["hint_green"].setText(_b("R\xc3\xbcckg\xc3\xa4ngig"))
             self["hint_ok"].setText(_b("OK = Greifen"))
-            self["hint_ch"].setText(_b("CH+/- = Seite"))
+            self["hint_ch"].setText(_b("CH+/- = Seite bl\xc3\xa4ttern"))
             self["hint_nav"].setText(_b("EXIT = Beenden"))
         else:
             # Kachel gegriffen
             self["hint_red"].setText(_b("Fertig"))
             self["hint_green"].setText(_b("R\xc3\xbcckg\xc3\xa4ngig"))
             self["hint_ok"].setText(_b("OK = Ablegen"))
-            self["hint_ch"].setText(_b("CH+/- = Seite"))
+            self["hint_ch"].setText(_b("CH+/- = Seite bl\xc3\xa4ttern"))
             self["hint_nav"].setText(_b("EXIT = Beenden"))
 
     # ------------------------------------------------------------------
