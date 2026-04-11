@@ -50,6 +50,12 @@ from mediathek import (
     get_zdfneo_highlights,
     get_kika_highlights,
     get_phoenix_highlights,
+    get_radio_bremen_highlights,
+    get_funk_highlights,
+    get_ard_alpha_highlights,
+    get_one_highlights,
+    get_tagesschau24_highlights,
+    get_dw_highlights,
     get_favorites,
     add_favorite,
     remove_favorite,
@@ -120,6 +126,13 @@ SOURCES = [
     ("ZDF Neo",          get_zdfneo_highlights,  "zdfneo.png"),
     ("KiKA",             get_kika_highlights,    "kika.png"),
     ("Phoenix",          get_phoenix_highlights, "phoenix.png"),
+    # Seite 3
+    ("Radio Bremen",     get_radio_bremen_highlights, "radio_bremen.png"),
+    ("funk",             get_funk_highlights,         "funk.png"),
+    ("ARD alpha",        get_ard_alpha_highlights,    "ard_alpha.png"),
+    ("ONE",              get_one_highlights,          "one.png"),
+    ("tagesschau24",     get_tagesschau24_highlights, "tagesschau24.png"),
+    ("DW",               get_dw_highlights,           "dw.png"),
 ]
 
 # Kachel-Layout 4×3 (vertikal zentriert zwischen Titel und Legende)
@@ -154,6 +167,12 @@ CHANNEL_MAP = {
     "ZDF Neo":       "ZDFneo",
     "KiKA":          "KiKA",
     "Phoenix":       "PHOENIX",
+    "Radio Bremen":  "Radio Bremen TV",
+    "funk":          "Funk.net",
+    "ARD alpha":     "ARD-alpha",
+    "ONE":           "ONE",
+    "tagesschau24":  "tagesschau24",
+    "DW":            "DW",
 }
 
 MODE_GROUPS   = 0
