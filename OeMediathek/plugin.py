@@ -122,18 +122,18 @@ SOURCES = [
     ("Phoenix",          get_phoenix_highlights, "phoenix.png"),
 ]
 
-# Kachel-Layout 3×3 (vertikal zentriert zwischen Titel und Legende)
-TILE_COLS = 3
+# Kachel-Layout 4×3 (vertikal zentriert zwischen Titel und Legende)
+TILE_COLS = 4
 TILE_ROWS = 3
-TILES_PER_PAGE = TILE_COLS * TILE_ROWS  # 9
+TILES_PER_PAGE = TILE_COLS * TILE_ROWS  # 12
 if IS_FHD:
-    TILE_W, TILE_H = 560, 180
-    _TX = [80, 680, 1280]
-    _TY = [187, 444, 701]
+    TILE_W, TILE_H = 268, 180
+    _TX = [394, 682, 970, 1258]
+    _TY = [245, 445, 645]
 else:
-    TILE_W, TILE_H = 373, 120
-    _TX = [53, 453, 853]
-    _TY = [124, 296, 467]
+    TILE_W, TILE_H = 178, 120
+    _TX = [264, 455, 646, 837]
+    _TY = [164, 297, 430]
 TILE_POSITIONS = [(_TX[c], _TY[r]) for r in range(TILE_ROWS) for c in range(TILE_COLS)]
 
 # Sender -> API-Kanalname (vollstaendig, inkl. nicht im Hauptmenu vertretener Sender)
