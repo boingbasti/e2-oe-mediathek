@@ -727,7 +727,7 @@ class OeMediathekMainScreen(Screen):
         try:
             from enigma import gRGB
             if grabbed:
-                col = gRGB(0xFF, 0xD7, 0x00, 0x1A)  # Gelb, leicht transparent (alpha=0x1A)
+                col = gRGB(0xFF, 0xD7, 0x00, 0x44)  # Gelb, halbtransparent (alpha=0x44)
             else:
                 col = gRGB(0x33, 0x33, 0x33, 0x1A)  # Grau, leicht transparent
             self["selector"].instance.setBackgroundColor(col)
