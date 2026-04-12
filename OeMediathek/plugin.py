@@ -1582,8 +1582,6 @@ class OeMediathekScreen(Screen):
         if self.mode == MODE_EPISODES:
             self["title_label"].setText(self.source_name)
             self._show_groups(restore_pos=True)
-        elif self._sv_mode:
-            self._sv_reset()
         else:
             self.open_alpha_picker()
 
