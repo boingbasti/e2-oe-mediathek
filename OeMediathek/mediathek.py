@@ -294,13 +294,19 @@ def get_all_highlights(offset=0, size=100, search_term=None, min_duration=0, sor
 # Favoritenverwaltung
 # Gespeichert als JSON: Liste von {"group": "...", "channel": "..."}
 # ------------------------------------------------------------------
+_SV_SN_NAMES = {">> Sendung verpasst?", ">> Demn\u00e4chst"}
+
 def _load_favorites_raw():
     try:
         if os.path.exists(FAVORITES_FILE):
             with open(FAVORITES_FILE, "r") as f:
                 data = json.load(f)
                 if isinstance(data, list):
-                    return data
+                    # Sondereintraege (SV/SN) bereinigen falls versehentlich gespeichert
+                    cleaned = [e for e in data if e.get("group") not in _SV_SN_NAMES]
+                    if len(cleaned) != len(data):
+                        save_favorites(cleaned)
+                    return cleaned
     except Exception:
         pass
     return []
@@ -389,20 +395,29 @@ def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by=
                 min_duration=min_duration,
                 sort_by=sort_by,
             )
-            # Lokal auf die exakte Gruppe filtern, um unscharfen Beifang auszublenden
+            # Lokal auf die exakte Gruppe filtern, um unscharfen Beifang auszublenden.
+            # Vergleich normalisiert: "BR: Schnittgut" gespeichert von "Alle" passt auch
+            # auf group_key "Schnittgut" aus der channel-spezifischen Abfrage.
             for item in items:
                 item_group = item.get("group", b"")
                 try:
                     item_group_str = item_group.decode("utf-8", "replace")
                 except Exception:
                     item_group_str = str(item_group)
+                # Direkte Übereinstimmung
                 if item_group_str == group:
                     all_items.append(item)
+                    continue
+                # Fallback: gespeicherte Gruppe hat Sender-Prefix, item_group nicht
+                # z.B. group="BR: Schnittgut", item_group_str="Schnittgut"
+                if ": " in group:
+                    group_suffix = group.split(": ", 1)[1]
+                    if item_group_str == group_suffix:
+                        all_items.append(item)
         except Exception as e:
             _log("Favorit laden Fehler (%s): %s" % (group, str(e)))
 
-    # Wichtig: Paging (offset und size) fuer die gesammelte Gesamtliste anwenden
-    total_count = len(all_items)
-    sliced_items = all_items[offset : offset + size]
-
-    return sliced_items, total_count
+    # Kein Paging ueber alle Favoriten-Items — jede Gruppe hat bereits max. 100 Eintraege,
+    # und die Gesamtzahl bleibt ueberschaubar. offset/size gelten nur fuer den API-Abruf
+    # pro Gruppe (dort unveraendert), nicht fuer die zusammengefuehrte Ergebnisliste.
+    return all_items, len(all_items)

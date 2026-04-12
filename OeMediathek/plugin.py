@@ -1235,10 +1235,15 @@ class OeMediathekScreen(Screen):
         except Exception:
             pass
 
+    def _sv_sn_offset(self):
+        """Offset der echten Gruppen in der MenuList — 2 wenn SV/SN eingeblendet, sonst 0."""
+        return 2 if self.source_name not in ("Meine Favoriten", "Alle Mediatheken") else 0
+
     def _show_groups(self, restore_pos=False):
         self.mode = MODE_GROUPS
         self.last_index = -1
-        entries = [_SV_ENTRY, _SN_ENTRY]
+        # Sondereinträge nur bei echten Mediatheken, nicht bei Favoriten oder "Alle"
+        entries = [_SV_ENTRY, _SN_ENTRY] if self._sv_sn_offset() == 2 else []
         for gname, gitems in self.groups_filtered:
             # Keine Zahlen mehr in der Vorschau anhängen
             entries.append(gname)
@@ -1397,7 +1402,7 @@ class OeMediathekScreen(Screen):
             
         self.mode = MODE_EPISODES
         self.last_index = -1
-        self.cur_group_idx = group_idx + 2  # +2 wegen _SV_ENTRY und _SN_ENTRY an Position 0/1
+        self.cur_group_idx = group_idx + self._sv_sn_offset()
         self._fetching = True
         self._fetch_target = "episodes"
         self._fetch_episodes_result = []
@@ -1590,12 +1595,13 @@ class OeMediathekScreen(Screen):
             if idx is None:
                 return
             if self.mode == MODE_GROUPS:
-                if idx == 0:
+                offset = self._sv_sn_offset()
+                if offset == 2 and idx == 0:
                     self._open_sv_date_picker()
-                elif idx == 1:
+                elif offset == 2 and idx == 1:
                     self._open_sn_date_picker()
-                elif idx - 2 < len(self.groups_filtered):
-                    self._start_episode_fetch(idx - 2)
+                elif idx - offset < len(self.groups_filtered):
+                    self._start_episode_fetch(idx - offset)
             else:
                 if idx < len(self.cur_episodes):
                     item = self.cur_episodes[idx]
@@ -1743,9 +1749,17 @@ class OeMediathekScreen(Screen):
     def toggle_favorite(self):
         try:
             idx = self["menu_list"].getSelectedIndex()
-            if idx is None or idx >= len(self.groups_filtered):
+            if idx is None:
                 return
-            gname, gitems = self.groups_filtered[idx]
+            # Sondereintraege koennen nicht als Favorit hinzugefuegt werden,
+            # aber falls versehentlich gespeichert: loeschen ermoeglichen
+            offset = self._sv_sn_offset()
+            if idx < offset:
+                return
+            real_idx = idx - offset
+            if real_idx >= len(self.groups_filtered):
+                return
+            gname, gitems = self.groups_filtered[real_idx]
 
             # Kanal direkt aus dem ersten Item der Gruppe lesen — zuverlaessig auch
             # in der Favoriten-Ansicht und bei "Alle Mediatheken"
@@ -1794,11 +1808,17 @@ class OeMediathekScreen(Screen):
             return
         try:
             idx = self["menu_list"].getSelectedIndex()
-            if idx is not None and idx < len(self.groups_filtered):
-                gname, _ = self.groups_filtered[idx]
-                if is_favorite(gname):
-                    self["hint_blue"].setText("Favorit löschen")
+            if idx is not None:
+                offset = self._sv_sn_offset()
+                if idx < offset:
+                    self["hint_blue"].setText(_b(""))
                     return
+                real_idx = idx - offset
+                if real_idx < len(self.groups_filtered):
+                    gname, _ = self.groups_filtered[real_idx]
+                    if is_favorite(gname):
+                        self["hint_blue"].setText("Favorit löschen")
+                        return
         except Exception:
             pass
         self["hint_blue"].setText("Favorit")
@@ -1876,7 +1896,7 @@ class OeMediathekScreen(Screen):
                 else:
                     self["menu_list"].setList([])
                     self["description_text"].setText(_b(""))
-                    self._start_episode_fetch(self.cur_group_idx)
+                    self._start_episode_fetch(self.cur_group_idx - self._sv_sn_offset())
         except Exception:
             _log("cycle_sort: " + _fmt_exc())
 

@@ -84,7 +84,7 @@ Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsa
 Die aktuelle ZIP-Datei aus dem [Releases-Bereich](../../releases) herunterladen, entpacken und die IPK-Datei auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.3_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.3.1_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.
