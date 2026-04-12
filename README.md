@@ -2,7 +2,7 @@
 
 Enigma2-Plugin (Python 2) zum Streamen der öffentlich-rechtlichen Mediatheken auf VU+ Receivern.
 
-Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsame Suche zur Verfügung. Folgende Sender haben zusätzlich eine eigene Mediathek-Ansicht: ARD, ZDF, Arte, 3sat, NDR, WDR, BR, MDR, HR, SWR, RBB, SR, ZDFinfo, ZDFneo, KiKA, Phoenix
+Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsame Suche zur Verfügung. Folgende Sender haben zusätzlich eine eigene Mediathek-Ansicht: ARD, ZDF, Arte, 3sat, NDR, WDR, BR, MDR, HR, SWR, RBB, SR, ZDFinfo, ZDFneo, KiKA, Phoenix, Radio Bremen, funk, ARD alpha, ONE, tagesschau24, DW
 
 ---
 
@@ -40,24 +40,30 @@ Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsa
 | Taste | Funktion |
 |-------|----------|
 | OK | Gruppe öffnen / Folge abspielen |
-| Rot | Zurück zur Gruppenansicht |
+| Rot | Zurück zur Gruppenansicht / ABC-Auswahl |
 | Grün | A-Z Sortierung |
 | Gelb | Suche (Bildschirmtastatur) |
 | Blau | Download (Episodenansicht) / Favoriten (Gruppenansicht) |
+| EXIT | Zurück / Filter aufheben (Sendung verpasst? / Demnächst) |
 | CH+ / CH- | Seitenweise blättern (bis zu 500 Einträge pro Abruf) |
 
 ### Hauptmenü
 
 | Taste | Funktion |
 |-------|----------|
+| Rot | Sortiermodus (Kacheln umsortieren) |
 | Grün | Einstellungen |
 | Gelb | Download-Manager (nur sichtbar wenn Downloads aktiv) |
+| CH+ / CH- | Zwischen Seiten wechseln |
 
+- **Sendung verpasst?:** Erster Eintrag in jeder Mediathek — zeigt alle Sendungen eines wählbaren Tages (bis zu 8 Tage zurück)
+- **Demnächst:** Zweiter Eintrag in jeder Mediathek — zeigt geplante Sendungen der nächsten 7 Tage
+- **Sortiermodus:** Kacheln im Hauptmenü per OK greifen und ablegen; Reihenfolge wird gespeichert und überlebt Neustarts
 - **HD/SD-Auswahl:** Wenn ein Beitrag in HD und SD verfügbar ist, wird vor dem Abspielen gefragt
 - **Download:** Episoden direkt auf die Festplatte laden; läuft im Hintergrund weiter wenn der Screen per Gelb geschlossen wird
 - **Download-Warteschlange:** Mehrere Downloads können nacheinander gestartet werden und laufen automatisch der Reihe nach ab
 - **Download-Manager:** Zeigt laufenden Download mit Fortschritt und alle wartenden Downloads; Abbrechen einzeln oder gesamt möglich
-- **Einstellungen:** Speicherort für Downloads konfigurierbar (Standard: `/media/hdd/movie/OeMediathek`)
+- **Einstellungen:** Speicherort für Downloads und Kachel-Reihenfolge zurücksetzen
 - **Favoriten:** Beiträge können als Favoriten gespeichert und über den Favoritenbereich aufgerufen werden
 - **Hintergrundfetch:** Inhalte werden im Hintergrund geladen, die Oberfläche bleibt bedienbar
 
@@ -78,7 +84,7 @@ Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsa
 Die aktuelle ZIP-Datei aus dem [Releases-Bereich](../../releases) herunterladen, entpacken und die IPK-Datei auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.2_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.3_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.
