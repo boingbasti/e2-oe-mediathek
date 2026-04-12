@@ -1297,11 +1297,10 @@ class OeMediathekScreen(Screen):
         date_str = choice[1]   # "YYYY-MM-DD"
         try:
             import time as _time
-            import calendar as _calendar
             parts = date_str.split("-")
             y, m, d = int(parts[0]), int(parts[1]), int(parts[2])
-            # Mitternacht (00:00) bis 23:59:59 UTC des gewählten Tages (Lokalzeit)
-            start_ts = int(_calendar.timegm(_time.strptime(date_str, "%Y-%m-%d")))
+            # Mitternacht bis 23:59:59 in der Lokalzeit der Box
+            start_ts = int(_time.mktime((y, m, d, 0, 0, 0, 0, 0, -1)))
             end_ts   = start_ts + 86399
         except Exception:
             self["status_label"].setText(_b("Datum ungueltig!"))
@@ -1350,8 +1349,10 @@ class OeMediathekScreen(Screen):
         date_str = choice[1]
         try:
             import time as _time
-            import calendar as _calendar
-            start_ts = int(_calendar.timegm(_time.strptime(date_str, "%Y-%m-%d")))
+            parts = date_str.split("-")
+            y, m, d = int(parts[0]), int(parts[1]), int(parts[2])
+            # Mitternacht bis 23:59:59 in der Lokalzeit der Box
+            start_ts = int(_time.mktime((y, m, d, 0, 0, 0, 0, 0, -1)))
             end_ts   = start_ts + 86399
         except Exception:
             self["status_label"].setText(_b("Datum ungueltig!"))
