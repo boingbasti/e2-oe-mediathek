@@ -87,7 +87,7 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
         "queries":   queries,
         "sortBy":    api_sort,
         "sortOrder": "desc",
-        "future":    False,
+        "future":    True,
         "offset":    offset,
         "size":      size,
     }

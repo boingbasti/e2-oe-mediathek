@@ -180,8 +180,9 @@ CHANNEL_MAP = {
 MODE_GROUPS   = 0
 MODE_EPISODES = 1
 
-# Sendung verpasst? — Sondereintrag am Anfang der Gruppenansicht
-_SV_ENTRY = b">> Sendung verpasst?"
+# Sondereinträge am Anfang der Gruppenansicht
+_SV_ENTRY  = b">> Sendung verpasst?"
+_SN_ENTRY  = b">> Demn\xc3\xa4chst"
 
 
 def _episode_label(title_bytes):
@@ -237,11 +238,15 @@ def _relevance_sort(groups, search_term):
     return sorted(groups, key=_rank)
 
 
-def _build_groups(items, sort_mode="timestamp"):
+def _build_groups(items, sort_mode="timestamp", flat=False):
     groups_dict  = {}
     groups_order = []
     for item in items:
-        key = item.get("group") or item.get("title") or b"Sonstige"
+        if flat:
+            # Im Flat-Modus jeden Titel als eigene Gruppe — keine Sammelordner
+            key = item.get("title") or b"Sonstige"
+        else:
+            key = item.get("group") or item.get("title") or b"Sonstige"
         if key not in groups_dict:
             groups_dict[key] = []
             groups_order.append(key)
@@ -1043,6 +1048,7 @@ class OeMediathekScreen(Screen):
         self.min_duration    = 0
         self.sort_mode       = "timestamp"
         self._sv_mode        = False   # True = Sendung-verpasst?-Filter aktiv
+        self._sn_mode        = False   # True = Demnächst-Filter aktiv
 
         self._fetching      = False
         self._fetch_target  = "groups"
@@ -1232,7 +1238,7 @@ class OeMediathekScreen(Screen):
     def _show_groups(self, restore_pos=False):
         self.mode = MODE_GROUPS
         self.last_index = -1
-        entries = [_SV_ENTRY]
+        entries = [_SV_ENTRY, _SN_ENTRY]
         for gname, gitems in self.groups_filtered:
             # Keine Zahlen mehr in der Vorschau anhängen
             entries.append(gname)
@@ -1240,6 +1246,8 @@ class OeMediathekScreen(Screen):
 
         if self._sv_mode:
             status_text = "Sendung verpasst? — %d Sendungen" % len(self.groups_filtered)
+        elif self._sn_mode:
+            status_text = "Demn\xc3\xa4chst — %d Sendungen" % len(self.groups_filtered)
         else:
             status_text = "%d Sendungen" % len(self.groups_filtered)
         if self.current_search:
@@ -1307,13 +1315,64 @@ class OeMediathekScreen(Screen):
             return
 
         self._sv_mode = True
-        built = _build_groups(filtered, self.sort_mode)
+        built = _build_groups(filtered, self.sort_mode, flat=True)
+        self.groups_filtered = _relevance_sort(built, self.current_search)
+        self._show_groups()
+
+    def _open_sn_date_picker(self):
+        import time as _time
+        _WEEKDAYS = [
+            b"Montag", b"Dienstag", b"Mittwoch", b"Donnerstag",
+            b"Freitag", b"Samstag", b"Sonntag",
+        ]
+        choices = []
+        now_ts = _time.time()
+        for i in range(1, 8):
+            t   = _time.localtime(now_ts + i * 86400)
+            ds  = "%04d-%02d-%02d" % (t.tm_year, t.tm_mon, t.tm_mday)
+            dsp = "%02d.%02d.%04d" % (t.tm_mday, t.tm_mon, t.tm_year)
+            if i == 1:
+                label = _b("Morgen (%s)" % dsp)
+            else:
+                wd    = _WEEKDAYS[t.tm_wday]
+                label = wd + _b(" (%s)" % dsp)
+            choices.append((label, ds))
+        self.session.openWithCallback(
+            self._on_sn_date_chosen,
+            ChoiceBox,
+            title="Demn\xc3\xa4chst — Datum w\xc3\xa4hlen:",
+            list=choices,
+        )
+
+    def _on_sn_date_chosen(self, choice):
+        if not choice:
+            return
+        date_str = choice[1]
+        try:
+            import time as _time
+            import calendar as _calendar
+            start_ts = int(_calendar.timegm(_time.strptime(date_str, "%Y-%m-%d")))
+            end_ts   = start_ts + 86399
+        except Exception:
+            self["status_label"].setText(_b("Datum ungueltig!"))
+            return
+
+        filtered = [item for item in self.all_items
+                    if start_ts <= item.get("timestamp", 0) <= end_ts]
+
+        if not filtered:
+            self["status_label"].setText(_b("Keine Sendungen am %s" % date_str))
+            return
+
+        self._sn_mode = True
+        built = _build_groups(filtered, self.sort_mode, flat=True)
         self.groups_filtered = _relevance_sort(built, self.current_search)
         self._show_groups()
 
     def _sv_reset(self):
-        """Sendung-verpasst?-Filter aufheben — zurück zur vollständigen Gruppenansicht."""
+        """SV/SN-Filter aufheben — zurück zur vollständigen Gruppenansicht."""
         self._sv_mode = False
+        self._sn_mode = False
         self.groups_filtered = _relevance_sort(self.groups, self.current_search)
         self._show_groups()
 
@@ -1337,7 +1396,7 @@ class OeMediathekScreen(Screen):
             
         self.mode = MODE_EPISODES
         self.last_index = -1
-        self.cur_group_idx = group_idx + 1  # +1 wegen _SV_ENTRY an Position 0
+        self.cur_group_idx = group_idx + 2  # +2 wegen _SV_ENTRY und _SN_ENTRY an Position 0/1
         self._fetching = True
         self._fetch_target = "episodes"
         self._fetch_episodes_result = []
@@ -1531,10 +1590,11 @@ class OeMediathekScreen(Screen):
                 return
             if self.mode == MODE_GROUPS:
                 if idx == 0:
-                    # "Sendung verpasst?" — Datumauswahl
                     self._open_sv_date_picker()
-                elif idx - 1 < len(self.groups_filtered):
-                    self._start_episode_fetch(idx - 1)
+                elif idx == 1:
+                    self._open_sn_date_picker()
+                elif idx - 2 < len(self.groups_filtered):
+                    self._start_episode_fetch(idx - 2)
             else:
                 if idx < len(self.cur_episodes):
                     item = self.cur_episodes[idx]
@@ -1573,7 +1633,7 @@ class OeMediathekScreen(Screen):
         if self.mode == MODE_EPISODES:
             self["title_label"].setText(self.source_name)
             self._show_groups(restore_pos=True)
-        elif self._sv_mode:
+        elif self._sv_mode or self._sn_mode:
             self._sv_reset()
         else:
             self.close()
@@ -1757,6 +1817,7 @@ class OeMediathekScreen(Screen):
             _log("Keine weiteren Seiten")
             return
         self._sv_mode = False
+        self._sn_mode = False
         self.page += 1
         self._start_fetch()
 
@@ -1766,6 +1827,7 @@ class OeMediathekScreen(Screen):
         if self._fetching or self.page == 0:
             return
         self._sv_mode = False
+        self._sn_mode = False
         self.page -= 1
         self._start_fetch()
 
