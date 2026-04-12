@@ -130,6 +130,7 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
         ch         = entry.get("channel", "")
         topic      = entry.get("topic", "")
         title      = entry.get("title", "")
+        timestamp  = entry.get("timestamp", 0)
 
         if ch in blocked:
             continue
@@ -196,6 +197,11 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
             group_key = title if channel else ch + ": " + title
 
         _log("URL [%s] HD=%s SD=%s" % (ch, url_hd if url_hd else "-", url_sd if url_sd else "-"))
+        try:
+            ts = int(timestamp)
+        except Exception:
+            ts = 0
+
         items.append({
             "title":         _s(title),
             "group":         _s(group_key),
@@ -204,6 +210,7 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
             "stream_url_sd": _s(url_sd),
             "description":   _s(desc),
             "duration":      _s(duration_str),
+            "timestamp":     ts,
         })
 
     _log("MVW %d Sendungen verarbeitet" % len(items))
