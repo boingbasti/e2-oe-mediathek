@@ -4,6 +4,7 @@
 
 import json
 import os
+import threading
 
 LOG_FILE       = "/tmp/oemediathek.log"
 FAVORITES_FILE = "/etc/enigma2/oemediathek_favorites.json"
@@ -369,8 +370,9 @@ def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by=
     if not favs:
         return [], 0
 
-    all_items = []
-    for fav in favs:
+    results = [None] * len(favs)
+
+    def _fetch_one(idx, fav):
         channel = fav.get("channel") or None
         group   = fav.get("group", "")
 
@@ -385,6 +387,7 @@ def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by=
             if prefix in _KNOWN_CHANNELS:
                 pure_topic = group.split(": ", 1)[1]
 
+        matched = []
         try:
             # Hole gezielt bis zu 100 Folgen genau dieser Serie
             items, _ = _mvw_query(
@@ -406,16 +409,28 @@ def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by=
                     item_group_str = str(item_group)
                 # Direkte Übereinstimmung
                 if item_group_str == group:
-                    all_items.append(item)
+                    matched.append(item)
                     continue
                 # Fallback: gespeicherte Gruppe hat Sender-Prefix, item_group nicht
                 # z.B. group="BR: Schnittgut", item_group_str="Schnittgut"
                 if ": " in group:
                     group_suffix = group.split(": ", 1)[1]
                     if item_group_str == group_suffix:
-                        all_items.append(item)
+                        matched.append(item)
         except Exception as e:
             _log("Favorit laden Fehler (%s): %s" % (group, str(e)))
+        results[idx] = matched
+
+    threads = [threading.Thread(target=_fetch_one, args=(i, fav)) for i, fav in enumerate(favs)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    all_items = []
+    for r in results:
+        if r:
+            all_items.extend(r)
 
     # Kein Paging ueber alle Favoriten-Items — jede Gruppe hat bereits max. 100 Eintraege,
     # und die Gesamtzahl bleibt ueberschaubar. offset/size gelten nur fuer den API-Abruf
