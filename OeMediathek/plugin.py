@@ -56,11 +56,16 @@ from mediathek import (
     get_one_highlights,
     get_tagesschau24_highlights,
     get_dw_highlights,
+    get_orf_highlights,
+    get_srf_highlights,
     get_favorites,
     add_favorite,
     remove_favorite,
     is_favorite,
+    reorder_favorites,
     _mvw_query,
+    load_search_history,
+    save_search_history,
 )
 from player import play_stream
 from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size
@@ -68,7 +73,7 @@ from download_manager import OeMediathekDownloadManagerScreen
 
 LOGO_DIR = os.path.join(os.path.dirname(__file__), "logos")
 LOG_FILE = "/tmp/oemediathek.log"
-PAGE_SIZE = 500
+PAGE_SIZE = 100
 DEBUG = False
 
 # Download-Queue: aktiver Downloader, wartende Items, ausstehende Benachrichtigung
@@ -126,13 +131,16 @@ SOURCES = [
     ("ZDF Neo",          get_zdfneo_highlights,  "zdfneo.png"),
     ("KiKA",             get_kika_highlights,    "kika.png"),
     ("Phoenix",          get_phoenix_highlights, "phoenix.png"),
-    # Seite 3
+    # Seite 2 (Forts.)
     ("Radio Bremen",     get_radio_bremen_highlights, "radio_bremen.png"),
     ("funk",             get_funk_highlights,         "funk.png"),
     ("ARD alpha",        get_ard_alpha_highlights,    "ard_alpha.png"),
     ("ONE",              get_one_highlights,          "one.png"),
     ("tagesschau24",     get_tagesschau24_highlights, "tagesschau24.png"),
     ("DW",               get_dw_highlights,           "dw.png"),
+    # Seite 3
+    ("ORF",              get_orf_highlights,          "orf.png"),
+    ("SRF",              get_srf_highlights,          "srf.png"),
 ]
 # Unveränderliche Kopie der Original-Reihenfolge für den Werksreset
 _SOURCES_DEFAULT = list(SOURCES)
@@ -185,10 +193,12 @@ _SV_ENTRY  = b">> Sendung verpasst?"
 _SN_ENTRY  = b">> Demn\xc3\xa4chst"
 
 
-def _episode_label(title_bytes):
+def _episode_label(title_bytes, topic_bytes=None):
     """
     Gibt einen Listeneintrag zurueck. Falls der Titel (SXX/EYY) enthaelt,
     wird 'S12E08  <Titel ohne Tag>' vorangestellt, sonst unveraendert.
+    Optional: topic_bytes als Praefix voranstellen (z.B. fuer Direkte Treffer),
+    aber nur wenn das Topic nicht bereits im Titel enthalten ist.
     """
     import re
     try:
@@ -203,6 +213,13 @@ def _episode_label(title_bytes):
         label   = "S%02dE%02d  %s" % (season, episode, clean)
     else:
         label = title
+    if topic_bytes:
+        try:
+            topic = topic_bytes.decode("utf-8", "replace")
+        except Exception:
+            topic = str(topic_bytes)
+        if topic.lower() not in label.lower():
+            label = topic + ": " + label
     try:
         return label.encode("utf-8")
     except Exception:
@@ -237,6 +254,89 @@ def _relevance_sort(groups, search_term):
         return 2
 
     return sorted(groups, key=_rank)
+
+
+def _inject_direct_hits(groups, search_term):
+    """
+    Fuegt bei aktiver Suche eine Gruppe "Direkte Treffer" ganz oben ein.
+    Darin landen alle Episoden, deren Titel den Suchbegriff enthaelt,
+    aber deren topic (Gruppenname) ihn NICHT enthaelt.
+    So werden Filmtitel gefunden, auch wenn das topic nichts mit dem
+    gesuchten Begriff zu tun hat.
+    """
+    if not search_term:
+        return groups
+    try:
+        term = search_term.lower()
+    except Exception:
+        return groups
+
+    terms = term.split()
+    if not terms:
+        return groups
+
+    direct = []
+    for key, episodes in groups:
+        try:
+            group_name = key.decode("utf-8", "replace").lower()
+        except Exception:
+            group_name = str(key).lower()
+        if all(w in group_name for w in terms):
+            # Topic enthaelt alle Woerter bereits -> normale Gruppe genuegt
+            continue
+        for ep in episodes:
+            t = ep.get("title", b"")
+            try:
+                title_str = t.decode("utf-8", "replace").lower()
+            except Exception:
+                title_str = str(t).lower()
+            if all(w in title_str for w in terms):
+                direct.append(ep)
+
+    if not direct:
+        return groups
+
+    # Relevanz-Sortierung: exakter Substring zuerst, dann Einzelwoerter, innerhalb gleicher Stufe nach Datum
+    def _relevance_key(ep):
+        t = ep.get("title", b"")
+        try:
+            title_str = t.decode("utf-8", "replace").lower()
+        except Exception:
+            title_str = str(t).lower()
+        exact = 0 if term in title_str else 1
+        ts = ep.get("timestamp", 0)
+        try:
+            ts = int(ts)
+        except Exception:
+            ts = 0
+        return (exact, -ts)
+
+    direct.sort(key=_relevance_key)
+
+    # Duplikate entfernen: nur URL-Pfad vergleichen (Hostname ignorieren, da CDN-Varianten existieren)
+    # Nach der Sortierung, damit der relevantere Eintrag gewinnt
+    seen_url_paths = set()
+    deduped = []
+    for ep in direct:
+        url = ep.get("stream_url_sd") or ep.get("stream_url_hd") or b""
+        try:
+            url_str = url.decode("utf-8", "replace") if isinstance(url, bytes) else str(url)
+        except Exception:
+            url_str = str(url)
+        # Pfad ab dem ersten "/" nach "://" extrahieren
+        try:
+            path_key = url_str.split("://", 1)[1].split("/", 1)[1] if "://" in url_str else url_str
+        except Exception:
+            path_key = url_str
+        if path_key and path_key in seen_url_paths:
+            continue
+        if path_key:
+            seen_url_paths.add(path_key)
+        deduped.append(ep)
+    direct = deduped
+
+    label = (">> Direkte Treffer (%d)" % len(direct)).encode("utf-8")
+    return [(label, direct)] + list(groups)
 
 
 def _build_groups(items, sort_mode="timestamp", flat=False):
@@ -330,9 +430,9 @@ class OeMediathekAlphaPickerScreen(Screen):
         Screen.__init__(self, session)
         self.selected = 0
 
-        self["title_label"] = Label("Buchstabe wählen")
+        self["title_label"] = Label(_b("Buchstabe w\xc3\xa4hlen"))
         self["selector"]    = Label("")
-        self["hint_label"]  = Label("OK = Wählen   |   EXIT = Abbrechen")
+        self["hint_label"]  = Label(_b("OK = W\xc3\xa4hlen   |   EXIT = Abbrechen"))
 
         for i, ch in enumerate(_ALPHA_CHARS):
             self["cell_%d" % i] = Label(ch)
@@ -448,7 +548,7 @@ class OeMediathekInfoScreen(Screen):
         self["duration_label"] = Label(dur_str)
         
         self["text_label"] = ScrollLabel(_b(description))
-        self["hint_label"] = Label("Hoch/Runter = Scrollen   |   EXIT/INFO = Schließen")
+        self["hint_label"] = Label(_b("Hoch/Runter = Scrollen   |   EXIT/INFO = Schlie\xc3\x9fen"))
         
         self["actions"] = ActionMap(
             ["OkCancelActions", "DirectionActions", "EPGSelectActions"],
@@ -531,8 +631,9 @@ class OeMediathekMainScreen(Screen):
                 lw, lh = (220, 132) if IS_FHD else (146, 88)
                 lx  = tx + (TILE_W - lw) // 2
                 ly  = ty + (TILE_H - lh) // 2
-                tiles_bg += '<eLabel position="%d,%d" size="%d,%d" backgroundColor="#1A000000" zPosition="-4" />\n' \
-                            % (tx, ty, TILE_W, TILE_H)
+                # tile_bg_X als benanntes Widget damit hide()/show() moeglich ist
+                tiles_bg += '<widget name="tile_bg_%d" position="%d,%d" size="%d,%d" backgroundColor="#1A000000" zPosition="-4" />\n' \
+                            % (i, tx, ty, TILE_W, TILE_H)
                 logos    += '<widget name="logo_%d" position="%d,%d" size="%d,%d" alphatest="blend" scale="1" transparent="1" zPosition="1" />\n' \
                             % (i, lx, ly, lw, lh)
 
@@ -638,13 +739,14 @@ class OeMediathekMainScreen(Screen):
                 self["logo_%d" % i] = _Pixmap() if _Pixmap else Label("")
             except Exception:
                 self["logo_%d" % i] = Label("")
+            self["tile_bg_%d" % i] = Label("")
 
         self["actions"] = ActionMap(
             ["OkCancelActions", "DirectionActions", "WizardActions",
              "ChannelSelectBaseActions", "ColorActions"],
             {
                 "ok":           self.on_ok,
-                "cancel":       self.close,
+                "cancel":       self.on_cancel,
                 "up":           self.key_up,
                 "down":         self.key_down,
                 "left":         self.key_left,
@@ -689,9 +791,21 @@ class OeMediathekMainScreen(Screen):
         """Kacheln und Logos der aktuellen Seite neu befuellen."""
         offset = self.main_page * TILES_PER_PAGE
         for i in range(TILES_PER_PAGE):
-            # Logo leeren — wird danach neu gesetzt
+            src_idx = offset + i
+            has_src = src_idx < len(SOURCES)
+            # Logo leeren
             try:
                 self["logo_%d" % i].instance.setPixmap(None)
+            except Exception:
+                pass
+            # Kachelhintergrund und Logo ein- oder ausblenden
+            try:
+                if has_src:
+                    self["tile_bg_%d" % i].instance.show()
+                    self["logo_%d" % i].instance.show()
+                else:
+                    self["tile_bg_%d" % i].instance.hide()
+                    self["logo_%d" % i].instance.hide()
             except Exception:
                 pass
 
@@ -762,14 +876,14 @@ class OeMediathekMainScreen(Screen):
             self["hint_green"].setText(_b("R\xc3\xbcckg\xc3\xa4ngig"))
             self["hint_ok"].setText(_b("OK = Greifen"))
             self["hint_ch"].setText(_b("CH+/- = Seite bl\xc3\xa4ttern"))
-            self["hint_nav"].setText(_b("EXIT = Beenden"))
+            self["hint_nav"].setText(_b("EXIT = Abbrechen"))
         else:
             # Kachel gegriffen
             self["hint_red"].setText(_b("Fertig"))
             self["hint_green"].setText(_b("R\xc3\xbcckg\xc3\xa4ngig"))
             self["hint_ok"].setText(_b("OK = Ablegen"))
             self["hint_ch"].setText(_b("CH+/- = Seite bl\xc3\xa4ttern"))
-            self["hint_nav"].setText(_b("EXIT = Beenden"))
+            self["hint_nav"].setText(_b("EXIT = Abbrechen"))
 
     # ------------------------------------------------------------------
     # Sortiermodus
@@ -861,6 +975,20 @@ class OeMediathekMainScreen(Screen):
         if new_page != self.main_page:
             self.main_page = new_page
         self._refresh_page()
+
+    def on_cancel(self):
+        if self._sort_mode:
+            # Sortiermodus abbrechen ohne speichern
+            if self._sort_order_backup is not None:
+                SOURCES[:] = self._sort_order_backup
+            self._sort_mode = False
+            self._sort_grabbed = None
+            self._sort_order_backup = None
+            self._set_selector_color(False)
+            self._refresh_page()
+            self._update_legend()
+        else:
+            self.close()
 
     def doClose(self):
         if self._sort_mode and self._sort_order_backup is not None:
@@ -975,6 +1103,108 @@ class OeMediathekMainScreen(Screen):
 
 
 # ------------------------------------------------------------------
+# Suchverlauf-Screen  (Vorschalt-Dialog vor der Tastatur)
+# ------------------------------------------------------------------
+class OeMediathekSearchHistoryScreen(Screen):
+
+    _NEW_SEARCH = u"\u25ba Neue Suche..."
+
+    @staticmethod
+    def _make_skin():
+        if IS_FHD:
+            return """
+        <screen name="OeMediathekSearchHistoryScreen" position="0,0" size="1920,1080" flags="wfNoBorder">
+            <eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6" />
+            <eLabel position="560,200" size="800,680" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="title_label" position="600,230" size="720,60" font="Regular;38" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
+            <eLabel position="600,306" size="720,2" backgroundColor="#33FFFFFF" zPosition="-4" />
+            <widget name="menu_list" position="600,320" size="720,460" font="Regular;34" itemHeight="56" foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" />
+            <widget name="hint_label" position="600,800" size="720,50" font="Regular;26" halign="center" valign="center" foregroundColor="#555555" backgroundColor="#33000000" transparent="1" />
+        </screen>
+            """
+        else:
+            return """
+        <screen name="OeMediathekSearchHistoryScreen" position="0,0" size="1280,720" flags="wfNoBorder">
+            <eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6" />
+            <eLabel position="373,133" size="534,453" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="title_label" position="400,153" size="480,40" font="Regular;25" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
+            <eLabel position="400,204" size="480,1" backgroundColor="#33FFFFFF" zPosition="-4" />
+            <widget name="menu_list" position="400,213" size="480,307" font="Regular;22" itemHeight="37" foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" />
+            <widget name="hint_label" position="400,533" size="480,33" font="Regular;17" halign="center" valign="center" foregroundColor="#555555" backgroundColor="#33000000" transparent="1" />
+        </screen>
+            """
+
+    def __init__(self, session):
+        self.skin = self._make_skin()
+        Screen.__init__(self, session)
+
+        self["title_label"] = Label(_b("Letzte Suchen"))
+        self["menu_list"]   = MenuList([])
+        self["hint_label"]  = Label(_b("OK = Ausw\xc3\xa4hlen   |   EXIT = Abbrechen"))
+
+        self["actions"] = ActionMap(
+            ["OkCancelActions", "ColorActions"],
+            {
+                "ok":     self.on_ok,
+                "cancel": self.on_cancel,
+                "red":    self.on_delete,
+            },
+            1,
+        )
+        self.onShow.append(self._populate)
+
+    def _populate(self):
+        history = load_search_history()
+        entries = [self._NEW_SEARCH] + history
+        self["menu_list"].setList([_b(e) for e in entries])
+
+    def on_ok(self):
+        sel = self["menu_list"].getCurrent()
+        if sel is None:
+            self.close(None)
+            return
+        try:
+            text = sel.decode("utf-8", "replace")
+        except Exception:
+            text = str(sel)
+        if text == self._NEW_SEARCH:
+            self.close("__new__")
+        else:
+            self.close(text)
+
+    def on_delete(self):
+        """Rote Taste: aktuellen Eintrag aus dem Verlauf entfernen."""
+        sel = self["menu_list"].getCurrent()
+        if sel is None:
+            return
+        try:
+            text = sel.decode("utf-8", "replace")
+        except Exception:
+            text = str(sel)
+        if text == self._NEW_SEARCH:
+            return
+        from mediathek import load_search_history, SEARCH_HISTORY_FILE
+        import json as _json
+        history = load_search_history()
+        history = [e for e in history if e != text]
+        try:
+            with open(SEARCH_HISTORY_FILE, "w") as f:
+                _json.dump(history, f, ensure_ascii=False)
+        except Exception:
+            pass
+        self._populate()
+
+    def on_cancel(self):
+        self.close(None)
+
+    def doClose(self):
+        try:
+            Screen.doClose(self)
+        except TypeError:
+            pass
+
+
+# ------------------------------------------------------------------
 # Inhalts-Screen  (Split-Screen Card Layout mit Deep-Fetch)
 # ------------------------------------------------------------------
 class OeMediathekScreen(Screen):
@@ -987,7 +1217,8 @@ class OeMediathekScreen(Screen):
             <eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6" />
             <eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="50,30" size="1300,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
-            <widget name="status_label" position="1360,30" size="470,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
+            <widget name="sort_label" position="1360,30" size="220,80" font="Regular;28" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
+            <widget name="status_label" position="1590,30" size="240,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
             <eLabel position="30,140" size="1100,780" backgroundColor="#33000000" zPosition="-5" />
             <widget name="menu_list" position="40,150" size="1080,760" font="Regular;34" scrollbarMode="showOnDemand" itemHeight="58" backgroundColor="#33000000" transparent="1" />
             <eLabel position="1160,140" size="730,780" backgroundColor="#33000000" zPosition="-5" />
@@ -1001,7 +1232,7 @@ class OeMediathekScreen(Screen):
             <widget name="hint_yellow" position="868,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
             <eLabel position="1250,980" size="8,60" backgroundColor="#1A0044DD" zPosition="2" />
             <widget name="hint_blue" position="1268,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_page" position="1668,960" size="202,100" font="Regular;32" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_page" position="1468,960" size="402,100" font="Regular;32" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
         </screen>
             """
         else:
@@ -1010,7 +1241,8 @@ class OeMediathekScreen(Screen):
             <eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6" />
             <eLabel position="20,20" size="1240,53" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="33,20" size="866,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
-            <widget name="status_label" position="906,20" size="313,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
+            <widget name="sort_label" position="906,20" size="147,53" font="Regular;18" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
+            <widget name="status_label" position="1060,20" size="153,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
             <eLabel position="20,93" size="733,520" backgroundColor="#33000000" zPosition="-5" />
             <widget name="menu_list" position="26,100" size="720,506" font="Regular;22" scrollbarMode="showOnDemand" itemHeight="38" backgroundColor="#33000000" transparent="1" />
             <eLabel position="773,93" size="486,520" backgroundColor="#33000000" zPosition="-5" />
@@ -1024,7 +1256,7 @@ class OeMediathekScreen(Screen):
             <widget name="hint_yellow" position="578,640" size="233,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
             <eLabel position="833,653" size="5,40" backgroundColor="#1A0044DD" zPosition="2" />
             <widget name="hint_blue" position="845,640" size="233,66" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_page" position="1112,640" size="134,66" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_page" position="1012,640" size="234,66" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
         </screen>
             """
 
@@ -1044,11 +1276,19 @@ class OeMediathekScreen(Screen):
         self.groups_filtered = []
         self.cur_episodes    = []
         self.cur_group_name  = b""
+        self.ep_page         = 0
+        self.ep_total        = 0
+        self.ep_has_more     = False
 
         self.current_search  = None
         self.min_duration    = 0
         self.sort_mode       = "timestamp"
         self._sv_mode        = False   # True = Sendung-verpasst?-Filter aktiv
+        self._sv_sn_pending  = None    # "sv" oder "sn" — wartet auf Prefetch
+        self._fav_sort_mode  = False   # True = Favoriten-Sortiermodus aktiv
+        self._fav_grabbed    = None    # Index des gegriffenen Favoriten
+        self._fav_order_backup = None  # Backup der Reihenfolge vor dem Sortieren
+        self._ep_api_has_more = False  # API hat noch Daten nach letztem Episoden-Fetch
         self._sn_mode        = False   # True = Demnächst-Filter aktiv
 
         self._fetching      = False
@@ -1068,6 +1308,7 @@ class OeMediathekScreen(Screen):
         self["menu_list"]    = MenuList([])
         self["description_text"] = ScrollLabel(_b(""))
         
+        self["sort_label"]   = Label("")
         self["hint_red"]     = Label("")
         self["hint_green"]   = Label("")
         self["hint_yellow"]  = Label("")
@@ -1088,6 +1329,8 @@ class OeMediathekScreen(Screen):
                 "epg":          self.on_download,
                 "nextBouquet":  self.next_page,
                 "prevBouquet":  self.prev_page,
+                "up":           self.on_up,
+                "down":         self.on_down,
             },
             -1,
         )
@@ -1160,9 +1403,12 @@ class OeMediathekScreen(Screen):
     def _fetch_thread(self):
         try:
             api_sort = self.sort_mode if self.sort_mode != "az" else "timestamp"
+            # Bei A-Z alle verfuegbaren Ergebnisse laden (bis zu 1000),
+            # damit die Sortierung die gesamte Liste einbezieht
+            fetch_size = 1000 if self.sort_mode == "az" else PAGE_SIZE
             self._fetch_result, self._fetch_total = self.loader(
                 offset=self.page * PAGE_SIZE,
-                size=PAGE_SIZE,
+                size=fetch_size,
                 search_term=self.current_search,
                 min_duration=self.min_duration,
                 sort_by=api_sort,
@@ -1181,6 +1427,8 @@ class OeMediathekScreen(Screen):
             self._on_episodes_fetch_done()
         elif self._fetch_target == "alpha":
             self._on_alpha_fetch_done()
+        elif self._fetch_target == "sv_sn_prefetch":
+            self._on_sv_sn_prefetch_done()
         else:
             self._on_fetch_done()
 
@@ -1205,6 +1453,7 @@ class OeMediathekScreen(Screen):
             
         self.groups          = _build_groups(self.all_items, self.sort_mode)
         self.groups_filtered = _relevance_sort(self.groups, self.current_search)
+        self.groups_filtered = _inject_direct_hits(self.groups_filtered, self.current_search)
         self._show_groups()
 
     def _update_desc(self):
@@ -1236,39 +1485,113 @@ class OeMediathekScreen(Screen):
         except Exception:
             pass
 
+    # Sender mit zu wenigen Eintraegen fuer "Sendung verpasst?" / "Demnaechst" (< 50/Woche)
+    _NO_SV_SN_SOURCES = frozenset([
+        "Radio Bremen", "funk", "ARD alpha", "DW", "ZDF Info", "ZDF Neo",
+        "ORF", "SRF",
+    ])
+
     def _sv_sn_offset(self):
         """Offset der echten Gruppen in der MenuList — 2 wenn SV/SN eingeblendet, sonst 0."""
+        if self.current_search:
+            return 0
+        if self.alpha_letter:
+            return 0
+        if self.source_name in self._NO_SV_SN_SOURCES:
+            return 0
         return 2 if self.source_name not in ("Meine Favoriten", "Alle Mediatheken") else 0
 
     def _show_groups(self, restore_pos=False):
         self.mode = MODE_GROUPS
         self.last_index = -1
-        # Sondereinträge nur bei echten Mediatheken, nicht bei Favoriten oder "Alle"
-        entries = [_SV_ENTRY, _SN_ENTRY] if self._sv_sn_offset() == 2 else []
+        self._update_sort_label()
+        # Sondereinträge nur bei echten Mediatheken, nicht bei Favoriten, "Alle" oder aktiver Suche
+        entries = [_SV_ENTRY, _SN_ENTRY] if self._sv_sn_offset() == 2 and not self.current_search else []
         for gname, gitems in self.groups_filtered:
             # Keine Zahlen mehr in der Vorschau anhängen
             entries.append(gname)
         self["menu_list"].setList(entries)
 
         if self._sv_mode:
-            status_text = "Sendung verpasst? — %d Sendungen" % len(self.groups_filtered)
+            status_text = "Sendung verpasst? \xe2\x80\x94 %d Sendungen" % len(self.groups_filtered)
         elif self._sn_mode:
-            status_text = "Demn\xc3\xa4chst — %d Sendungen" % len(self.groups_filtered)
+            status_text = "Demn\xc3\xa4chst \xe2\x80\x94 %d Sendungen" % len(self.groups_filtered)
         else:
             status_text = "%d Sendungen" % len(self.groups_filtered)
         if self.current_search:
             status_text += " (Suche: %s)" % self.current_search
-        self["status_label"].setText(status_text)
+        self["status_label"].setText(_b(status_text))
 
-        self["hint_red"].setText("ABC-Auswahl")
-        self["hint_green"].setText(self._next_sort_hint())
-        self["hint_yellow"].setText("Suche (Server)")
-        self._update_blue_hint()
+        if self._fav_sort_mode:
+            # Im Sortiermodus: Hints werden von _fav_update_hints gesetzt
+            self._fav_update_hints()
+        else:
+            self._update_red_hint()
+            current = self._current_sort_label()
+            next_hint = self._next_sort_hint()
+            if next_hint:
+                self["hint_green"].setText(_b(current + " > " + next_hint))
+            else:
+                self["hint_green"].setText(_b(current))
+            if self.source_name != "Meine Favoriten":
+                self["hint_yellow"].setText("Suche (Server)")
+            else:
+                self["hint_yellow"].setText(_b(""))
+            self._update_blue_hint()
 
         self._update_page_hint()
         pos = self.cur_group_idx if restore_pos and self.cur_group_idx is not None else 0
         self._focus_list(pos)
         self._update_desc()
+
+    def _prefetch_sv_sn(self, mode):
+        """Laedt bis zu 1000 Eintraege bevor SV/SN-Datepicker geoeffnet wird."""
+        SV_SN_FETCH_SIZE = 1000
+        if len(self.all_items) >= SV_SN_FETCH_SIZE or self._fetching:
+            # Genug Daten vorhanden oder Fetch laeuft bereits
+            if mode == "sv":
+                self._open_sv_date_picker()
+            else:
+                self._open_sn_date_picker()
+            return
+        self["status_label"].setText("Lade Sendungen ...")
+        self._fetching = True
+        self._fetch_target = "sv_sn_prefetch"
+        self._sv_sn_pending = mode
+        self._fetch_result = []
+        self._fetch_error = None
+        t = threading.Thread(target=self._sv_sn_prefetch_thread, args=(SV_SN_FETCH_SIZE,))
+        t.daemon = True
+        t.start()
+        if self._poll_timer:
+            self._poll_timer.start(300, True)
+
+    def _sv_sn_prefetch_thread(self, size):
+        try:
+            self._fetch_result, self._fetch_total = self.loader(
+                offset=0,
+                size=size,
+                search_term=None,
+                min_duration=0,
+                sort_by="timestamp",
+            )
+        except Exception:
+            self._fetch_error = _fmt_exc()
+        self._fetching = False
+
+    def _on_sv_sn_prefetch_done(self):
+        if self._fetch_error:
+            _log("SV/SN Prefetch Fehler: " + self._fetch_error)
+            self["status_label"].setText("Fehler beim Laden!")
+            return
+        self.all_items = self._fetch_result
+        self.groups = _build_groups(self.all_items, self.sort_mode)
+        self.groups_filtered = list(self.groups)
+        self._show_groups()
+        if getattr(self, "_sv_sn_pending", None) == "sv":
+            self._open_sv_date_picker()
+        else:
+            self._open_sn_date_picker()
 
     def _open_sv_date_picker(self):
         import time as _time
@@ -1277,9 +1600,12 @@ class OeMediathekScreen(Screen):
             b"Freitag", b"Samstag", b"Sonntag",
         ]
         choices = []
-        now_ts = _time.time()
+        now    = _time.localtime()
+        # Mitternacht des heutigen Tages als Ankerpunkt — vermeidet Sommerzeit-Fehler
+        today_midnight = int(_time.mktime((now.tm_year, now.tm_mon, now.tm_mday, 0, 0, 0, 0, 0, -1)))
         for i in range(8):
-            t   = _time.localtime(now_ts - i * 86400)
+            day_ts = today_midnight - i * 86400
+            t   = _time.localtime(day_ts)
             ds  = "%04d-%02d-%02d" % (t.tm_year, t.tm_mon, t.tm_mday)
             dsp = "%02d.%02d.%04d" % (t.tm_mday, t.tm_mon, t.tm_year)
             if i == 0:
@@ -1315,11 +1641,13 @@ class OeMediathekScreen(Screen):
         filtered = [item for item in self.all_items
                     if start_ts <= item.get("timestamp", 0) <= end_ts]
 
+        self._sv_mode = True
         if not filtered:
+            self.groups_filtered = []
+            self._show_groups()
             self["status_label"].setText(_b("Keine Sendungen am %s" % date_str))
             return
 
-        self._sv_mode = True
         built = _build_groups(filtered, self.sort_mode, flat=True)
         self.groups_filtered = _relevance_sort(built, self.current_search)
         self._show_groups()
@@ -1331,9 +1659,11 @@ class OeMediathekScreen(Screen):
             b"Freitag", b"Samstag", b"Sonntag",
         ]
         choices = []
-        now_ts = _time.time()
+        now    = _time.localtime()
+        today_midnight = int(_time.mktime((now.tm_year, now.tm_mon, now.tm_mday, 0, 0, 0, 0, 0, -1)))
         for i in range(1, 8):
-            t   = _time.localtime(now_ts + i * 86400)
+            day_ts = today_midnight + i * 86400
+            t   = _time.localtime(day_ts)
             ds  = "%04d-%02d-%02d" % (t.tm_year, t.tm_mon, t.tm_mday)
             dsp = "%02d.%02d.%04d" % (t.tm_mday, t.tm_mon, t.tm_year)
             if i == 1:
@@ -1367,11 +1697,13 @@ class OeMediathekScreen(Screen):
         filtered = [item for item in self.all_items
                     if start_ts <= item.get("timestamp", 0) <= end_ts]
 
+        self._sn_mode = True
         if not filtered:
+            self.groups_filtered = []
+            self._show_groups()
             self["status_label"].setText(_b("Keine Sendungen am %s" % date_str))
             return
 
-        self._sn_mode = True
         built = _build_groups(filtered, self.sort_mode, flat=True)
         self.groups_filtered = _relevance_sort(built, self.current_search)
         self._show_groups()
@@ -1385,7 +1717,19 @@ class OeMediathekScreen(Screen):
 
     def _update_page_hint(self):
         if self.mode == MODE_EPISODES:
-            self["hint_page"].setText("EXIT = Zurück")
+            page_num = self.ep_page + 1
+            if self.ep_has_more:
+                page_info = "CH+/- Seite %d" % page_num
+            elif page_num > 1:
+                page_info = "Seite %d (letzte)" % page_num
+            else:
+                page_info = "EXIT = Zur\xc3\xbcck"
+            self["hint_page"].setText(page_info)
+            return
+        if self._fav_sort_mode:
+            return
+        if self.source_name == "Meine Favoriten":
+            self["hint_page"].setText(_b(""))
             return
         page_num    = self.page + 1
         total_pages = (self._fetch_total + PAGE_SIZE - 1) // PAGE_SIZE if self._fetch_total > 0 else None
@@ -1404,6 +1748,10 @@ class OeMediathekScreen(Screen):
         self.mode = MODE_EPISODES
         self.last_index = -1
         self.cur_group_idx = group_idx + self._sv_sn_offset()
+        self.ep_page = 0
+        self.ep_total = 0
+        self.ep_has_more = False
+        self.sort_mode = "timestamp"
         self._fetching = True
         self._fetch_target = "episodes"
         self._fetch_episodes_result = []
@@ -1419,9 +1767,7 @@ class OeMediathekScreen(Screen):
         title_text = self.source_name + b" | " + group_str
         self["title_label"].setText(title_text)
         
-        # Favoriten haben ohnehin schon alle lokalen Folgen geladen (bis zu 500)
-        if self.source_name != "Meine Favoriten":
-            self["status_label"].setText("Lade alle Folgen ...")
+        self["status_label"].setText("Lade alle Folgen ...")
             
         self["menu_list"].setList([])
         self["description_text"].setText(_b(""))
@@ -1437,13 +1783,6 @@ class OeMediathekScreen(Screen):
 
     def _fetch_episodes_thread(self, gname, local_items):
         try:
-            # Bei Favoriten koennen wir den Deep Fetch ueberspringen, da mediathek.py das bereits erledigt hat
-            if self.source_name == "Meine Favoriten":
-                self._fetch_episodes_result = list(local_items)
-                self._fetch_error = None
-                self._fetching = False
-                return
-
             try:
                 raw_str = gname.decode("utf-8", "replace")
             except Exception:
@@ -1466,32 +1805,44 @@ class OeMediathekScreen(Screen):
                 except Exception:
                     ch = None
 
-            # Deep Fetch: nur im topic-Feld suchen, verhindert Beifang durch title-Treffer
-            res, _ = _mvw_query(
-                channel=ch,
-                offset=0,
-                size=1000,
-                search_term=pure_topic,
-                min_duration=self.min_duration,
-                sort_by=api_sort,
-                search_fields=["topic"],
-            )
-            
+            # Adaptiver Fetch: solange nachladen bis PAGE_SIZE Treffer gesammelt
+            # oder keine weiteren Daten mehr kommen. Jeder Schritt laedt PAGE_SIZE
+            # Eintraege, da AD/GS-Filter viele rauswirft.
             exact_items = []
-            gname_str = raw_str
-            # Unscharfe Treffer serverseitig aussortieren (Filterung exakt auf den Ursprungsnamen)
-            for item in res:
-                ig = item.get("group", b"")
-                try:
-                    ig_str = ig.decode("utf-8", "replace")
-                except Exception:
-                    ig_str = str(ig)
-                if ig_str == gname_str:
-                    exact_items.append(item)
-                    
+            api_offset = self.ep_page * PAGE_SIZE
+            total = 0
+            last_res_full = False
+            MAX_ROUNDS = 10  # max. 10x PAGE_SIZE = 1000 Eintraege pro Seite
+            for _ in range(MAX_ROUNDS):
+                res, total = _mvw_query(
+                    channel=ch,
+                    offset=api_offset,
+                    size=PAGE_SIZE,
+                    search_term=pure_topic,
+                    min_duration=self.min_duration,
+                    sort_by=api_sort,
+                    search_fields=["topic"],
+                )
+                for item in res:
+                    ig = item.get("group", b"")
+                    try:
+                        ig_str = ig.decode("utf-8", "replace")
+                    except Exception:
+                        ig_str = str(ig)
+                    if ig_str == raw_str:
+                        exact_items.append(item)
+                api_offset += PAGE_SIZE
+                last_res_full = (len(res) >= PAGE_SIZE)
+                if len(exact_items) >= PAGE_SIZE or not last_res_full:
+                    break
+            self.ep_total = total
+            # Mehr Seiten wenn API noch Daten hat (letzter Batch war voll)
+            # oder total groesser als bisher verarbeiteter Offset
+            self._ep_api_has_more = last_res_full or (total > api_offset)
+
             if not exact_items:
                 exact_items = list(local_items)
-                
+
             self._fetch_episodes_result = exact_items
             self._fetch_error = None
         except Exception:
@@ -1503,21 +1854,28 @@ class OeMediathekScreen(Screen):
     def _on_episodes_fetch_done(self):
         if self._fetch_error:
             _log("Episoden Fetch Fehler: " + str(self._fetch_error))
-            
+
         self.cur_episodes = self._fetch_episodes_result
-        
-        if self.sort_mode == "az":
-            self.cur_episodes = sorted(
-                self.cur_episodes,
-                key=lambda i: i["title"].decode("utf-8", "replace").lower()
-            )
-            
-        self["menu_list"].setList([_episode_label(i["title"]) for i in self.cur_episodes])
-        self["status_label"].setText("%d Folgen" % len(self.cur_episodes))
-        
+        self.ep_has_more = (len(self.cur_episodes) >= PAGE_SIZE) or getattr(self, "_ep_api_has_more", False)
+
+        is_direct_hits = self.cur_group_name.startswith(b">> Direkte Treffer")
+        if is_direct_hits:
+            self["menu_list"].setList([_episode_label(i["title"], i.get("group")) for i in self.cur_episodes])
+        else:
+            self["menu_list"].setList([_episode_label(i["title"]) for i in self.cur_episodes])
+
+        if self.ep_total > 0 and (self.ep_has_more or self.ep_page > 0):
+            self["status_label"].setText(_b("%d  \xc2\xb7  ~%d gesamt" % (len(self.cur_episodes), self.ep_total)))
+        else:
+            self["status_label"].setText("%d Folgen" % len(self.cur_episodes))
+        self["sort_label"].setText(_b("Neueste zuerst"))
+
         self["hint_red"].setText("")
-        self["hint_green"].setText(self._next_sort_hint())
-        self["hint_yellow"].setText("Suche (Server)")
+        self["hint_green"].setText(_b(""))
+        if self.source_name != "Meine Favoriten":
+            self["hint_yellow"].setText("Suche (Server)")
+        else:
+            self["hint_yellow"].setText(_b(""))
         self["hint_blue"].setText(_b("Download"))
 
         self._update_page_hint()
@@ -1595,12 +1953,23 @@ class OeMediathekScreen(Screen):
             _log("on_ok mode=%d idx=%s" % (self.mode, str(idx)))
             if idx is None:
                 return
+            # Favoriten-Sortiermodus: OK = Greifen oder Ablegen
+            if self._fav_sort_mode:
+                if self._fav_grabbed is None:
+                    self._fav_grabbed = idx
+                    self["menu_list"].setList(self._fav_list_entries())
+                    self._focus_list(idx)
+                    self._fav_update_hints()
+                else:
+                    self._fav_grabbed = None
+                    self._show_groups(restore_pos=True)
+                return
             if self.mode == MODE_GROUPS:
                 offset = self._sv_sn_offset()
                 if offset == 2 and idx == 0:
-                    self._open_sv_date_picker()
+                    self._prefetch_sv_sn("sv")
                 elif offset == 2 and idx == 1:
-                    self._open_sn_date_picker()
+                    self._prefetch_sv_sn("sn")
                 elif idx - offset < len(self.groups_filtered):
                     self._start_episode_fetch(idx - offset)
             else:
@@ -1638,11 +2007,31 @@ class OeMediathekScreen(Screen):
             play_stream(self.session, ret[1], title)
 
     def on_cancel(self):
+        if self._fav_sort_mode:
+            # Sortiermodus abbrechen: Reihenfolge wiederherstellen
+            if self._fav_order_backup is not None:
+                orig = self._fav_order_backup
+                backed = {gname: gitems for gname, gitems in self.groups_filtered}
+                self.groups_filtered = [(g, backed.get(g, [])) for g in orig if g in backed]
+            self._fav_sort_mode = False
+            self._fav_grabbed = None
+            self._fav_order_backup = None
+            self._show_groups()
+            return
         if self.mode == MODE_EPISODES:
             self["title_label"].setText(self.source_name)
             self._show_groups(restore_pos=True)
         elif self._sv_mode or self._sn_mode:
             self._sv_reset()
+        elif self.alpha_letter:
+            self.alpha_letter = None
+            self.page = 0
+            self.all_items = []
+            self.groups = []
+            self.groups_filtered = []
+            self["menu_list"].setList([])
+            self["description_text"].setText(_b(""))
+            self._start_fetch()
         else:
             self.close()
 
@@ -1650,8 +2039,100 @@ class OeMediathekScreen(Screen):
         if self.mode == MODE_EPISODES:
             self["title_label"].setText(self.source_name)
             self._show_groups(restore_pos=True)
+        elif self.source_name == "Meine Favoriten":
+            self._fav_toggle_sort_mode()
+        elif self.alpha_letter:
+            # ABC-Filter aufheben: zurueck zur normalen Gruppenansicht
+            self.alpha_letter = None
+            self.page = 0
+            self.all_items = []
+            self.groups = []
+            self.groups_filtered = []
+            self["menu_list"].setList([])
+            self["description_text"].setText(_b(""))
+            self._start_fetch()
         else:
             self.open_alpha_picker()
+
+    # ------------------------------------------------------------------
+    # Favoriten-Sortiermodus
+    # ------------------------------------------------------------------
+    def _fav_toggle_sort_mode(self):
+        if not self._fav_sort_mode:
+            # Sortiermodus einschalten
+            self._fav_sort_mode = True
+            self._fav_grabbed = None
+            self._fav_order_backup = [gname for gname, _ in self.groups_filtered]
+            self._fav_update_hints()
+            self._show_groups(restore_pos=True)
+        else:
+            # Sortiermodus beenden und speichern
+            self._fav_sort_mode = False
+            self._fav_grabbed = None
+            self._fav_order_backup = None
+            reorder_favorites([gname for gname, _ in self.groups_filtered])
+            self._show_toast(_b("Reihenfolge gespeichert"), added=True)
+            self._show_groups()
+
+    def _fav_update_hints(self):
+        if self._fav_sort_mode:
+            self["hint_red"].setText(_b("Fertig"))
+            self["hint_green"].setText(_b("R\xc3\xbcckg\xc3\xa4ngig"))
+            self["hint_yellow"].setText(_b(""))
+            self["hint_blue"].setText(_b("Favorit l\xc3\xb6schen"))
+            if self._fav_grabbed is None:
+                self["hint_page"].setText(_b("OK = Greifen"))
+            else:
+                self["hint_page"].setText(_b("OK = Ablegen"))
+        else:
+            self._update_red_hint()
+            self["hint_yellow"].setText(_b(""))
+            self["hint_page"].setText(_b(""))
+
+    def _fav_move(self, direction):
+        """Gegriffenen Favoriten um eine Position nach oben (-1) oder unten (+1) verschieben."""
+        if not self._fav_sort_mode or self._fav_grabbed is None:
+            return
+        idx = self._fav_grabbed
+        new_idx = idx + direction
+        if new_idx < 0 or new_idx >= len(self.groups_filtered):
+            return
+        # Tauschen
+        self.groups_filtered[idx], self.groups_filtered[new_idx] = \
+            self.groups_filtered[new_idx], self.groups_filtered[idx]
+        self._fav_grabbed = new_idx
+        # Liste neu aufbauen und Cursor auf neuer Position setzen
+        self["menu_list"].setList(self._fav_list_entries())
+        self._focus_list(new_idx)
+
+    def _fav_list_entries(self):
+        """Erstellt die MenuList-Eintraege fuer den Favoriten-Sortiermodus.
+        Der gegriffene Eintrag bekommt einen Pfeil-Prefix als visuellen Marker."""
+        entries = []
+        for i, (gname, _) in enumerate(self.groups_filtered):
+            if i == self._fav_grabbed:
+                entries.append(_b("\xc2\xbb ") + gname)
+            else:
+                entries.append(gname)
+        return entries
+
+    def on_up(self):
+        if self._fav_sort_mode and self._fav_grabbed is not None:
+            self._fav_move(-1)
+        else:
+            try:
+                self["menu_list"].up()
+            except Exception:
+                pass
+
+    def on_down(self):
+        if self._fav_sort_mode and self._fav_grabbed is not None:
+            self._fav_move(1)
+        else:
+            try:
+                self["menu_list"].down()
+            except Exception:
+                pass
 
     def open_alpha_picker(self):
         try:
@@ -1714,12 +2195,32 @@ class OeMediathekScreen(Screen):
                 self._fetching = False
                 return
 
-            res, _ = self.loader(
+            # search_fields=["topic"] damit nur Topics durchsucht werden (nicht Titel)
+            # Dadurch kommen alle Gruppen/Topics die den Buchstaben enthalten
+            ch = None
+            try:
+                ch_map = {
+                    "ARD Mediathek": "ARD", "ZDF Mediathek": "ZDF", "Arte": "ARTE",
+                    "3sat": "3Sat", "NDR Mediathek": "NDR", "WDR Mediathek": "WDR",
+                    "BR Mediathek": "BR", "MDR Mediathek": "MDR", "HR Mediathek": "HR",
+                    "SWR Mediathek": "SWR", "rbb Mediathek": "rbb", "SR Mediathek": "SR",
+                    "ZDF Info": "ZDFinfo", "ZDF Neo": "ZDFneo", "KiKA": "KiKA",
+                    "Phoenix": "phoenix", "Radio Bremen": "radiobremen", "funk": "funk.net",
+                    "ARD alpha": "ARD-alpha", "ONE": "ONE", "tagesschau24": "tagesschau24",
+                    "DW": "DW", "ORF": "ORF", "SRF": "SRF",
+                }
+                ch = ch_map.get(self.source_name)
+            except Exception:
+                pass
+
+            res, _ = _mvw_query(
+                channel=ch,
                 offset=0,
-                size=2000,
+                size=500,
                 search_term=letter,
                 min_duration=self.min_duration,
                 sort_by=api_sort,
+                search_fields=["topic"],
             )
 
             # Lokal auf exakten Anfangsbuchstaben einengen, Sender-Prefix ignorieren
@@ -1828,7 +2329,7 @@ class OeMediathekScreen(Screen):
                 if real_idx < len(self.groups_filtered):
                     gname, _ = self.groups_filtered[real_idx]
                     if is_favorite(gname):
-                        self["hint_blue"].setText("Favorit löschen")
+                        self["hint_blue"].setText(_b("Favorit l\xc3\xb6schen"))
                         return
         except Exception:
             pass
@@ -1837,66 +2338,114 @@ class OeMediathekScreen(Screen):
     def _update_red_hint(self):
         if self.mode == MODE_EPISODES:
             self["hint_red"].setText("")
+        elif self.source_name == "Meine Favoriten":
+            if self._fav_sort_mode:
+                self["hint_red"].setText(_b("Fertig"))
+            else:
+                self["hint_red"].setText(_b("Sortieren"))
         else:
             self["hint_red"].setText("ABC-Auswahl")
 
     def next_page(self):
-        if self.mode == MODE_EPISODES:
-            return
         if self._fetching:
+            return
+        if self.mode == MODE_EPISODES:
+            if not self.ep_has_more:
+                return
+            self.ep_page += 1
+            self._start_episode_page_fetch()
             return
         if not self._has_more:
             _log("Keine weiteren Seiten")
             return
-        self._sv_mode = False
-        self._sn_mode = False
+        if self._sv_mode or self._sn_mode:
+            return
         self.page += 1
         self._start_fetch()
 
     def prev_page(self):
+        if self._fetching:
+            return
         if self.mode == MODE_EPISODES:
+            if self.ep_page == 0:
+                return
+            self.ep_page -= 1
+            self._start_episode_page_fetch()
             return
-        if self._fetching or self.page == 0:
+        if self.page == 0:
             return
-        self._sv_mode = False
-        self._sn_mode = False
+        if self._sv_mode or self._sn_mode:
+            return
         self.page -= 1
         self._start_fetch()
 
-    _SORT_CYCLE = ["timestamp", "az", "duration"]
+    def _start_episode_page_fetch(self):
+        """Laedt eine andere Seite der aktuell geoeffneten Gruppe nach."""
+        if self._fetching:
+            return
+        # Aktuelle Gruppe aus groups_filtered holen
+        real_idx = self.cur_group_idx - self._sv_sn_offset()
+        if real_idx < 0 or real_idx >= len(self.groups_filtered):
+            return
+        gname, gitems = self.groups_filtered[real_idx]
+        self._fetching = True
+        self._fetch_target = "episodes"
+        self._fetch_episodes_result = []
+        self["status_label"].setText("Lade Seite %d ..." % (self.ep_page + 1))
+        self["menu_list"].setList([])
+        self._update_page_hint()
+        t = threading.Thread(target=self._fetch_episodes_thread, args=(gname, gitems))
+        t.daemon = True
+        t.start()
+        if self._poll_timer:
+            self._poll_timer.start(300, True)
+
+    # In der Episodenansicht nur "timestamp" (kein "az" — wuerde nur aktuelle Seite sortieren)
+    _SORT_CYCLE_GROUPS   = ["timestamp", "az"]
+    _SORT_CYCLE_EPISODES = ["timestamp"]
     _SORT_LABELS = {
         "timestamp": "Neueste zuerst",
         "az":        "A-Z",
-        "duration":  "Nach Laenge",
     }
 
-    def _next_sort_hint(self):
+    def _update_sort_label(self):
+        if self.mode == MODE_GROUPS:
+            self["sort_label"].setText(_b(self._current_sort_label()))
+
+    def _current_sort_label(self):
         return OeMediathekScreen._SORT_LABELS.get(self.sort_mode, "Neueste zuerst")
+
+    def _next_sort_hint(self):
+        """Gibt das Label des naechsten Sortier-Modus zurueck (ohne Prefix)."""
+        cycle = self._SORT_CYCLE_GROUPS if self.mode == MODE_GROUPS else self._SORT_CYCLE_EPISODES
+        if len(cycle) <= 1:
+            return ""
+        idx = cycle.index(self.sort_mode) if self.sort_mode in cycle else 0
+        next_mode = cycle[(idx + 1) % len(cycle)]
+        return OeMediathekScreen._SORT_LABELS.get(next_mode, "Neueste zuerst")
 
     def cycle_sort(self):
         try:
-            cycle = OeMediathekScreen._SORT_CYCLE
+            # Im Favoriten-Sortiermodus: Gruen = Rückgängig
+            if self._fav_sort_mode:
+                if self._fav_order_backup is not None:
+                    backed = {gname: gitems for gname, gitems in self.groups_filtered}
+                    self.groups_filtered = [(g, backed.get(g, [])) for g in self._fav_order_backup if g in backed]
+                    self._fav_grabbed = None
+                    self["menu_list"].setList(self._fav_list_entries())
+                    self._fav_update_hints()
+                    self._show_toast(_b("Reihenfolge zur\xc3\xbcckgesetzt"), added=True)
+                return
+            cycle = self._SORT_CYCLE_GROUPS if self.mode == MODE_GROUPS else self._SORT_CYCLE_EPISODES
+            if len(cycle) <= 1:
+                return
             idx = cycle.index(self.sort_mode) if self.sort_mode in cycle else 0
             self.sort_mode = cycle[(idx + 1) % len(cycle)]
             _log("Sortierung: " + self.sort_mode)
 
-            if self.sort_mode == "az":
-                if self.mode == MODE_GROUPS:
-                    self.groups_filtered = sorted(
-                        self.groups_filtered,
-                        key=lambda g: g[0].decode("utf-8", "replace").lower()
-                    )
-                    self._show_groups()
-                else:
-                    self.cur_episodes = sorted(
-                        self.cur_episodes,
-                        key=lambda i: i["title"].decode("utf-8", "replace").lower()
-                    )
-                    self["menu_list"].setList([_episode_label(i["title"]) for i in self.cur_episodes])
-                    self["hint_green"].setText(self._next_sort_hint())
-                    self._focus_list(0)
-            else:
-                if self.mode == MODE_GROUPS:
+            if self.mode == MODE_GROUPS:
+                if self.sort_mode == "az":
+                    # A-Z: vollstaendigen Fetch mit size=500 neu starten
                     self.page = 0
                     self.all_items = []
                     self.groups = []
@@ -1905,9 +2454,16 @@ class OeMediathekScreen(Screen):
                     self["description_text"].setText(_b(""))
                     self._start_fetch()
                 else:
-                    self["menu_list"].setList([])
-                    self["description_text"].setText(_b(""))
-                    self._start_episode_fetch(self.cur_group_idx - self._sv_sn_offset())
+                    # Neueste zuerst: API-Reihenfolge, vorhandene Daten reichen
+                    self.groups = _build_groups(self.all_items, self.sort_mode)
+                    self.groups_filtered = _relevance_sort(self.groups, self.current_search)
+                    self.groups_filtered = _inject_direct_hits(self.groups_filtered, self.current_search)
+                    self._show_groups()
+            else:
+                self.ep_page = 0
+                self["menu_list"].setList([])
+                self["description_text"].setText(_b(""))
+                self._start_episode_fetch(self.cur_group_idx - self._sv_sn_offset())
         except Exception:
             _log("cycle_sort: " + _fmt_exc())
 
@@ -1918,23 +2474,49 @@ class OeMediathekScreen(Screen):
             self.toggle_favorite()
 
     def open_search(self):
+        if self.source_name == "Meine Favoriten":
+            return
         try:
             self.session.openWithCallback(
-                self.do_search, VirtualKeyBoard,
-                title="Suchen:", text="",
+                self._on_history_choice,
+                OeMediathekSearchHistoryScreen,
             )
         except Exception:
             _log("open_search: " + _fmt_exc())
 
+    def _on_history_choice(self, choice):
+        """Callback vom History-Screen: None=Abbruch, '__new__'=Tastatur, sonst direkt suchen."""
+        if choice is None:
+            return
+        if choice == "__new__":
+            try:
+                self.session.openWithCallback(
+                    self.do_search, VirtualKeyBoard,
+                    title="Suchen:", text="",
+                )
+            except Exception:
+                _log("open_search VirtualKeyBoard: " + _fmt_exc())
+        else:
+            self.do_search(choice)
+
     def do_search(self, term):
         try:
             if term is not None:
+                # Sicherstellen dass term ein str ist (kein unicode in Python 2)
+                if isinstance(term, bytes):
+                    term = term.decode("utf-8", "replace")
+                try:
+                    if isinstance(term, unicode):
+                        term = term.encode("utf-8")
+                except NameError:
+                    pass  # Python 3: unicode == str, kein encode noetig
                 term = term.strip()
                 if not term:
                     self.current_search = None
                 else:
                     self.current_search = term
-                
+                    save_search_history(term)
+
                 self.page = 0
                 self.all_items = []
                 self.groups = []

@@ -2,7 +2,9 @@
 
 Enigma2-Plugin (Python 2) zum Streamen der öffentlich-rechtlichen Mediatheken auf VU+ Receivern.
 
-Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsame Suche zur Verfügung. Folgende Sender haben zusätzlich eine eigene Mediathek-Ansicht: ARD, ZDF, Arte, 3sat, NDR, WDR, BR, MDR, HR, SWR, RBB, SR, ZDFinfo, ZDFneo, KiKA, Phoenix, Radio Bremen, funk, ARD alpha, ONE, tagesschau24, DW
+Jeder Sender hat eine eigene Mediathek-Ansicht. Über „Alle Mediatheken" sind alle deutschen öffentlich-rechtlichen Sender gemeinsam durchsuchbar. ORF (Österreich) und SRF (Schweiz) sind als eigene Kacheln verfügbar, aber nicht in „Alle Mediatheken" enthalten.
+
+Verfügbare Sender: ARD, ZDF, Arte, 3sat, NDR, WDR, BR, MDR, HR, SWR, RBB, SR, ZDFinfo, ZDFneo, KiKA, Phoenix, Radio Bremen, funk, ARD alpha, ONE, tagesschau24, DW, ORF, SRF
 
 ---
 
@@ -40,12 +42,13 @@ Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsa
 | Taste | Funktion |
 |-------|----------|
 | OK | Gruppe öffnen / Folge abspielen |
-| Rot | Zurück zur Gruppenansicht / ABC-Auswahl |
+| Rot | Zurück zur Gruppenansicht |
 | Grün | A-Z Sortierung |
-| Gelb | Suche (Bildschirmtastatur) |
+| Gelb | Suche (Suchverlauf / Bildschirmtastatur) |
 | Blau | Download (Episodenansicht) / Favoriten (Gruppenansicht) |
 | EXIT | Zurück / Filter aufheben (Sendung verpasst? / Demnächst) |
-| CH+ / CH- | Seitenweise blättern (bis zu 500 Einträge pro Abruf) |
+| CH+ / CH- | Seitenweise blättern (100 Einträge pro Seite) |
+| INFO / EPG | Episodendetails anzeigen |
 
 ### Hauptmenü
 
@@ -58,13 +61,18 @@ Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsa
 
 - **Sendung verpasst?:** Erster Eintrag in jeder Mediathek — zeigt alle Sendungen eines wählbaren Tages (bis zu 8 Tage zurück)
 - **Demnächst:** Zweiter Eintrag in jeder Mediathek — zeigt geplante Sendungen der nächsten 7 Tage
-- **Sortiermodus:** Kacheln im Hauptmenü per OK greifen und ablegen; Reihenfolge wird gespeichert und überlebt Neustarts
+- **Sortiermodus (Hauptmenü):** Kacheln per OK greifen und ablegen; Reihenfolge wird gespeichert und überlebt Neustarts; EXIT bricht ab ohne zu speichern
+- **Favoriten sortieren:** In der Favoritenliste per Rot in den Sortiermodus wechseln, Einträge per OK greifen und mit Pfeiltasten verschieben, Grün setzt die Reihenfolge zurück, EXIT bricht ab
 - **HD/SD-Auswahl:** Wenn ein Beitrag in HD und SD verfügbar ist, wird vor dem Abspielen gefragt
-- **Download:** Episoden direkt auf die Festplatte laden; läuft im Hintergrund weiter wenn der Screen per Gelb geschlossen wird
+- **Download:** Episoden direkt auf die Festplatte laden; läuft im Hintergrund weiter wenn der Screen per Gelb geschlossen wird; HLS/m3u8-Streams werden unterstützt
 - **Download-Warteschlange:** Mehrere Downloads können nacheinander gestartet werden und laufen automatisch der Reihe nach ab
 - **Download-Manager:** Zeigt laufenden Download mit Fortschritt und alle wartenden Downloads; Abbrechen einzeln oder gesamt möglich
 - **Einstellungen:** Speicherort für Downloads und Kachel-Reihenfolge zurücksetzen
 - **Favoriten:** Beiträge können als Favoriten gespeichert und über den Favoritenbereich aufgerufen werden
+- **Suchverlauf:** Die letzten 10 Suchbegriffe werden gespeichert und beim nächsten Aufruf der Suche zur Auswahl angeboten
+- **Direkte Treffer:** Bei der Suche werden Episoden, deren Titel den Suchbegriff enthält (aber deren Rubrik nicht), als „>> Direkte Treffer" ganz oben angezeigt
+- **A-Z Sortierung:** Lädt vor dem Sortieren alle verfügbaren Einträge vom Server (bis zu 1000)
+- **Aktueller Sortiermodus:** Wird dauerhaft oben rechts im Screen angezeigt
 - **Hintergrundfetch:** Inhalte werden im Hintergrund geladen, die Oberfläche bleibt bedienbar
 
 ---
@@ -75,16 +83,20 @@ Inhalte aller deutschen öffentlich-rechtlichen Sender stehen über die gemeinsa
 - Internetverbindung
 - Skin mit OSD-Auflösung 1920×1080 (FHD) oder 1280×720 (HD) – wird automatisch erkannt
 
+### Für ORF-Streams
+
+ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Systemerweiterungen > serviceapp*). Ohne ServiceApp startet der Stream nicht, das Plugin läuft aber stabil weiter. Zusätzlich ist eine **österreichische IP-Adresse** erforderlich, da ORF geo-blocked ist (z.B. über VPN). SRF-Inhalte sind ohne diese Voraussetzungen verfügbar.
+
 ---
 
 ## Installation
 
 ### Per IPK (empfohlen)
 
-Die aktuelle ZIP-Datei aus dem [Releases-Bereich](../../releases) herunterladen, entpacken und die IPK-Datei auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
+Die ZIP-Datei aus dem [Releases-Bereich](../../releases) herunterladen, entpacken und die IPK-Datei auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.3.2_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.4.0_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.

@@ -2,6 +2,7 @@
 # player.py
 # Startet einen Stream im angepassten Enigma2-Mediaplayer
 
+import os
 from enigma import eServiceReference
 
 try:
@@ -29,15 +30,30 @@ class OeStreamPlayer(MoviePlayer):
         pass
 
 
+_ORF_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+def _has_serviceapp():
+    """Prueft lautlos, ob das Systemplugin ServiceApp auf der Box installiert ist."""
+    return os.path.exists("/usr/lib/enigma2/python/Plugins/SystemPlugins/ServiceApp")
+
+
 def play_stream(session, stream_url, title="ÖR Mediathek"):
     """
-    Spielt eine m3u8-URL im eigenen, angepassten Enigma2-Player ab.
+    Spielt eine URL im eigenen, angepassten Enigma2-Player ab.
+    Nutzt standardmaessig 4097 (GStreamer). Nur bei ORF-Streams wird, 
+    falls verfuegbar, auf 5002 (exteplayer3) gewechselt.
     """
-
     if isinstance(stream_url, bytes):
         stream_url_str = stream_url.decode('utf-8', 'replace')
     else:
         stream_url_str = stream_url
+
+    # Pruefen, ob es sich um einen ORF-Stream handelt
+    is_orf = "apasfiis.sf.apa.at" in stream_url_str
+
+    # ORF-Streams benoetigen einen mobilen User-Agent
+    if is_orf and "#" not in stream_url_str:
+        stream_url_str = stream_url_str + "#User-Agent=" + _ORF_USER_AGENT
 
     if isinstance(stream_url_str, bytes):
         stream_url_bytes = stream_url_str
@@ -49,9 +65,13 @@ def play_stream(session, stream_url, title="ÖR Mediathek"):
     else:
         title_bytes = title.encode('utf-8')
 
-    # Enigma2 Service-Referenz für HLS/m3u8
-    # Typ 4097 = gstreamer / externer Player
-    ref = eServiceReference(4097, 0, stream_url_bytes)
+    # Dynamische Player-Auswahl (Weiche)
+    player_id = 4097
+    if is_orf and _has_serviceapp():
+        player_id = 5002  # exteplayer3 erzwingen, da GStreamer bei ORF-HLS oft abbricht
+
+    # Enigma2 Service-Referenz 
+    ref = eServiceReference(player_id, 0, stream_url_bytes)
     ref.setName(title_bytes)
 
     # Hier wird der erstellte Player aufgerufen
