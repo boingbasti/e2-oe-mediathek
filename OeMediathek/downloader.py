@@ -6,6 +6,7 @@ import os
 import json
 import threading
 import re
+import subprocess
 
 # Python 2/3 Kompatibilitaet
 try:
@@ -71,6 +72,73 @@ def set_save_dir(path):
     s["save_dir"] = path
     save_settings(s)
 
+def get_auto_convert():
+    return load_settings().get("auto_convert_ts", False)
+
+def set_auto_convert(enabled):
+    s = load_settings()
+    s["auto_convert_ts"] = bool(enabled)
+    save_settings(s)
+
+def write_info_txt(filepath, title, description=None, duration=None, topic=None):
+    """Schreibt eine .txt Datei mit Sendungsinfos neben die Download-Datei."""
+    try:
+        txt_path = os.path.splitext(filepath)[0] + ".txt"
+        def _dec(v):
+            if isinstance(v, bytes):
+                return v.decode("utf-8", "replace")
+            return v or ""
+        lines = []
+        t = _dec(title)
+        if t:
+            lines.append(t)
+        d = _dec(description)
+        if d:
+            lines.append(d)
+        dur = _dec(duration)
+        if dur:
+            lines.append(u"Laufzeit: " + dur)
+        top = _dec(topic)
+        if top and top.lower() != t.lower():
+            lines.append(u"Sendung: " + top)
+        if lines:
+            with open(txt_path, "w") as f:
+                f.write(u"\n\n".join(lines).encode("utf-8"))
+    except Exception:
+        pass
+
+def convert_mp4_to_ts(mp4_path, on_done=None, on_error=None):
+    """Konvertiert mp4_path verlustfrei zu .ts (ffmpeg -c copy) in einem Background-Thread."""
+    def _run():
+        ts_path = os.path.splitext(mp4_path)[0] + ".ts"
+        try:
+            cmd = ["ffmpeg", "-y", "-i", mp4_path, "-c", "copy", ts_path]
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            _out, _err = proc.communicate()
+            if proc.returncode != 0:
+                raise Exception("ffmpeg Fehler (Code %d)" % proc.returncode)
+            try:
+                os.remove(mp4_path)
+            except Exception:
+                pass
+            if on_done:
+                on_done(ts_path)
+        except Exception as e:
+            try:
+                if os.path.exists(ts_path):
+                    os.remove(ts_path)
+            except Exception:
+                pass
+            if on_error:
+                on_error(str(e))
+    t = threading.Thread(target=_run)
+    t.daemon = True
+    t.start()
+
 # --------------------------------------------------------------------------
 # Hilfsfunktionen
 # --------------------------------------------------------------------------
@@ -82,7 +150,7 @@ def _sanitize(text):
     text = text.replace(u"\xdf", "ss")
     text = text.replace(u"\xc4", "Ae").replace(u"\xd6", "Oe").replace(u"\xdc", "Ue")
     text = re.sub(r'[^\w\s\-]', '', text)
-    return text.strip().replace(" ", "_")
+    return text.strip()
 
 def _make_filename(title, url, topic=None):
     # m3u8 Playlisten werden als Enigma2-freundliche .ts Datei gespeichert
@@ -91,7 +159,7 @@ def _make_filename(title, url, topic=None):
     if topic:
         safe_topic = _sanitize(topic)
         if safe_topic and safe_topic.lower() != safe_title.lower():
-            combined = safe_topic + "_-_" + safe_title
+            combined = safe_topic + " - " + safe_title
         else:
             combined = safe_title
     else:
@@ -135,9 +203,12 @@ def format_size(size_bytes):
 class Downloader(object):
     CHUNK_SIZE = 256 * 1024
 
-    def __init__(self, url, title, topic=None, on_progress=None, on_done=None, on_error=None):
+    def __init__(self, url, title, topic=None, description=None, duration=None, on_progress=None, on_done=None, on_error=None):
         self.url         = url
         self.title       = title
+        self.description = description
+        self.duration    = duration
+        self.topic       = topic
         self.on_progress = on_progress
         self.on_done     = on_done
         self.on_error    = on_error
@@ -185,7 +256,6 @@ class Downloader(object):
                         if lines[j].strip() and not lines[j].startswith("#"):
                             sub_url = lines[j].strip()
                             break
-                    break
             if sub_url:
                 try:
                     from urlparse import urljoin
@@ -283,6 +353,7 @@ class Downloader(object):
                 if self.on_error:
                     self.on_error("Abgebrochen")
             else:
+                write_info_txt(self.filepath, self.title, self.description, self.duration, self.topic)
                 if self.on_done:
                     self.on_done(self.filepath)
 

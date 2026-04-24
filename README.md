@@ -42,13 +42,13 @@ Verfügbare Sender: ARD, ZDF, Arte, 3sat, NDR, WDR, BR, MDR, HR, SWR, RBB, SR, Z
 | Taste | Funktion |
 |-------|----------|
 | OK | Gruppe öffnen / Folge abspielen |
-| Rot | Zurück zur Gruppenansicht |
+| Rot | Zurück (Gruppenansicht) / Download (Episodenansicht) |
 | Grün | A-Z Sortierung |
 | Gelb | Suche (Suchverlauf / Bildschirmtastatur) |
-| Blau | Download (Episodenansicht) / Favoriten (Gruppenansicht) |
+| Blau | Favoriten (Gruppenansicht) / Folge als Favorit speichern (Episodenansicht) |
 | EXIT | Zurück / Filter aufheben (Sendung verpasst? / Demnächst) |
 | CH+ / CH- | Seitenweise blättern (100 Einträge pro Seite) |
-| INFO / EPG | Episodendetails anzeigen |
+| INFO / EPG | Episodendetails anzeigen / Folge markieren (*) |
 
 ### Hauptmenü
 
@@ -64,15 +64,17 @@ Verfügbare Sender: ARD, ZDF, Arte, 3sat, NDR, WDR, BR, MDR, HR, SWR, RBB, SR, Z
 - **Sortiermodus (Hauptmenü):** Kacheln per OK greifen und ablegen; Reihenfolge wird gespeichert und überlebt Neustarts; EXIT bricht ab ohne zu speichern
 - **Favoriten sortieren:** In der Favoritenliste per Rot in den Sortiermodus wechseln, Einträge per OK greifen und mit Pfeiltasten verschieben, Grün setzt die Reihenfolge zurück, EXIT bricht ab
 - **HD/SD-Auswahl:** Wenn ein Beitrag in HD und SD verfügbar ist, wird vor dem Abspielen gefragt
-- **Download:** Episoden direkt auf die Festplatte laden; läuft im Hintergrund weiter wenn der Screen per Gelb geschlossen wird; HLS/m3u8-Streams werden unterstützt
+- **Download:** Episoden direkt auf die Festplatte laden; läuft im Hintergrund weiter wenn der Screen per Gelb geschlossen wird; HLS/m3u8-Streams werden unterstützt; Dateiname ohne Unterstriche; zusätzlich wird eine Textdatei mit Sendungsinformationen erstellt
 - **Download-Warteschlange:** Mehrere Downloads können nacheinander gestartet werden und laufen automatisch der Reihe nach ab
 - **Download-Manager:** Zeigt laufenden Download mit Fortschritt und alle wartenden Downloads; Abbrechen einzeln oder gesamt möglich
-- **Einstellungen:** Speicherort für Downloads und Kachel-Reihenfolge zurücksetzen
-- **Favoriten:** Beiträge können als Favoriten gespeichert und über den Favoritenbereich aufgerufen werden
+- **Einstellungen:** Speicherort für Downloads, MP4→TS Konvertierung per ffmpeg und Kachel-Reihenfolge zurücksetzen
+- **Favoriten:** Sendungsgruppen und einzelne Folgen können als Favoriten gespeichert werden; in der Favoritenansicht kann zwischen Gruppen- und Folgenansicht gewechselt werden
+- **Markierung:** Einzelne Folgen können mit `*` markiert werden (INFO/EPG-Taste)
 - **Suchverlauf:** Die letzten 10 Suchbegriffe werden gespeichert und beim nächsten Aufruf der Suche zur Auswahl angeboten
 - **Direkte Treffer:** Bei der Suche werden Episoden, deren Titel den Suchbegriff enthält (aber deren Rubrik nicht), als „>> Direkte Treffer" ganz oben angezeigt
 - **A-Z Sortierung:** Lädt vor dem Sortieren alle verfügbaren Einträge vom Server (bis zu 1000)
 - **Aktueller Sortiermodus:** Wird dauerhaft oben rechts im Screen angezeigt
+- **Versionsanzeige:** Die aktuelle Plugin-Version wird oben rechts im Hauptmenü angezeigt
 - **Hintergrundfetch:** Inhalte werden im Hintergrund geladen, die Oberfläche bleibt bedienbar
 
 ---
@@ -96,7 +98,7 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 Die ZIP-Datei aus dem [Releases-Bereich](../../releases) herunterladen, entpacken und die IPK-Datei auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.4.0_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.5.0_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.

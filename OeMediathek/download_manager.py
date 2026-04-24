@@ -118,15 +118,19 @@ class OeMediathekDownloadManagerScreen(Screen):
 
                 # Fortschritt aus dem Downloader lesen (thread-safe: nur lesen)
                 try:
-                    dl_bytes = active._downloaded if hasattr(active, "_downloaded") else 0
-                    total    = active._total      if hasattr(active, "_total")      else 0
-                    if total > 0:
-                        pct = int(dl_bytes * 100 / total)
-                        self["progress_label"].setText(_b("%d%% von %s" % (pct, format_size(total))))
-                    elif dl_bytes > 0:
-                        self["progress_label"].setText(_b("%s heruntergeladen" % format_size(dl_bytes)))
+                    converting = getattr(active, "_converting", False)
+                    if converting:
+                        self["progress_label"].setText(_b("Konvertiere zu TS ..."))
                     else:
-                        self["progress_label"].setText(_b("Starte ..."))
+                        dl_bytes = active._downloaded if hasattr(active, "_downloaded") else 0
+                        total    = active._total      if hasattr(active, "_total")      else 0
+                        if total > 0:
+                            pct = int(dl_bytes * 100 / total)
+                            self["progress_label"].setText(_b("%d%% von %s" % (pct, format_size(total))))
+                        elif dl_bytes > 0:
+                            self["progress_label"].setText(_b("%s heruntergeladen" % format_size(dl_bytes)))
+                        else:
+                            self["progress_label"].setText(_b("Starte ..."))
                 except Exception:
                     self["progress_label"].setText(_b(""))
 
@@ -154,12 +158,14 @@ class OeMediathekDownloadManagerScreen(Screen):
 
     def _cancel_all(self):
         try:
-            import plugin as _plugin
-            _plugin._download_queue = []
+            import sys
+            _plugin = sys.modules.get("plugin")
+            if _plugin is not None:
+                _plugin._download_queue = []
+                _plugin._active_downloader = None
             active = self._get_active()
             if active:
                 active.cancel()
-            _plugin._active_downloader = None
         except Exception:
             pass
         self.close()

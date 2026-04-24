@@ -7,8 +7,10 @@ import os
 import threading
 
 LOG_FILE            = "/tmp/oemediathek.log"
-FAVORITES_FILE      = "/etc/enigma2/oemediathek_favorites.json"
-SEARCH_HISTORY_FILE = "/etc/enigma2/oemediathek_search_history.json"
+FAVORITES_FILE         = "/etc/enigma2/oemediathek_favorites.json"
+EPISODE_FAVORITES_FILE = "/etc/enigma2/oemediathek_episode_favorites.json"
+WATCHED_FILE           = "/etc/enigma2/oemediathek_watched.json"
+SEARCH_HISTORY_FILE    = "/etc/enigma2/oemediathek_search_history.json"
 SEARCH_HISTORY_MAX  = 10
 DEBUG               = False
 
@@ -120,7 +122,8 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
         total_results = int(total_results)
     except Exception:
         total_results = 0
-    _log("MVW %d Ergebnisse (gesamt: %d)" % (len(results_raw), total_results))
+    raw_count = len(results_raw)
+    _log("MVW %d Ergebnisse (gesamt: %d)" % (raw_count, total_results))
 
     # Sender die in DE nicht verfuegbar sind ausblenden (nur bei "Alle Mediatheken").
     # Hinweis: Die API hat keinen Exclude-Parameter. Wenn eine Seite viele geblockte
@@ -166,7 +169,7 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
             continue
 
         # Audiodeskriptions- und Gebaerdensprach-Fassungen ausblenden
-        if title.endswith("(Audiodeskription)") or title.endswith("(Geb\xc3\xa4rdensprache)"):
+        if title.endswith("(Audiodeskription)") or title.endswith(u"(Geb\xe4rdensprache)") or title.endswith(u"(\xd6GS)"):
             continue
 
         try:
@@ -217,7 +220,7 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
         })
 
     _log("MVW %d Sendungen verarbeitet" % len(items))
-    return items, total_results
+    return items, total_results, raw_count
 
 
 # ------------------------------------------------------------------
@@ -386,6 +389,145 @@ def is_favorite(group_bytes):
     return any(f.get("group") == group for f in _load_favorites_raw())
 
 
+def _load_watched():
+    try:
+        if os.path.exists(WATCHED_FILE):
+            with open(WATCHED_FILE, "r") as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    return set(data)
+    except Exception:
+        pass
+    return set()
+
+
+def _save_watched(watched_set):
+    try:
+        with open(WATCHED_FILE, "w") as f:
+            json.dump(list(watched_set), f, ensure_ascii=False)
+    except Exception as e:
+        _log("Watched speichern Fehler: " + str(e))
+
+
+def is_watched(url_bytes):
+    try:
+        url = url_bytes.decode("utf-8", "replace") if isinstance(url_bytes, bytes) else url_bytes
+    except Exception:
+        url = str(url_bytes)
+    return url in _load_watched()
+
+
+def toggle_watched(url_bytes):
+    try:
+        url = url_bytes.decode("utf-8", "replace") if isinstance(url_bytes, bytes) else url_bytes
+    except Exception:
+        url = str(url_bytes)
+    watched = _load_watched()
+    if url in watched:
+        watched.discard(url)
+        _log("Watched entfernt: " + url)
+    else:
+        watched.add(url)
+        _log("Watched markiert: " + url)
+    _save_watched(watched)
+
+
+_episode_favorites_cache = None
+
+
+def _load_episode_favorites():
+    global _episode_favorites_cache
+    if _episode_favorites_cache is not None:
+        return _episode_favorites_cache
+    try:
+        if os.path.exists(EPISODE_FAVORITES_FILE):
+            with open(EPISODE_FAVORITES_FILE, "r") as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    _episode_favorites_cache = data
+                    return _episode_favorites_cache
+    except Exception:
+        pass
+    _episode_favorites_cache = []
+    return _episode_favorites_cache
+
+
+def _save_episode_favorites(items):
+    global _episode_favorites_cache
+    _episode_favorites_cache = items
+    try:
+        with open(EPISODE_FAVORITES_FILE, "w") as f:
+            json.dump(items, f, ensure_ascii=False)
+    except Exception as e:
+        _log("Episode-Favoriten speichern Fehler: " + str(e))
+
+
+def _item_to_unicode(item):
+    """Konvertiert alle Bytes-Werte eines Item-Dicts zu Unicode-Strings fuer JSON."""
+    result = {}
+    for k, v in item.items():
+        if isinstance(v, bytes):
+            result[k] = v.decode("utf-8", "replace")
+        else:
+            result[k] = v
+    return result
+
+
+def _item_to_bytes(item):
+    """Konvertiert alle String-Werte eines Item-Dicts zurueck zu Bytes fuer Enigma2."""
+    _STR_FIELDS = {"title", "group", "channel", "description", "duration",
+                   "stream_url_hd", "stream_url_sd"}
+    result = {}
+    for k, v in item.items():
+        if k in _STR_FIELDS and isinstance(v, str):
+            try:
+                result[k] = v.encode("utf-8")
+            except Exception:
+                result[k] = v
+        else:
+            result[k] = v
+    return result
+
+
+def is_episode_favorite(url_bytes):
+    try:
+        url = url_bytes.decode("utf-8", "replace") if isinstance(url_bytes, bytes) else url_bytes
+    except Exception:
+        url = str(url_bytes)
+    return any(e.get("stream_url_hd") == url or e.get("stream_url_sd") == url
+               for e in _load_episode_favorites())
+
+
+def add_episode_favorite(item):
+    """item: dict mit Bytes-Werten (wie aus der API)."""
+    item_u = _item_to_unicode(item)
+    url = item_u.get("stream_url_hd") or item_u.get("stream_url_sd") or ""
+    if not url:
+        return
+    favs = _load_episode_favorites()
+    if any(e.get("stream_url_hd") == url or e.get("stream_url_sd") == url for e in favs):
+        return
+    favs.insert(0, item_u)
+    _save_episode_favorites(favs)
+    _log("Episode-Favorit hinzugefuegt: " + url)
+
+
+def remove_episode_favorite(url_bytes):
+    try:
+        url = url_bytes.decode("utf-8", "replace") if isinstance(url_bytes, bytes) else url_bytes
+    except Exception:
+        url = str(url_bytes)
+    favs = _load_episode_favorites()
+    favs = [e for e in favs if e.get("stream_url_hd") != url and e.get("stream_url_sd") != url]
+    _save_episode_favorites(favs)
+    _log("Episode-Favorit entfernt: " + url)
+
+
+def get_episode_favorites():
+    """Gibt alle Episode-Favoriten als Liste von Bytes-Item-Dicts zurueck."""
+    return [_item_to_bytes(e) for e in _load_episode_favorites()]
+
+
 def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp"):
     """
     Laedt alle Favoriten-Gruppen frisch aus der API.
@@ -393,7 +535,7 @@ def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by=
     """
     favs = _load_favorites_raw()
     if not favs:
-        return [], 0
+        return [], 0, 0
 
     results = [None] * len(favs)
 
@@ -417,7 +559,7 @@ def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by=
             # Hole gezielt bis zu 100 Folgen genau dieser Serie.
             # search_fields=["topic"] verhindert Beifang durch Trailer,
             # deren Titel den Seriennamen enthalten aber ein anderes Topic haben.
-            items, _ = _mvw_query(
+            items, _, _rc = _mvw_query(
                 channel=channel,
                 size=100,
                 offset=0,
@@ -463,7 +605,7 @@ def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by=
     # Kein Paging ueber alle Favoriten-Items — jede Gruppe hat bereits max. 100 Eintraege,
     # und die Gesamtzahl bleibt ueberschaubar. offset/size gelten nur fuer den API-Abruf
     # pro Gruppe (dort unveraendert), nicht fuer die zusammengefuehrte Ergebnisliste.
-    return all_items, len(all_items)
+    return all_items, len(all_items), len(all_items)
 
 
 # ------------------------------------------------------------------
