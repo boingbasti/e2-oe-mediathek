@@ -58,6 +58,7 @@ Verfügbare Sender: ARD, ZDF, Arte, 3sat, NDR, WDR, BR, MDR, HR, SWR, RBB, SR, Z
 | Grün | Einstellungen |
 | Gelb | Download-Manager (nur sichtbar wenn Downloads aktiv) |
 | CH+ / CH- | Zwischen Seiten wechseln |
+| Links / Rechts | Navigation innerhalb einer Zeile (per Einstellung: Seitenwechsel) |
 
 - **Sendung verpasst?:** Erster Eintrag in jeder Mediathek — zeigt alle Sendungen eines wählbaren Tages (bis zu 8 Tage zurück)
 - **Demnächst:** Zweiter Eintrag in jeder Mediathek — zeigt geplante Sendungen der nächsten 7 Tage
@@ -67,7 +68,7 @@ Verfügbare Sender: ARD, ZDF, Arte, 3sat, NDR, WDR, BR, MDR, HR, SWR, RBB, SR, Z
 - **Download:** Episoden direkt auf die Festplatte laden; läuft im Hintergrund weiter wenn der Screen per Gelb geschlossen wird; HLS/m3u8-Streams werden unterstützt; Dateiname ohne Unterstriche; zusätzlich wird eine Textdatei mit Sendungsinformationen erstellt
 - **Download-Warteschlange:** Mehrere Downloads können nacheinander gestartet werden und laufen automatisch der Reihe nach ab
 - **Download-Manager:** Zeigt laufenden Download mit Fortschritt und alle wartenden Downloads; Abbrechen einzeln oder gesamt möglich
-- **Einstellungen:** Speicherort für Downloads, MP4→TS Konvertierung per ffmpeg und Kachel-Reihenfolge zurücksetzen
+- **Einstellungen:** Speicherort für Downloads, MP4→TS Konvertierung per ffmpeg, Kachel-Reihenfolge zurücksetzen und Navigation Links/Rechts im Hauptmenü (Seitenwechsel oder Zeilenende)
 - **Favoriten:** Sendungsgruppen und einzelne Folgen können als Favoriten gespeichert werden; in der Favoritenansicht kann zwischen Gruppen- und Folgenansicht gewechselt werden
 - **Markierung:** Einzelne Folgen können mit `*` markiert werden (INFO/EPG-Taste)
 - **Suchverlauf:** Die letzten 10 Suchbegriffe werden gespeichert und beim nächsten Aufruf der Suche zur Auswahl angeboten
