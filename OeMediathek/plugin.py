@@ -74,7 +74,7 @@ from mediathek import (
     save_search_history,
 )
 from player import play_stream
-from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts
+from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr
 from download_manager import OeMediathekDownloadManagerScreen
 
 LOGO_DIR = os.path.join(os.path.dirname(__file__), "logos")
@@ -1069,28 +1069,46 @@ class OeMediathekMainScreen(Screen):
             self._refresh_page()
 
     def key_right(self):
-        new = self.selected + 1
-        if new >= len(SOURCES):
-            new = 0
-        new_page = new // TILES_PER_PAGE
-        if new_page != self.main_page:
-            self.main_page = new_page
-            self.selected = new
-            self._refresh_page()
+        tile_idx = self.selected % TILES_PER_PAGE
+        col = tile_idx % TILE_COLS
+        if col == TILE_COLS - 1:
+            if not get_tile_wrap_lr():
+                row = tile_idx // TILE_COLS
+                new = self.main_page * TILES_PER_PAGE + row * TILE_COLS
+                self._select(new)
+            else:
+                new = self.selected + 1
+                if new >= len(SOURCES):
+                    new = 0
+                new_page = new // TILES_PER_PAGE
+                self.main_page = new_page
+                self.selected = new
+                self._refresh_page()
         else:
-            self._select(new)
+            new = self.selected + 1
+            if new < len(SOURCES):
+                self._select(new)
 
     def key_left(self):
-        new = self.selected - 1
-        if new < 0:
-            new = len(SOURCES) - 1
-        new_page = new // TILES_PER_PAGE
-        if new_page != self.main_page:
-            self.main_page = new_page
-            self.selected = new
-            self._refresh_page()
+        tile_idx = self.selected % TILES_PER_PAGE
+        col = tile_idx % TILE_COLS
+        if col == 0:
+            if not get_tile_wrap_lr():
+                row = tile_idx // TILE_COLS
+                new = self.main_page * TILES_PER_PAGE + row * TILE_COLS + (TILE_COLS - 1)
+                if new >= len(SOURCES):
+                    new = len(SOURCES) - 1
+                self._select(new)
+            else:
+                new = self.selected - 1
+                if new < 0:
+                    new = len(SOURCES) - 1
+                new_page = new // TILES_PER_PAGE
+                self.main_page = new_page
+                self.selected = new
+                self._refresh_page()
         else:
-            self._select(new)
+            self._select(self.selected - 1)
 
     def key_down(self):
         tile_idx = self.selected % TILES_PER_PAGE
@@ -2306,6 +2324,12 @@ class OeMediathekScreen(Screen):
                 entries.append(gname)
         return entries
 
+    def _list_len(self):
+        if self.mode == MODE_EPISODES:
+            return len(self.cur_episodes)
+        # SV/SN-Sondereinträge sind in der MenuList, aber nicht in groups_filtered
+        return len(self.groups_filtered) + (self._sv_sn_offset() if not self.current_search else 0)
+
     def on_up(self):
         if self._ep_fav_sort_mode and self._ep_fav_grabbed is not None:
             self._ep_fav_move(-1)
@@ -2313,7 +2337,13 @@ class OeMediathekScreen(Screen):
             self._fav_move(-1)
         else:
             try:
-                self["menu_list"].up()
+                idx = self["menu_list"].getSelectedIndex()
+                if idx == 0:
+                    last = self._list_len() - 1
+                    if last > 0:
+                        self["menu_list"].instance.moveSelectionTo(last)
+                else:
+                    self["menu_list"].up()
             except Exception:
                 pass
 
@@ -2324,7 +2354,12 @@ class OeMediathekScreen(Screen):
             self._fav_move(1)
         else:
             try:
-                self["menu_list"].down()
+                idx = self["menu_list"].getSelectedIndex()
+                n = self._list_len()
+                if n > 0 and idx >= n - 1:
+                    self["menu_list"].instance.moveSelectionTo(0)
+                else:
+                    self["menu_list"].down()
             except Exception:
                 pass
 
@@ -3221,75 +3256,122 @@ class OeMediathekDirBrowser(Screen):
 # --------------------------------------------------------------------------
 
 class OeMediathekSettingsScreen(Screen):
+
+    # Einträge: (label_text, action_id, status_fn_or_None)
+    # action_id: 0=Browse, 1=ToggleConvert, 2=ResetOrder, 3=ToggleWrapLR
+    _ENTRIES = [
+        ("Download-Ordner",               0, None),
+        ("MP4 -> TS Konvertierung:",       1, get_auto_convert),
+        ("Seite wechseln mit Links/Rechts:", 3, get_tile_wrap_lr),
+        ("Reihenfolge zur\xc3\xbccksetzen", 2, None),
+    ]
+
+    # Layout-Konstanten je Auflösung: (x, y_first_row, row_h, font_title, font_row, font_hint, w, h, status_w)
     if IS_FHD:
-        skin = """
-        <screen name="OeMediathekSettingsScreen" position="560,300" size="800,460" flags="wfNoBorder">
-            <eLabel position="0,0" size="800,460" backgroundColor="#33000000" zPosition="-6" />
-            <widget name="title_label" position="40,30" size="720,60" font="Regular;42" halign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <eLabel position="40,100" size="720,2" backgroundColor="#44FFFFFF" zPosition="-4" />
-            <widget name="menu_list" position="40,115" size="720,280" font="Regular;34" scrollbarMode="showNever" itemHeight="56" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="40,405" size="720,2" backgroundColor="#44FFFFFF" zPosition="-4" />
-            <widget name="hint_label" position="40,415" size="720,40" font="Regular;28" halign="center" foregroundColor="#AAAAAA" transparent="1" />
-        </screen>"""
+        _L = (40, 115, 56, 42, 34, 28, 800, 516, 120)
     else:
-        skin = """
-        <screen name="OeMediathekSettingsScreen" position="373,200" size="534,307" flags="wfNoBorder">
-            <eLabel position="0,0" size="534,307" backgroundColor="#33000000" zPosition="-6" />
-            <widget name="title_label" position="27,20" size="480,40" font="Regular;28" halign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <eLabel position="27,67" size="480,1" backgroundColor="#44FFFFFF" zPosition="-4" />
-            <widget name="menu_list" position="27,76" size="480,187" font="Regular;22" scrollbarMode="showNever" itemHeight="37" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="27,270" size="480,1" backgroundColor="#44FFFFFF" zPosition="-4" />
-            <widget name="hint_label" position="27,277" size="480,27" font="Regular;19" halign="center" foregroundColor="#AAAAAA" transparent="1" />
-        </screen>"""
+        _L = (27,  76, 37, 28, 22, 19, 534, 344,  80)
+
+    @classmethod
+    def _make_skin(cls):
+        x, y0, rh, ft, fr, fh, w, h, sw = cls._L
+        iw = w - 2 * x        # innere Breite
+        lw = iw - sw - 10     # Label-Breite (links)
+        n  = len(cls._ENTRIES)
+        list_h = n * rh
+        y_line1 = y0 - 5
+        y_hint  = y0 + list_h + 10
+        y_line2 = y_hint - 5
+        total_h = y_hint + fh + 15
+
+        rows = ""
+        for i in range(n):
+            ry = y0 + i * rh
+            rows += """
+            <widget name="sel_{i}"   position="{x},{ry}"  size="{iw},{rh}" backgroundColor="#1A0066FF" zPosition="-3" />
+            <widget name="lbl_{i}"   position="{x},{ry}"  size="{lw},{rh}" font="Regular;{fr}" valign="center" foregroundColor="#FFFFFF" transparent="1" />
+            <widget name="stat_{i}"  position="{sx},{ry}" size="{sw},{rh}" font="Regular;{fr}" valign="center" halign="right" foregroundColor="#FFDD00" transparent="1" />
+            """.format(i=i, x=x, ry=ry, iw=iw, rh=rh, lw=lw, sx=x+lw+10, sw=sw, fr=fr)
+
+        return """
+        <screen name="OeMediathekSettingsScreen" position="{px},{py}" size="{w},{total_h}" flags="wfNoBorder">
+            <eLabel position="0,0" size="{w},{total_h}" backgroundColor="#33000000" zPosition="-6" />
+            <widget name="title_label" position="{x},10" size="{iw},{ft_h}" font="Regular;{ft}" halign="center" foregroundColor="#FFFFFF" transparent="1" />
+            <eLabel position="{x},{y_line1}" size="{iw},2" backgroundColor="#44FFFFFF" zPosition="-4" />
+            {rows}
+            <eLabel position="{x},{y_line2}" size="{iw},2" backgroundColor="#44FFFFFF" zPosition="-4" />
+            <widget name="hint_label" position="{x},{y_hint}" size="{iw},{fh}" font="Regular;{fh_size}" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+        </screen>""".format(
+            px=(1920 - w) // 2 if IS_FHD else (1280 - w) // 2,
+            py=(1080 - total_h) // 2 if IS_FHD else (720 - total_h) // 2,
+            w=w, total_h=total_h, x=x, iw=iw,
+            ft=ft, ft_h=ft + 10,
+            y_line1=y_line1, y_line2=y_line2,
+            rows=rows,
+            y_hint=y_hint, fh=fh + 4, fh_size=fh,
+        )
 
     def __init__(self, session):
+        self.skin = self._make_skin()
         Screen.__init__(self, session)
+        self._sel = 0
+
         self["title_label"] = Label(_b("Einstellungen"))
-        self["menu_list"]   = MenuList([])
         self["hint_label"]  = Label(_b("OK = Ausw\xc3\xa4hlen   |   EXIT = Schlie\xc3\x9fen"))
+
+        for i, (label, _, _fn) in enumerate(self._ENTRIES):
+            self["lbl_%d"  % i] = Label(_b(label))
+            self["stat_%d" % i] = Label(_b(""))
+            self["sel_%d"  % i] = Label(_b(""))
+            self["sel_%d"  % i].hide()
 
         self["actions"] = ActionMap(
             ["OkCancelActions", "DirectionActions"],
             {
                 "ok":     self._on_ok,
                 "cancel": self.close,
-                "up":     self["menu_list"].up,
-                "down":   self["menu_list"].down,
+                "up":     self._move_up,
+                "down":   self._move_down,
             },
             -1,
         )
-        self.onShow.append(self._refresh_menu)
+        self.onShow.append(self._refresh)
 
-    def _build_entries(self):
-        convert_status = "EIN" if get_auto_convert() else "AUS"
-        return [
-            (_b("Download-Ordner"),                                     0),
-            (_b("MP4 -> TS Konvertierung:  [" + convert_status + "]"),  1),
-            (_b("Reihenfolge zur\xc3\xbccksetzen"),                     2),
-        ]
+    def _refresh(self):
+        for i, (_label, _aid, fn) in enumerate(self._ENTRIES):
+            if fn is not None:
+                self["stat_%d" % i].setText(_b("[EIN]" if fn() else "[AUS]"))
+            else:
+                self["stat_%d" % i].setText(_b(""))
+        self._update_highlight()
 
-    def _refresh_menu(self):
-        try:
-            cur = self["menu_list"].getCurrent()
-            cur_idx = cur[1] if cur else 0
-        except Exception:
-            cur_idx = 0
-        self["menu_list"].setList(self._build_entries())
-        try:
-            self["menu_list"].moveToIndex(cur_idx)
-        except Exception:
-            pass
+    def _update_highlight(self):
+        for i in range(len(self._ENTRIES)):
+            try:
+                if i == self._sel:
+                    self["sel_%d" % i].show()
+                else:
+                    self["sel_%d" % i].hide()
+            except Exception:
+                pass
+
+    def _move_up(self):
+        self._sel = (self._sel - 1) % len(self._ENTRIES)
+        self._update_highlight()
+
+    def _move_down(self):
+        self._sel = (self._sel + 1) % len(self._ENTRIES)
+        self._update_highlight()
 
     def _on_ok(self):
-        cur = self["menu_list"].getCurrent()
-        if cur is None:
-            return
-        idx = cur[1]
-        if idx == 0:
+        _, action_id, _ = self._ENTRIES[self._sel]
+        if action_id == 0:
             self._browse()
-        elif idx == 1:
+        elif action_id == 1:
             self._toggle_convert()
-        elif idx == 2:
+        elif action_id == 3:
+            self._toggle_tile_wrap_lr()
+        elif action_id == 2:
             self._reset_order()
 
     def _browse(self):
@@ -3315,7 +3397,11 @@ class OeMediathekSettingsScreen(Screen):
 
     def _toggle_convert(self):
         set_auto_convert(not get_auto_convert())
-        self._refresh_menu()
+        self._refresh()
+
+    def _toggle_tile_wrap_lr(self):
+        set_tile_wrap_lr(not get_tile_wrap_lr())
+        self._refresh()
 
     def _reset_order(self):
         try:

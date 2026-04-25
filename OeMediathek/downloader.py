@@ -80,6 +80,14 @@ def set_auto_convert(enabled):
     s["auto_convert_ts"] = bool(enabled)
     save_settings(s)
 
+def get_tile_wrap_lr():
+    return load_settings().get("tile_wrap_lr", True)
+
+def set_tile_wrap_lr(enabled):
+    s = load_settings()
+    s["tile_wrap_lr"] = bool(enabled)
+    save_settings(s)
+
 def write_info_txt(filepath, title, description=None, duration=None, topic=None):
     """Schreibt eine .txt Datei mit Sendungsinfos neben die Download-Datei."""
     try:
