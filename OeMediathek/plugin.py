@@ -1328,16 +1328,16 @@ class OeMediathekScreen(Screen):
             <eLabel position="773,90" size="477,524" backgroundColor="#33000000" zPosition="-5" />
             <widget name="description_text" position="790,103" size="443,504" font="Regular;22" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
             <eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5" />
-            <eLabel position="43,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2" />
-            <widget name="hint_red" position="51,634" size="220,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="293,649" size="5,30" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_green" position="301,634" size="190,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="513,649" size="5,30" backgroundColor="#1AAAAA00" zPosition="2" />
-            <widget name="hint_yellow" position="521,634" size="190,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="733,649" size="5,30" backgroundColor="#1A0044DD" zPosition="2" />
-            <widget name="hint_blue" position="741,634" size="175,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_info" position="930,634" size="150,60" font="Regular;17" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_page" position="1080,634" size="170,60" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2" />
+            <widget name="hint_red" position="42,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="300,649" size="5,30" backgroundColor="#1A00AA00" zPosition="2" />
+            <widget name="hint_green" position="309,634" size="200,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="539,649" size="5,30" backgroundColor="#1AAAAA00" zPosition="2" />
+            <widget name="hint_yellow" position="548,634" size="195,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="772,649" size="5,30" backgroundColor="#1A0044DD" zPosition="2" />
+            <widget name="hint_blue" position="781,634" size="161,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_info" position="978,634" size="147,60" font="Regular;17" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_page" position="1132,634" size="118,60" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
         </screen>
             """
 
@@ -2096,6 +2096,7 @@ class OeMediathekScreen(Screen):
 
             desc = item.get("description", b"")
             dur  = item.get("duration", b"")
+            dl_topic = item.get("group") or self.cur_group_name if self.cur_group_name.startswith(b">> Direkte Treffer") else self.cur_group_name
 
             # Läuft bereits ein Download → in Queue einreihen
             if _active_downloader is not None:
@@ -2104,7 +2105,7 @@ class OeMediathekScreen(Screen):
                     _download_queue.append({
                         "title":       item["title"],
                         "url":         url,
-                        "topic":       self.cur_group_name,
+                        "topic":       dl_topic,
                         "description": desc,
                         "duration":    dur,
                     })
@@ -2117,7 +2118,7 @@ class OeMediathekScreen(Screen):
                     _download_queue.append({
                         "title":       item["title"],
                         "url":         url,
-                        "topic":       self.cur_group_name,
+                        "topic":       dl_topic,
                         "description": desc,
                         "duration":    dur,
                     })
@@ -2126,7 +2127,7 @@ class OeMediathekScreen(Screen):
                     return
 
             # Kein laufender Download → Screen öffnen
-            self.session.open(OeMediathekDownloadScreen, item["title"], url, topic=self.cur_group_name, description=desc, duration=dur)
+            self.session.open(OeMediathekDownloadScreen, item["title"], url, topic=dl_topic, description=desc, duration=dur)
         except Exception:
             _log("on_download Fehler: " + _fmt_exc())
 
