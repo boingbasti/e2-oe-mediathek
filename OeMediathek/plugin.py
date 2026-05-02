@@ -124,10 +124,198 @@ def _b(val):
         return str(val)
 
 
+LIVE_EVENT_GROUPS = [
+    # (Gruppenname, [(Anzeigename, Stream-URL), ...])
+    ("Arte Concert", [
+        ("Arte Concert",              "https://arteconcerthls.akamaized.net/hls/live/2025494/channel01/master.m3u8"),
+    ]),
+    ("ARD / Sportschau", [
+        ("ARD Event 1 (weltweit)",    "https://ardevent1.akamaized.net/hls/live/681511/wdr_msl4_ardevent1/master.m3u8"),
+        ("ARD Event 2 (DE)",          "https://ardevent2.akamaized.net/hls/live/681512/wdr_msl4_ardevent2/master.m3u8"),
+        ("Sportschau Event 1",        "http://sportschau-event.ard-mcdn.de/sportschau/event01/hls/de/master.m3u8"),
+        ("Sportschau Event 2",        "http://sportschau-event.ard-mcdn.de/sportschau/event02/hls/de/master.m3u8"),
+        ("Sportschau Event 3",        "http://sportschau-event.ard-mcdn.de/sportschau/event03/hls/de/master.m3u8"),
+        ("Sportschau Event 4",        "http://sportschau-event.ard-mcdn.de/sportschau/event04/hls/de/master.m3u8"),
+        ("Sportschau Event 5",        "http://sportschau-event.ard-mcdn.de/sportschau/event05/hls/de/master.m3u8"),
+        ("Sportschau Event 6",        "http://sportschau-event.ard-mcdn.de/sportschau/event06/hls/de/master.m3u8"),
+        ("Sportschau Event 7",        "http://sportschau-event.ard-mcdn.de/sportschau/event07/hls/de/master.m3u8"),
+        ("Sportschau Event 8",        "http://sportschau-event.ard-mcdn.de/sportschau/event08/hls/de/master.m3u8"),
+        ("Sportschau Event 9",        "http://sportschau-event.ard-mcdn.de/sportschau/event09/hls/de/master.m3u8"),
+        ("Sportschau Event 10",       "http://sportschau-event.ard-mcdn.de/sportschau/event10/hls/de/master.m3u8"),
+        ("Sportschau Event 11",       "http://sportschau-event.ard-mcdn.de/sportschau/event11/hls/de/master.m3u8"),
+        ("Sportschau Event 12",       "http://sportschau-event.ard-mcdn.de/sportschau/event12/hls/de/master.m3u8"),
+        ("Sportschau Event 13",       "http://sportschau-event.ard-mcdn.de/sportschau/event13/hls/de/master.m3u8"),
+        ("Sportschau Event 13+",      "http://sportschau-event.ard-mcdn.de/sportschau/event13-ma/hls/de/master.m3u8"),
+    ]),
+    ("WDR Spezial", [
+        ("WDR Spezial 1",             "https://wdrspezial.akamaized.net/hls/live/2012020/wdr_spezial1/index.m3u8"),
+        ("WDR Spezial 2",             "https://wdrspezial.akamaized.net/hls/live/2012067/wdr_spezial2/index.m3u8"),
+        ("WDR Spezial 3",             "https://wdrspezial.akamaized.net/hls/live/2012068/wdr_spezial3/index.m3u8"),
+        ("WDR Spezial 4",             "https://wdrspezial.akamaized.net/hls/live/2012069/wdr_spezial4/index.m3u8"),
+        ("WDR Spezial 5",             "https://wdrspezial.akamaized.net/hls/live/2012070/wdr_spezial5/index.m3u8"),
+        ("WDR Spezial 6",             "https://wdrspezial.akamaized.net/hls/live/2013621/wdr_spezial6/index.m3u8"),
+        ("WDR Spezial 7",             "https://wdrspezial.akamaized.net/hls/live/2013622/wdr_spezial7/index.m3u8"),
+    ]),
+    ("ZDF sportstudio", [
+        ("ZDF sportstudio 1",         "https://zdf-hls-01.akamaized.net/hls/live/2016296/de/veryhigh/master.m3u8"),
+        ("ZDF sportstudio 2",         "https://zdf-hls-02.akamaized.net/hls/live/2016297/de/veryhigh/master.m3u8"),
+        ("ZDF sportstudio 3",         "https://zdf-hls-03.akamaized.net/hls/live/2016298/de/veryhigh/master.m3u8"),
+        ("ZDF sportstudio 4",         "https://zdf-hls-04.akamaized.net/hls/live/2016299/de/veryhigh/master.m3u8"),
+        ("ZDF sportstudio 5",         "https://zdf-hls-05.akamaized.net/hls/live/2016300/de/veryhigh/master.m3u8"),
+        ("ZDF sportstudio 6",         "https://zdf-hls-06.akamaized.net/hls/live/2016301/de/veryhigh/master.m3u8"),
+        ("ZDF sportstudio 7",         "https://zdf-hls-07.akamaized.net/hls/live/2016302/de/high/master.m3u8"),
+        ("ZDF sportstudio 8",         "https://zdf-hls-08.akamaized.net/hls/live/2016303/de/high/master.m3u8"),
+        ("ZDF sportstudio 9",         "https://zdf-hls-09.akamaized.net/hls/live/2016304/de/high/master.m3u8"),
+        ("ZDF sportstudio 10",        "https://zdf-hls-10.akamaized.net/hls/live/2016305/de/high/master.m3u8"),
+        ("ZDF sportstudio 11",        "https://zdf-hls-11.akamaized.net/hls/live/2016436/de/high/master.m3u8"),
+        ("ZDF sportstudio 12",        "https://zdf-hls-12.akamaized.net/hls/live/2016495/de/high/master.m3u8"),
+        ("ZDF sportstudio 13",        "https://zdf-hls-13.akamaized.net/hls/live/2016496/de/high/master.m3u8"),
+        ("ZDF sportstudio 14",        "https://zdf-hls-14.akamaized.net/hls/live/2016497/de/high/master.m3u8"),
+        ("ZDF sportstudio 15",        "https://zdf-hls-15.akamaized.net/hls/live/2016498/de/high/master.m3u8"),
+        ("ZDF sportstudio 16",        "https://zdf-hls-16.akamaized.net/hls/live/2016499/de/high/master.m3u8"),
+        ("ZDF sportstudio 17",        "https://zdf-hls-17.akamaized.net/hls/live/2016500/de/high/master.m3u8"),
+        ("ZDF sportstudio 19",        "https://zdf-hls-19.akamaized.net/hls/live/2016502/de/high/master.m3u8"),
+        ("ZDF sportstudio 20",        "https://zdf-hls-20.akamaized.net/hls/live/2016503/de/high/master.m3u8"),
+        ("ZDF sportstudio 21",        "https://zdf-hls-21.akamaized.net/hls/live/2016504/de/high/master.m3u8"),
+        ("ZDF sportstudio 22",        "https://zdf-hls-22.akamaized.net/hls/live/2016505/de/high/master.m3u8"),
+        ("ZDF sportstudio 23",        "https://zdf-hls-23.akamaized.net/hls/live/2016506/de/high/master.m3u8"),
+    ]),
+    ("HR Event", [
+        ("HR Event 1",                "http://hr-event.ard-mcdn.de/sportschau/event01/hls/de/master.m3u8"),
+        ("HR Event 2",                "http://hr-event.ard-mcdn.de/sportschau/event02/hls/de/master.m3u8"),
+        ("HR Event 3",                "http://hr-event.ard-mcdn.de/sportschau/event03/hls/de/master.m3u8"),
+        ("HR Event 4",                "http://hr-event.ard-mcdn.de/sportschau/event04/hls/de/master.m3u8"),
+        ("HR Event 5",                "http://hr-event.ard-mcdn.de/sportschau/event05/hls/de/master.m3u8"),
+        ("HR Event 6",                "http://hr-event.ard-mcdn.de/sportschau/event06/hls/de/master.m3u8"),
+        ("HR Event 7",                "http://hr-event.ard-mcdn.de/sportschau/event07/hls/de/master.m3u8"),
+        ("HR Event 8",                "http://hr-event.ard-mcdn.de/sportschau/event08/hls/de/master.m3u8"),
+        ("HR Event 9",                "http://hr-event.ard-mcdn.de/sportschau/event09/hls/de/master.m3u8"),
+        ("HR Event 10",               "http://hr-event.ard-mcdn.de/sportschau/event10/hls/de/master.m3u8"),
+        ("HR Event 11",               "http://hr-event.ard-mcdn.de/sportschau/event11/hls/de/master.m3u8"),
+        ("HR Event 12",               "http://hr-event.ard-mcdn.de/sportschau/event12/hls/de/master.m3u8"),
+        ("HR Event 13",               "http://hr-event.ard-mcdn.de/sportschau/event13/hls/de/master.m3u8"),
+    ]),
+    ("MDR Event", [
+        ("MDR Event 1",               "http://mdr-event.ard-mcdn.de/sportschau/event01/hls/de/master.m3u8"),
+        ("MDR Event 2",               "http://mdr-event.ard-mcdn.de/sportschau/event02/hls/de/master.m3u8"),
+        ("MDR Event 3",               "http://mdr-event.ard-mcdn.de/sportschau/event03/hls/de/master.m3u8"),
+        ("MDR Event 4",               "http://mdr-event.ard-mcdn.de/sportschau/event04/hls/de/master.m3u8"),
+        ("MDR Event 5",               "http://mdr-event.ard-mcdn.de/sportschau/event05/hls/de/master.m3u8"),
+        ("MDR Event 6",               "http://mdr-event.ard-mcdn.de/sportschau/event06/hls/de/master.m3u8"),
+        ("MDR Event 7",               "http://mdr-event.ard-mcdn.de/sportschau/event07/hls/de/master.m3u8"),
+        ("MDR Event 8",               "http://mdr-event.ard-mcdn.de/sportschau/event08/hls/de/master.m3u8"),
+        ("MDR Event 9",               "http://mdr-event.ard-mcdn.de/sportschau/event09/hls/de/master.m3u8"),
+        ("MDR Event 10",              "http://mdr-event.ard-mcdn.de/sportschau/event10/hls/de/master.m3u8"),
+        ("MDR Event 11",              "http://mdr-event.ard-mcdn.de/sportschau/event11/hls/de/master.m3u8"),
+        ("MDR Event 12",              "http://mdr-event.ard-mcdn.de/sportschau/event12/hls/de/master.m3u8"),
+        ("MDR Event 13",              "http://mdr-event.ard-mcdn.de/sportschau/event13/hls/de/master.m3u8"),
+    ]),
+    ("BR Event", [
+        ("BR Event 1",                "https://brevent.akamaized.net/hls/live/2004894/br_event_01/master.m3u8"),
+        ("BR Event 2",                "https://brevent.akamaized.net/hls/live/2004895/br_event_02/master.m3u8"),
+        ("BR Event 3",                "https://brevent.akamaized.net/hls/live/2004896/br_event_03/master.m3u8"),
+        ("BR Event 4",                "https://brevent.akamaized.net/hls/live/2004897/br_event_04/master.m3u8"),
+    ]),
+    ("SWR Event", [
+        ("SWR Event 1",               "https://swrevent01hls.akamaized.net/hls/live/2023986/swrevent01/master.m3u8"),
+        ("SWR Event 2",               "https://swrevent02hls.akamaized.net/hls/live/2023987/swrevent02/master.m3u8"),
+        ("SWR Event 3",               "https://swrevent03hls.akamaized.net/hls/live/2023988/swrevent03/master.m3u8"),
+        ("SWR Event 4",               "https://swrevent04hls.akamaized.net/hls/live/2023989/swrevent04/master.m3u8"),
+    ]),
+    ("RBB Event", [
+        ("RBB Event 1",               "https://rbbevent01-hls.akamaized.net/hls/live/2032067/rbbevent01/master.m3u8"),
+        ("RBB Event 2",               "https://rbbevent02-hls.akamaized.net/hls/live/2032068/rbbevent02/master.m3u8"),
+    ]),
+    ("Radio Bremen", [
+        ("Radio Bremen Event 1",      "https://rbhlsevent1.akamaized.net/hls/live/2031942/rbhlsevent1/master.m3u8"),
+        ("Radio Bremen Event 2",      "https://rbhlsevent2.akamaized.net/hls/live/2031943/rbhlsevent2/master.m3u8"),
+    ]),
+]
+
+LIVE_STREAM_GROUPS = [
+    # (Gruppenname, [(Anzeigename, URL), ...]) — alphabetisch nach Gruppenname
+    ("3sat", [
+        ("3sat",                      "https://zdf-hls-18.akamaized.net/hls/live/2016501/dach/high/master.m3u8"),
+    ]),
+    ("ARD Das Erste", [
+        ("Das Erste (DE)",            "http://daserste-live.ard-mcdn.de/daserste/live/hls/de/master.m3u8"),
+        ("Das Erste (International)", "http://daserste-live.ard-mcdn.de/daserste/live/hls/int/master.m3u8"),
+    ]),
+    ("ARD alpha", [
+        ("ARD alpha (DE)",            "http://mcdn.br.de/br/fs/ard_alpha/hls/de/master.m3u8"),
+        ("ARD alpha (International)", "http://mcdn.br.de/br/fs/ard_alpha/hls/int/master.m3u8"),
+    ]),
+    ("Arte", [
+        ("Arte (Deutsch)",            "https://arteliveext.akamaized.net/hls/live/2030993/artelive_de/index.m3u8"),
+        ("Arte (Fran\xc3\xa7ais)",   "https://artesimulcast.akamaized.net/hls/live/2031003/artelive_fr/index.m3u8"),
+    ]),
+    ("BR", [
+        ("BR S\xc3\xbcd (DE)",       "http://mcdn.br.de/br/fs/bfs_sued/hls/de/master.m3u8"),
+        ("BR S\xc3\xbcd (International)", "http://mcdn.br.de/br/fs/bfs_sued/hls/int/master.m3u8"),
+        ("BR Nord",                   "http://mcdn.br.de/br/fs/bfs_nord/hls/de/master.m3u8"),
+    ]),
+    ("DW", [
+        ("DW",                        "https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8"),
+    ]),
+    ("HR", [
+        ("HR",                        "http://hr-live.ard-mcdn.de/hr/live/hls/de/master.m3u8"),
+    ]),
+    ("KiKA", [
+        ("KiKA",                      "http://kika-live.ard-mcdn.de/kika/live/hls/de/master.m3u8"),
+    ]),
+    ("MDR", [
+        ("MDR",                       "http://mdr-live.ard-mcdn.de/mdr/live/hls/de/master.m3u8"),
+    ]),
+    ("NDR", [
+        ("NDR Niedersachsen",         "http://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_nds/master.m3u8"),
+        ("NDR Hamburg",               "http://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_hh/master.m3u8"),
+        ("NDR Mecklenburg-Vorpommern","http://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_mv/master.m3u8"),
+        ("NDR Schleswig-Holstein",    "http://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_sh/master.m3u8"),
+    ]),
+    ("ONE", [
+        ("ONE",                       "http://mcdn-one.ard.de/ardone/hls/master.m3u8"),
+    ]),
+    ("PHOENIX", [
+        ("PHOENIX",                   "https://zdf-hls-19.akamaized.net/hls/live/2016502/de/high/master.m3u8"),
+    ]),
+    ("RBB", [
+        ("RBB Berlin",                "http://rbb-live.ard-mcdn.de/rbb/berlin/hls/de/master.m3u8"),
+        ("RBB Brandenburg",           "http://rbb-live.ard-mcdn.de/rbb/brandenburg/hls/de/master.m3u8"),
+    ]),
+    ("Radio Bremen TV", [
+        ("Radio Bremen TV",           "https://rbhlslive.akamaized.net/hls/live/2020435/rbfs/master.m3u8"),
+    ]),
+    ("SR", [
+        ("SR",                        "http://sr-live.ard-mcdn.de/sr/live/hls/de/master.m3u8"),
+    ]),
+    ("SWR", [
+        ("SWR",                       "http://mcdn.swr.de/swr/swrbwd/master.m3u8"),
+    ]),
+    ("WDR", [
+        ("WDR",                       "http://wdr-live.ard-mcdn.de/wdr/live/hls/de/master.m3u8"),
+    ]),
+    ("ZDF", [
+        ("ZDF",                       "https://zdf-hls-15.akamaized.net/hls/live/2016498/de/high/master.m3u8"),
+    ]),
+    ("ZDFinfo", [
+        ("ZDFinfo",                   "https://zdf-hls-17.akamaized.net/hls/live/2016500/de/high/master.m3u8"),
+    ]),
+    ("ZDFneo", [
+        ("ZDFneo",                    "https://zdf-hls-16.akamaized.net/hls/live/2016499/de/high/master.m3u8"),
+    ]),
+    ("tagesschau24", [
+        ("tagesschau24",              "http://tagesschau-live.ard-mcdn.de/tagesschau/live/hls/de/master.m3u8"),
+    ]),
+]
+
+_LIVESTREAMS = "livestreams"  # Sentinel fuer SOURCES-Weiche
+
 SOURCES = [
     # Seite 1
     ("Meine Favoriten",  get_favorites,          "favorites.png"),
     ("Alle Mediatheken", get_all_highlights,     "alle.png"),
+    ("Live-Streams",     _LIVESTREAMS,           "live_streams.png"),
+    ("Live-Events",      None,                   "live_events.png"),
     ("ARD Mediathek",    get_ard_highlights,     "ard.png"),
     ("ZDF Mediathek",    get_zdf_highlights,     "zdf.png"),
     ("Arte",             get_arte_highlights,    "arte.png"),
@@ -1147,7 +1335,12 @@ class OeMediathekMainScreen(Screen):
         try:
             name, loader, _ = SOURCES[self.selected]
             _log("Oeffne: " + name)
-            self.session.open(OeMediathekScreen, name, loader)
+            if loader is None:
+                self.session.open(OeMediathekLiveScreen)
+            elif loader is _LIVESTREAMS:
+                self.session.open(OeMediathekLivestreamScreen)
+            else:
+                self.session.open(OeMediathekScreen, name, loader)
         except Exception:
             _log("on_ok: " + _fmt_exc())
 
@@ -1277,6 +1470,322 @@ class OeMediathekSearchHistoryScreen(Screen):
         self.close(None)
 
     def doClose(self):
+        try:
+            Screen.doClose(self)
+        except TypeError:
+            pass
+
+
+# ------------------------------------------------------------------
+# Live-Event-Screen  (gruppierte Stream-Liste mit Status-Check)
+# ------------------------------------------------------------------
+
+def _is_checkable(url):
+    return True
+
+
+def _check_stream_status(url, callback):
+    def worker():
+        code = 0
+        try:
+            try:
+                from urllib2 import urlopen, Request, HTTPError
+            except ImportError:
+                from urllib.request import urlopen, Request
+                from urllib.error import HTTPError
+            req = Request(url)
+            req.add_header("User-Agent", "Mozilla/5.0")
+            try:
+                resp = urlopen(req, timeout=5)
+                code = resp.getcode()
+                try:
+                    resp.close()
+                except Exception:
+                    pass
+            except HTTPError as e:
+                code = e.code
+        except Exception:
+            code = 0
+        try:
+            from twisted.internet import reactor
+            reactor.callFromThread(callback, code)
+        except Exception:
+            pass
+    t = threading.Thread(target=worker)
+    t.daemon = True
+    t.start()
+
+
+# ------------------------------------------------------------------
+# Live-Streams-Screen  (flache Liste aller Sender-Livestreams)
+# ------------------------------------------------------------------
+class OeMediathekLivestreamScreen(Screen):
+
+    @staticmethod
+    def _make_skin():
+        if IS_FHD:
+            return """
+        <screen name="OeMediathekLivestreamScreen" position="0,0" size="1920,1080" flags="wfNoBorder">
+            <eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6" />
+            <eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
+            <widget name="status_label" position="910,30" size="920,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
+            <eLabel position="30,140" size="1100,780" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="menu_list" position="40,150" size="1080,760" font="Regular;34" scrollbarMode="showOnDemand" itemHeight="58" backgroundColor="#33000000" transparent="1" />
+            <eLabel position="1160,140" size="730,780" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="description_text" position="1190,160" size="670,740" font="Regular;34" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
+            <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
+            <eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2" />
+            <widget name="hint_red" position="68,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_page" position="1698,960" size="172,100" font="Regular;32" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
+        </screen>
+            """
+        else:
+            return """
+        <screen name="OeMediathekLivestreamScreen" position="0,0" size="1280,720" flags="wfNoBorder">
+            <eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6" />
+            <eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
+            <widget name="status_label" position="610,20" size="610,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
+            <eLabel position="30,90" size="733,524" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="menu_list" position="36,97" size="720,510" font="Regular;22" scrollbarMode="showOnDemand" itemHeight="38" backgroundColor="#33000000" transparent="1" />
+            <eLabel position="773,90" size="477,524" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="description_text" position="790,103" size="443,504" font="Regular;22" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
+            <eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5" />
+            <eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2" />
+            <widget name="hint_red" position="42,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_page" position="1132,634" size="118,60" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
+        </screen>
+            """
+
+    def __init__(self, session, streams=None, title=None):
+        self.skin = self._make_skin()
+        Screen.__init__(self, session)
+        self.session  = session
+        self._streams = streams  # None = Gruppenauswahl, Liste = Streamauswahl
+        self.last_index = -1
+
+        if streams is None:
+            items        = [_b(g[0]) for g in LIVE_STREAM_GROUPS]
+            status_text  = str(len(LIVE_STREAM_GROUPS)) + " Sender"
+            title_text   = "Live-Streams"
+        else:
+            items        = [_b(name) for name, _ in streams]
+            status_text  = str(len(streams)) + (" Stream" if len(streams) == 1 else " Streams")
+            title_text   = title or "Live-Streams"
+
+        self["title_label"]      = Label(_b(title_text))
+        self["status_label"]     = Label(_b(status_text))
+        self["menu_list"]        = MenuList(items)
+        self["description_text"] = Label(_b(""))
+        self["hint_red"]         = Label(_b("Zur\xc3\xbcck"))
+        self["hint_page"]        = Label(_b(""))
+
+        self["actions"] = ActionMap(
+            ["OkCancelActions", "ColorActions"],
+            {
+                "ok":     self.key_ok,
+                "cancel": self.key_cancel,
+                "red":    self.key_cancel,
+            },
+            -1,
+        )
+
+        self._desc_timer = eTimer()
+        self._desc_timer.callback.append(self._update_desc)
+        self._desc_timer.start(250, False)
+
+        self.onClose.append(self.__stop_timers)
+
+    def __stop_timers(self):
+        try:
+            self._desc_timer.stop()
+        except Exception:
+            pass
+
+    def _update_desc(self):
+        idx = self["menu_list"].getSelectedIndex()
+        if idx is None or idx == self.last_index:
+            return
+        self.last_index = idx
+        if self._streams is None:
+            if idx >= len(LIVE_STREAM_GROUPS):
+                return
+            group_name, streams = LIVE_STREAM_GROUPS[idx]
+            count = len(streams)
+            self["description_text"].setText(_b(
+                group_name + "\n\n" +
+                str(count) + (" Stream" if count == 1 else " Streams")
+            ))
+        else:
+            if idx >= len(self._streams):
+                return
+            name, url = self._streams[idx]
+            self["description_text"].setText(_b(name + "\n\n" + url))
+
+    def key_ok(self):
+        idx = self["menu_list"].getSelectedIndex()
+        if idx is None:
+            return
+        if self._streams is None:
+            if idx >= len(LIVE_STREAM_GROUPS):
+                return
+            group_name, streams = LIVE_STREAM_GROUPS[idx]
+            self.session.open(OeMediathekLivestreamScreen, streams, group_name)
+        else:
+            if idx >= len(self._streams):
+                return
+            name, url = self._streams[idx]
+            _log("Livestream: " + name)
+            play_stream(self.session, url, name)
+
+    def key_cancel(self):
+        self.close()
+
+    def doClose(self):
+        self.__stop_timers()
+        try:
+            Screen.doClose(self)
+        except TypeError:
+            pass
+
+
+class OeMediathekLiveScreen(Screen):
+
+    _SKIN_FHD = """
+        <screen name="OeMediathekLiveScreen" position="0,0" size="1920,1080" flags="wfNoBorder">
+            <eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6" />
+            <eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="title_label" position="50,30" size="1810,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
+            <eLabel position="30,130" size="1100,810" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="menu_list" position="40,140" size="1080,790" font="Regular;34" scrollbarMode="showOnDemand" itemHeight="58" foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" />
+            <eLabel position="1160,130" size="730,810" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="info_text" position="1190,150" size="670,780" font="Regular;30" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
+            <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
+            <eLabel position="50,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2" />
+            <widget name="hint_ok"   position="68,960"  size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_exit" position="468,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+        </screen>
+    """
+    _SKIN_HD = """
+        <screen name="OeMediathekLiveScreen" position="0,0" size="1280,720" flags="wfNoBorder">
+            <eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6" />
+            <eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="title_label" position="43,20" size="1177,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
+            <eLabel position="30,83" size="733,540" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="menu_list" position="36,90" size="720,524" font="Regular;22" scrollbarMode="showOnDemand" itemHeight="38" foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" />
+            <eLabel position="773,83" size="477,540" backgroundColor="#33000000" zPosition="-5" />
+            <widget name="info_text" position="790,93" size="443,504" font="Regular;20" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
+            <eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5" />
+            <eLabel position="33,649" size="5,30" backgroundColor="#1A00AA00" zPosition="2" />
+            <widget name="hint_ok"   position="42,634"  size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_exit" position="290,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+        </screen>
+    """
+
+    def __init__(self, session, streams=None, title=None):
+        self.skin = self._SKIN_FHD if IS_FHD else self._SKIN_HD
+        Screen.__init__(self, session)
+        self.session = session
+        self._streams = streams  # None = Gruppenauswahl, Liste = Streamauswahl
+        self._status  = {}       # idx -> HTTP-Code oder "checking"
+        self._closed  = False
+
+        if streams is None:
+            items   = [g[0] for g in LIVE_EVENT_GROUPS]
+            hint_ok = "OK = \xc3\x96ffnen"
+            label   = "Live-Events"
+        else:
+            items   = [name for name, _ in streams]
+            hint_ok = "OK = Abspielen"
+            label   = title or "Live-Events"
+
+        self["title_label"] = Label(_b(label))
+        self["hint_ok"]     = Label(_b(hint_ok))
+        self["hint_exit"]   = Label(_b("EXIT = Zur\xc3\xbcck"))
+        self["info_text"]   = Label(_b(""))
+        self["menu_list"]   = MenuList([_b(i) for i in items])
+
+        self["actions"] = ActionMap(
+            ["OkCancelActions"],
+            {"ok": self.key_ok, "cancel": self.key_cancel},
+            -1,
+        )
+        self["menu_list"].onSelectionChanged.append(self._on_selection_changed)
+        self._on_selection_changed()
+
+    def _start_check(self, idx, url):
+        def on_result(code):
+            if self._closed:
+                return
+            self._status[idx] = code
+            try:
+                if self["menu_list"].getSelectedIndex() == idx:
+                    self._on_selection_changed()
+            except Exception:
+                pass
+        _check_stream_status(url, on_result)
+
+    def _on_selection_changed(self):
+        idx = self["menu_list"].getSelectedIndex()
+        if idx is None:
+            self["info_text"].setText(_b(""))
+            return
+        if self._streams is None:
+            if idx >= len(LIVE_EVENT_GROUPS):
+                return
+            group_name, streams = LIVE_EVENT_GROUPS[idx]
+            count = len(streams)
+            self["info_text"].setText(_b(
+                group_name + "\n\n" +
+                str(count) + (" Stream" if count == 1 else " Streams")
+            ))
+        else:
+            if idx >= len(self._streams):
+                return
+            name, url = self._streams[idx]
+            if _is_checkable(url):
+                if idx not in self._status:
+                    self._status[idx] = "checking"
+                    self._start_check(idx, url)
+                code = self._status[idx]
+                if code == "checking":
+                    status_line = "Status: pr\xc3\xbcfe..."
+                elif code == 200:
+                    status_line = "URL erreichbar"
+                elif code == 403:
+                    status_line = "kein Event"
+                elif code == 0:
+                    status_line = "nicht erreichbar"
+                else:
+                    status_line = "HTTP " + str(code)
+            else:
+                status_line = "Status: nicht pr\xc3\xbcfbar"
+            self["info_text"].setText(_b(
+                name + "\n\n" + status_line + "\n\n" + url
+            ))
+
+    def key_ok(self):
+        idx = self["menu_list"].getSelectedIndex()
+        if idx is None:
+            return
+        if self._streams is None:
+            if idx >= len(LIVE_EVENT_GROUPS):
+                return
+            group_name, streams = LIVE_EVENT_GROUPS[idx]
+            self.session.open(OeMediathekLiveScreen, streams, group_name)
+        else:
+            if idx >= len(self._streams):
+                return
+            name, url = self._streams[idx]
+            _log("Live-Event: " + name)
+            play_stream(self.session, url, name)
+
+    def key_cancel(self):
+        self.close()
+
+    def doClose(self):
+        self._closed = True
         try:
             Screen.doClose(self)
         except TypeError:

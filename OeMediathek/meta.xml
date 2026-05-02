@@ -2,7 +2,7 @@
 <plugin>
     <name>ÖR Mediathek</name>
     <description>Streamt alle öffentlich-rechtlichen Mediatheken (ARD, ZDF, Arte, 3sat u.v.m.)</description>
-    <version>1.5.2</version>
+    <version>1.6.0</version>
     <author>BomBasti</author>
     <category>Video</category>
     <icon>plugin.png</icon>

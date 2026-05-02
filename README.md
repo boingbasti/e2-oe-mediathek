@@ -6,6 +6,10 @@ Jeder Sender hat eine eigene Mediathek-Ansicht. Über „Alle Mediatheken" sind 
 
 Verfügbare Sender: ARD, ZDF, Arte, 3sat, NDR, WDR, BR, MDR, HR, SWR, RBB, SR, ZDFinfo, ZDFneo, KiKA, Phoenix, Radio Bremen, funk, ARD alpha, ONE, tagesschau24, DW, ORF, SRF
 
+Zusätzlich gibt es zwei neue Kacheln:
+- **Live-Streams:** Direktlinks zu den Sender-Livestreams (21 Sender, gruppiert mit regionalen und internationalen Varianten)
+- **Live-Events:** Event-Streams der öffentlich-rechtlichen Sender für Sport und Konzerte (ARD, ZDF, WDR, HR, MDR, BR, SWR, RBB, Radio Bremen, Arte Concert) mit Live-Status-Anzeige
+
 ---
 
 ## Screenshots
@@ -36,6 +40,18 @@ Verfügbare Sender: ARD, ZDF, Arte, 3sat, NDR, WDR, BR, MDR, HR, SWR, RBB, SR, Z
 ---
 
 ## Funktionen
+
+### Live-Streams / Live-Events
+
+| Taste | Funktion |
+|-------|----------|
+| OK | Gruppe öffnen / Stream abspielen |
+| Rot / EXIT | Zurück |
+
+- **Live-Streams:** Zeigt alle Sender gruppiert. Gruppen mit mehreren Varianten (z.B. NDR mit vier Länderfenstern, BR mit Nord/Süd/International) öffnen eine zweite Ebene. Die URL des gewählten Streams wird im rechten Panel angezeigt.
+- **Live-Events:** Zeigt Event-Stream-Gruppen. Pro Stream wird der Live-Status per HTTP-Check angezeigt (200 = erreichbar, 403 = kein aktives Event). Arte Concert sendet dauerhaft.
+
+---
 
 ### Inhalts-Screen
 
@@ -99,7 +115,7 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 Die ZIP-Datei aus dem [Releases-Bereich](../../releases) herunterladen, entpacken und die IPK-Datei auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.5.2_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.6.0_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.
