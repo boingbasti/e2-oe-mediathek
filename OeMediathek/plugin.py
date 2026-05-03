@@ -74,11 +74,12 @@ from mediathek import (
     save_search_history,
 )
 from player import play_stream
-from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr
+from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure
 from download_manager import OeMediathekDownloadManagerScreen
 
 LOGO_DIR = os.path.join(os.path.dirname(__file__), "logos")
-LOG_FILE = "/tmp/oemediathek.log"
+_TMP_DIR = "/tmp/OeMediathek"
+LOG_FILE = _TMP_DIR + "/oemediathek.log"
 PAGE_SIZE = 100
 DEBUG = False
 
@@ -108,6 +109,8 @@ def _log(msg):
     line = "[OeMediathek] " + str(msg)
     print(line)
     try:
+        if not os.path.isdir(_TMP_DIR):
+            os.makedirs(_TMP_DIR)
         with open(LOG_FILE, "a") as f:
             f.write(line + "\n")
     except Exception:
@@ -1582,11 +1585,13 @@ class OeMediathekLivestreamScreen(Screen):
         self["hint_page"]        = Label(_b(""))
 
         self["actions"] = ActionMap(
-            ["OkCancelActions", "ColorActions"],
+            ["OkCancelActions", "ColorActions", "DirectionActions"],
             {
                 "ok":     self.key_ok,
                 "cancel": self.key_cancel,
                 "red":    self.key_cancel,
+                "up":     self.key_up,
+                "down":   self.key_down,
             },
             -1,
         )
@@ -1600,6 +1605,28 @@ class OeMediathekLivestreamScreen(Screen):
     def __stop_timers(self):
         try:
             self._desc_timer.stop()
+        except Exception:
+            pass
+
+    def key_up(self):
+        try:
+            idx = self["menu_list"].getSelectedIndex()
+            n = len(LIVE_STREAM_GROUPS) if self._streams is None else len(self._streams)
+            if idx == 0:
+                self["menu_list"].instance.moveSelectionTo(n - 1)
+            else:
+                self["menu_list"].up()
+        except Exception:
+            pass
+
+    def key_down(self):
+        try:
+            idx = self["menu_list"].getSelectedIndex()
+            n = len(LIVE_STREAM_GROUPS) if self._streams is None else len(self._streams)
+            if n > 0 and idx >= n - 1:
+                self["menu_list"].instance.moveSelectionTo(0)
+            else:
+                self["menu_list"].down()
         except Exception:
             pass
 
@@ -1637,7 +1664,7 @@ class OeMediathekLivestreamScreen(Screen):
                 return
             name, url = self._streams[idx]
             _log("Livestream: " + name)
-            play_stream(self.session, url, name)
+            play_stream(self.session, url, name, is_live=True, autoconfigure_serviceapp=get_serviceapp_autoconfigure())
 
     def key_cancel(self):
         self.close()
@@ -1707,8 +1734,13 @@ class OeMediathekLiveScreen(Screen):
         self["menu_list"]   = MenuList([_b(i) for i in items])
 
         self["actions"] = ActionMap(
-            ["OkCancelActions"],
-            {"ok": self.key_ok, "cancel": self.key_cancel},
+            ["OkCancelActions", "DirectionActions"],
+            {
+                "ok":     self.key_ok,
+                "cancel": self.key_cancel,
+                "up":     self.key_up,
+                "down":   self.key_down,
+            },
             -1,
         )
         self["menu_list"].onSelectionChanged.append(self._on_selection_changed)
@@ -1765,6 +1797,28 @@ class OeMediathekLiveScreen(Screen):
                 name + "\n\n" + status_line + "\n\n" + url
             ))
 
+    def key_up(self):
+        try:
+            idx = self["menu_list"].getSelectedIndex()
+            n = len(LIVE_EVENT_GROUPS) if self._streams is None else len(self._streams)
+            if idx == 0:
+                self["menu_list"].instance.moveSelectionTo(n - 1)
+            else:
+                self["menu_list"].up()
+        except Exception:
+            pass
+
+    def key_down(self):
+        try:
+            idx = self["menu_list"].getSelectedIndex()
+            n = len(LIVE_EVENT_GROUPS) if self._streams is None else len(self._streams)
+            if n > 0 and idx >= n - 1:
+                self["menu_list"].instance.moveSelectionTo(0)
+            else:
+                self["menu_list"].down()
+        except Exception:
+            pass
+
     def key_ok(self):
         idx = self["menu_list"].getSelectedIndex()
         if idx is None:
@@ -1779,7 +1833,7 @@ class OeMediathekLiveScreen(Screen):
                 return
             name, url = self._streams[idx]
             _log("Live-Event: " + name)
-            play_stream(self.session, url, name)
+            play_stream(self.session, url, name, is_live=True, autoconfigure_serviceapp=get_serviceapp_autoconfigure())
 
     def key_cancel(self):
         self.close()
@@ -3773,6 +3827,7 @@ class OeMediathekSettingsScreen(Screen):
         ("Download-Ordner",               0, None),
         ("MP4 -> TS Konvertierung:",       1, get_auto_convert),
         ("Seite wechseln mit Links/Rechts:", 3, get_tile_wrap_lr),
+        ("ServiceApp f\xc3\xbcr Live-Streams konfigurieren:", 4, get_serviceapp_autoconfigure),
         ("Reihenfolge zur\xc3\xbccksetzen", 2, None),
     ]
 
@@ -3881,6 +3936,8 @@ class OeMediathekSettingsScreen(Screen):
             self._toggle_convert()
         elif action_id == 3:
             self._toggle_tile_wrap_lr()
+        elif action_id == 4:
+            self._toggle_serviceapp_autoconfigure()
         elif action_id == 2:
             self._reset_order()
 
@@ -3911,6 +3968,10 @@ class OeMediathekSettingsScreen(Screen):
 
     def _toggle_tile_wrap_lr(self):
         set_tile_wrap_lr(not get_tile_wrap_lr())
+        self._refresh()
+
+    def _toggle_serviceapp_autoconfigure(self):
+        set_serviceapp_autoconfigure(not get_serviceapp_autoconfigure())
         self._refresh()
 
     def _reset_order(self):

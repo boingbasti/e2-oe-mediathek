@@ -88,6 +88,14 @@ def set_tile_wrap_lr(enabled):
     s["tile_wrap_lr"] = bool(enabled)
     save_settings(s)
 
+def get_serviceapp_autoconfigure():
+    return load_settings().get("serviceapp_autoconfigure", True)
+
+def set_serviceapp_autoconfigure(enabled):
+    s = load_settings()
+    s["serviceapp_autoconfigure"] = bool(enabled)
+    save_settings(s)
+
 def write_info_txt(filepath, title, description=None, duration=None, topic=None):
     """Schreibt eine .txt Datei mit Sendungsinfos neben die Download-Datei."""
     try:
