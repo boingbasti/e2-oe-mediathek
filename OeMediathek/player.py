@@ -53,33 +53,107 @@ def _has_serviceapp():
     return os.path.exists("/usr/lib/enigma2/python/Plugins/SystemPlugins/ServiceApp")
 
 
+def _has_new_exteplayer3():
+    """exteplayer3 >= v181 (feedplus) bringt eigene Libs in /usr/lib/exteplayer3_deps/."""
+    return os.path.isdir("/usr/lib/exteplayer3_deps")
+
+
 def _configure_serviceapp_for_live():
-    """Setzt serviceapp-Einstellungen fuer synchrone HLS-Live-Streams (einmalig)."""
+    """Setzt serviceapp-Einstellungen fuer synchrone HLS-Live-Streams.
+    Bei exteplayer3 >= v181 wird aac_swdecoding nicht gesetzt (inkompatibel mit
+    altem serviceapp.so: generiert '-a' ohne Wert, v181 erwartet '-a 0|1|2|3').
+    """
     try:
         from Components.config import config
-        key = "serviceexteplayer3"
-        opts  = config.plugins.serviceapp.options[key]
-        ext3  = config.plugins.serviceapp.exteplayer3[key]
+        from Plugins.SystemPlugins.ServiceApp.serviceapp_client import (
+            setExtEplayer3Settings, setServiceAppSettings, OPTIONS_SERVICEEXTEPLAYER3
+        )
+        key  = "serviceexteplayer3"
+        opts = config.plugins.serviceapp.options[key]
+        ext3 = config.plugins.serviceapp.exteplayer3[key]
         changed = False
-        if not opts.hls_explorer.value:
-            opts.hls_explorer.value = True;   opts.hls_explorer.save();   changed = True
-        if opts.autoselect_stream.value:
-            opts.autoselect_stream.value = False; opts.autoselect_stream.save(); changed = True
-        if not ext3.aac_swdecoding.value:
-            ext3.aac_swdecoding.value = True; ext3.aac_swdecoding.save(); changed = True
+
         if not ext3.downmix.value:
-            ext3.downmix.value = True;        ext3.downmix.save();        changed = True
+            ext3.downmix.value = True; ext3.downmix.save(); changed = True
+
+        if _has_new_exteplayer3():
+            # v181+: exteplayer3's ffmpeg parst Master-Playlist inkl. EXT-X-MEDIA selbst.
+            # HLS-Explorer deaktivieren damit serviceapp die URL unveraendert durchreicht.
+            if opts.hls_explorer.value:
+                opts.hls_explorer.value = False; opts.hls_explorer.save(); changed = True
+        else:
+            # Alte exteplayer3: HLS-Explorer an, autoselect aus (kein ABR-Stutter), AAC SW-Decode an.
+            if not opts.hls_explorer.value:
+                opts.hls_explorer.value = True;  opts.hls_explorer.save(); changed = True
+            if opts.autoselect_stream.value:
+                opts.autoselect_stream.value = False; opts.autoselect_stream.save(); changed = True
+            if not ext3.aac_swdecoding.value:
+                ext3.aac_swdecoding.value = True; ext3.aac_swdecoding.save(); changed = True
+
+        # Bei v181 aac_swdecoding=False erzwingen: altes serviceapp.so wuerde sonst
+        # '-a' ohne Wert generieren (Boolean-Flag statt 0|1|2|3) -> exteplayer3 v181 haengt.
+        aac_sw = False if _has_new_exteplayer3() else ext3.aac_swdecoding.value
+        setExtEplayer3Settings(
+            OPTIONS_SERVICEEXTEPLAYER3,
+            aac_sw,
+            ext3.dts_swdecoding.value,
+            ext3.wma_swdecoding.value,
+            ext3.lpcm_injecion.value,
+            ext3.downmix.value
+        )
+        setServiceAppSettings(
+            OPTIONS_SERVICEEXTEPLAYER3,
+            opts.hls_explorer.value,
+            opts.autoselect_stream.value,
+            opts.connection_speed_kb.value,
+            opts.autoturnon_subtitles.value
+        )
         return changed
     except Exception:
         return False
 
 
+def _serve_playlist_via_http(content):
+    """Startet einen einmaligen localhost-HTTP-Server und gibt die URL zurueck."""
+    try:
+        import threading
+        import socket
+        try:
+            from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+        except ImportError:
+            from http.server import HTTPServer, BaseHTTPRequestHandler
+
+        data = content.encode('utf-8') if isinstance(content, str) else content
+
+        class _Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/vnd.apple.mpegurl')
+                self.end_headers()
+                self.wfile.write(data)
+            def log_message(self, *args):
+                pass
+
+        server = HTTPServer(('127.0.0.1', 0), _Handler)
+        port = server.server_address[1]
+
+        t = threading.Thread(target=lambda: (server.handle_request(), server.server_close()))
+        t.daemon = True
+        t.start()
+
+        return 'http://127.0.0.1:%d/live.m3u8' % port
+    except Exception:
+        return None
+
+
 def _build_single_quality_playlist(master_url):
     """
-    Laedt die HLS-Master-Playlist, waehlt die beste Variante und schreibt eine
-    modifizierte Playlist nach /tmp/, die nur diese eine Variante enthaelt
+    Laedt die HLS-Master-Playlist, waehlt die beste Variante und gibt eine
+    modifizierte Playlist zurueck, die nur diese eine Variante enthaelt
     (kein ABR-Wechsel) aber alle Audio-Tracks behaelt.
-    Gibt 'file:///tmp/...' zurueck, oder master_url bei Fehler.
+    Bei exteplayer3 >= v181 wird die Playlist per localhost-HTTP bereitgestellt,
+    da file:// nicht unterstuetzt wird. Sonst wird sie nach /tmp/ geschrieben.
+    Gibt master_url zurueck bei Fehler.
     """
     try:
         req = _Request(master_url)
@@ -88,8 +162,7 @@ def _build_single_quality_playlist(master_url):
         content = resp.read().decode('utf-8', 'replace')
         lines = content.splitlines()
 
-        # Beste Variante (hoechste Bandbreite) finden
-        best_bw        = -1
+        best_bw         = -1
         best_stream_inf = None
         best_variant    = None
 
@@ -112,12 +185,10 @@ def _build_single_quality_playlist(master_url):
         if not best_variant:
             return master_url
 
-        # Neue Playlist: Header + alle EXT-X-MEDIA + beste Variante
         out = ['#EXTM3U', '#EXT-X-VERSION:4', '#EXT-X-INDEPENDENT-SEGMENTS', '']
 
         for line in lines:
             if line.startswith('#EXT-X-MEDIA'):
-                # Relative URI="..." auf absolute URL umschreiben
                 line = re.sub(
                     r'URI="([^"]+)"',
                     lambda m: 'URI="' + _urljoin(master_url, m.group(1)) + '"',
@@ -130,12 +201,19 @@ def _build_single_quality_playlist(master_url):
         out.append(best_variant)
         out.append('')
 
-        if not os.path.isdir(_TMP_DIR):
-            os.makedirs(_TMP_DIR)
-        with open(_TMP_PLAYLIST, 'w') as f:
-            f.write('\n'.join(out))
+        playlist = '\n'.join(out)
 
-        return 'file://' + _TMP_PLAYLIST
+        if _has_new_exteplayer3():
+            # v181: file:// funktioniert nicht, stattdessen localhost HTTP
+            http_url = _serve_playlist_via_http(playlist)
+            if http_url:
+                return http_url
+        else:
+            if not os.path.isdir(_TMP_DIR):
+                os.makedirs(_TMP_DIR)
+            with open(_TMP_PLAYLIST, 'w') as f:
+                f.write(playlist)
+            return 'file://' + _TMP_PLAYLIST
 
     except Exception:
         pass
