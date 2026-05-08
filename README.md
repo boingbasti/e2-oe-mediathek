@@ -16,11 +16,11 @@ Zusätzlich gibt es zwei neue Kacheln:
 
 <table>
   <tr>
-    <td><img src="screenshots/Hauptseite1.jpg" width="400"/><br/>Hauptmenü</td>
-    <td><img src="screenshots/Hauptseite2.jpg" width="400"/><br/>Hauptmenü (weitere Sender)</td>
+    <td><img src="screenshots/Hauptseite_1.jpg" width="400"/><br/>Hauptmenü</td>
+    <td><img src="screenshots/Hauptseite_2.jpg" width="400"/><br/>Hauptmenü (weitere Sender)</td>
   </tr>
   <tr>
-    <td><img src="screenshots/Hauptseite3.jpg" width="400"/><br/>Hauptmenü (Seite 3)</td>
+    <td><img src="screenshots/Hauptseite_3.jpg" width="400"/><br/>Hauptmenü (Seite 3)</td>
     <td><img src="screenshots/Alle%20Mediatheken.jpg" width="400"/><br/>Alle Mediatheken</td>
   </tr>
   <tr>
