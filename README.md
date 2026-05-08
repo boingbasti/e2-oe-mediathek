@@ -16,24 +16,20 @@ Zusätzlich gibt es zwei neue Kacheln:
 
 <table>
   <tr>
-    <td><img src="screenshots/HauptScreen1.jpg" width="400"/><br/>Hauptmenü</td>
-    <td><img src="screenshots/HauptScreen2.jpg" width="400"/><br/>Hauptmenü (weitere Sender)</td>
+    <td><img src="screenshots/Hauptseite1.jpg" width="400"/><br/>Hauptmenü</td>
+    <td><img src="screenshots/Hauptseite2.jpg" width="400"/><br/>Hauptmenü (weitere Sender)</td>
   </tr>
   <tr>
-    <td><img src="screenshots/AlleMediatheken.jpg" width="400"/><br/>Alle Mediatheken</td>
-    <td><img src="screenshots/SenderMediathek-offen.jpg" width="400"/><br/>Sender-Mediathek geöffnet</td>
+    <td><img src="screenshots/Hauptseite3.jpg" width="400"/><br/>Hauptmenü (Seite 3)</td>
+    <td><img src="screenshots/Alle%20Mediatheken.jpg" width="400"/><br/>Alle Mediatheken</td>
   </tr>
   <tr>
-    <td><img src="screenshots/Serie-Folgenübersicht.jpg" width="400"/><br/>Serien-Folgenübersicht</td>
-    <td><img src="screenshots/ABC-Auswahl.jpg" width="400"/><br/>A-Z Sortierung</td>
+    <td><img src="screenshots/Mediathek.jpg" width="400"/><br/>Sender-Mediathek</td>
+    <td><img src="screenshots/Serie%20%C3%9Cbersicht.jpg" width="400"/><br/>Serien-Folgenübersicht</td>
   </tr>
   <tr>
-    <td><img src="screenshots/Suche.jpg" width="400"/><br/>Suche</td>
     <td><img src="screenshots/Favoriten.jpg" width="400"/><br/>Favoriten</td>
-  </tr>
-  <tr>
-    <td><img src="screenshots/Stream-Aktiv.jpg" width="400"/><br/>Stream aktiv</td>
-    <td></td>
+    <td><img src="screenshots/Einstellungen.jpg" width="400"/><br/>Einstellungen</td>
   </tr>
 </table>
 
@@ -115,7 +111,7 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 Die ZIP-Datei aus dem [Releases-Bereich](../../releases) herunterladen, entpacken und die IPK-Datei auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.6.2_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.6.3_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.
