@@ -130,7 +130,12 @@ def _b(val):
 LIVE_EVENT_GROUPS = [
     # (Gruppenname, [(Anzeigename, Stream-URL), ...])
     ("Arte Concert", [
-        ("Arte Concert",              "https://arteconcerthls.akamaized.net/hls/live/2025494/channel01/master.m3u8"),
+        ("Arte Concert 1",            "https://arteconcerthls.akamaized.net/hls/live/2025494/channel01/master.m3u8"),
+        ("Arte Concert 2",            "https://arteconcerthls.akamaized.net/hls/live/2025495/channel02/master.m3u8"),
+        ("Arte Concert 3",            "https://arteconcerthls.akamaized.net/hls/live/2025496/channel03/master.m3u8"),
+        ("Arte Concert 4",            "https://arteconcerthls.akamaized.net/hls/live/2025497/channel04/master.m3u8"),
+        ("Arte Concert 5",            "https://arteconcerthls.akamaized.net/hls/live/2025498/channel05/master.m3u8"),
+        ("Arte Concert 6",            "https://arteconcerthls.akamaized.net/hls/live/2025499/channel06/master.m3u8"),
     ]),
     ("ARD / Sportschau", [
         ("ARD Event 1 (weltweit)",    "https://ardevent1.akamaized.net/hls/live/681511/wdr_msl4_ardevent1/master.m3u8"),
@@ -158,6 +163,15 @@ LIVE_EVENT_GROUPS = [
         ("WDR Spezial 5",             "https://wdrspezial.akamaized.net/hls/live/2012070/wdr_spezial5/index.m3u8"),
         ("WDR Spezial 6",             "https://wdrspezial.akamaized.net/hls/live/2013621/wdr_spezial6/index.m3u8"),
         ("WDR Spezial 7",             "https://wdrspezial.akamaized.net/hls/live/2013622/wdr_spezial7/index.m3u8"),
+    ]),
+    ("WDR Event", [
+        ("WDR Event 3",               "https://wdrevent.akamaized.net/hls/live/2016698/wdr_msl4_wdrevent3/master.m3u8"),
+        ("WDR Event 4",               "https://wdrevent.akamaized.net/hls/live/2016699/wdr_msl4_wdrevent4/master.m3u8"),
+        ("WDR Event 5",               "https://wdrevent.akamaized.net/hls/live/2016700/wdr_msl4_wdrevent5/master.m3u8"),
+        ("WDR Event 7",               "https://wdrevent.akamaized.net/hls/live/2020357/wdr_msl4_wdrevent7/master.m3u8"),
+        ("WDR Event 8",               "https://wdrevent.akamaized.net/hls/live/2020358/wdr_msl4_wdrevent8/master.m3u8"),
+        ("WDR Event 9",               "https://wdrevent.akamaized.net/hls/live/2020359/wdr_msl4_wdrevent9/master.m3u8"),
+        ("WDR Event 10",              "https://wdrevent.akamaized.net/hls/live/2020360/wdr_msl4_wdrevent10/master.m3u8"),
     ]),
     ("ZDF sportstudio", [
         ("ZDF sportstudio 1",         "https://zdf-hls-01.akamaized.net/hls/live/2016296/de/veryhigh/master.m3u8"),
@@ -213,25 +227,33 @@ LIVE_EVENT_GROUPS = [
         ("MDR Event 12",              "http://mdr-event.ard-mcdn.de/sportschau/event12/hls/de/master.m3u8"),
         ("MDR Event 13",              "http://mdr-event.ard-mcdn.de/sportschau/event13/hls/de/master.m3u8"),
     ]),
+    ("MDR Event (weltweit)", [
+        ("MDR Event 1 (weltweit)",    "https://mdrevent1wwhls.akamaized.net/hls/live/2025205/mdrevent1ww/master.m3u8"),
+        ("MDR Event 2 (weltweit)",    "https://mdrevent2wwhls.akamaized.net/hls/live/2025367/mdrevent2ww/master.m3u8"),
+        ("MDR Event 3 (weltweit)",    "https://mdrevent3wwhls.akamaized.net/hls/live/2025368/mdrevent3ww/master.m3u8"),
+        ("MDR Event 4 (weltweit)",    "https://mdrevent4wwhls.akamaized.net/hls/live/2025369/mdrevent4ww/master.m3u8"),
+        ("MDR Event 5 (weltweit)",    "https://mdrevent5wwhls.akamaized.net/hls/live/2025370/mdrevent5ww/master.m3u8"),
+    ]),
     ("BR Event", [
-        ("BR Event 1",                "https://brevent.akamaized.net/hls/live/2004894/br_event_01/master.m3u8"),
-        ("BR Event 2",                "https://brevent.akamaized.net/hls/live/2004895/br_event_02/master.m3u8"),
-        ("BR Event 3",                "https://brevent.akamaized.net/hls/live/2004896/br_event_03/master.m3u8"),
-        ("BR Event 4",                "https://brevent.akamaized.net/hls/live/2004897/br_event_04/master.m3u8"),
+        ("BR Event 1",                "https://brevent.akamaized.net/hls/live/2028218/event_01/master.m3u8"),
+        ("BR Event 2",                "https://brevent.akamaized.net/hls/live/2028219/event_02/master.m3u8"),
+        ("BR Event 3",                "https://brevent.akamaized.net/hls/live/2028220/event_03/master.m3u8"),
+        ("BR Event 4",                "https://brevent.akamaized.net/hls/live/2028221/event_04/master.m3u8"),
+        ("BR Event 5",                "https://brevent.akamaized.net/hls/live/2028222/event_05/master.m3u8"),
     ]),
     ("SWR Event", [
-        ("SWR Event 1",               "https://swrevent01hls.akamaized.net/hls/live/2023986/swrevent01/master.m3u8"),
-        ("SWR Event 2",               "https://swrevent02hls.akamaized.net/hls/live/2023987/swrevent02/master.m3u8"),
-        ("SWR Event 3",               "https://swrevent03hls.akamaized.net/hls/live/2023988/swrevent03/master.m3u8"),
-        ("SWR Event 4",               "https://swrevent04hls.akamaized.net/hls/live/2023989/swrevent04/master.m3u8"),
+        ("SWR Event 1",               "https://swrevent01hls.akamaized.net/hls/live/2016766/event01/master.m3u8"),
+        ("SWR Event 2",               "https://swrevent02hls.akamaized.net/hls/live/2016767/event02/master.m3u8"),
+        ("SWR Event 3",               "https://swrevent03hls.akamaized.net/hls/live/2016768/event03/master.m3u8"),
+        ("SWR Event 4",               "https://swrevent04hls.akamaized.net/hls/live/2016769/event04/master.m3u8"),
     ]),
     ("RBB Event", [
-        ("RBB Event 1",               "https://rbbevent01-hls.akamaized.net/hls/live/2032067/rbbevent01/master.m3u8"),
-        ("RBB Event 2",               "https://rbbevent02-hls.akamaized.net/hls/live/2032068/rbbevent02/master.m3u8"),
+        ("RBB Event 1",               "https://rbbevent01-hls.akamaized.net/hls/live/685984/rbbevent01/master.m3u8"),
+        ("RBB Event 2",               "https://rbbevent02-hls.akamaized.net/hls/live/685985/rbbevent02/master.m3u8"),
     ]),
     ("Radio Bremen", [
-        ("Radio Bremen Event 1",      "https://rbhlsevent1.akamaized.net/hls/live/2031942/rbhlsevent1/master.m3u8"),
-        ("Radio Bremen Event 2",      "https://rbhlsevent2.akamaized.net/hls/live/2031943/rbhlsevent2/master.m3u8"),
+        ("Radio Bremen Event 1",      "https://rbhlsevent1.akamaized.net/hls/live/2027612/event1/master.m3u8"),
+        ("Radio Bremen Event 2",      "https://rbhlsevent2.akamaized.net/hls/live/2027613/event2/master.m3u8"),
     ]),
 ]
 
@@ -259,6 +281,7 @@ LIVE_STREAM_GROUPS = [
     ]),
     ("DW", [
         ("DW",                        "https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8"),
+        ("DW+",                       "https://dwamdstream110.akamaized.net/hls/live/2017971/dwstream110/index.m3u8"),
     ]),
     ("HR", [
         ("HR",                        "http://hr-live.ard-mcdn.de/hr/live/hls/de/master.m3u8"),
@@ -268,6 +291,9 @@ LIVE_STREAM_GROUPS = [
     ]),
     ("MDR", [
         ("MDR",                       "http://mdr-live.ard-mcdn.de/mdr/live/hls/de/master.m3u8"),
+        ("MDR Sachsen",               "https://mdrtvsnhls.akamaized.net/hls/live/2016928/mdrtvsn/master.m3u8"),
+        ("MDR Sachsen-Anhalt",        "https://mdrtvsahls.akamaized.net/hls/live/2016879/mdrtvsa/master.m3u8"),
+        ("MDR Th\xc3\xbcringen",     "https://mdrtvthhls.akamaized.net/hls/live/2016880/mdrtvth/master.m3u8"),
     ]),
     ("NDR", [
         ("NDR Niedersachsen",         "http://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_nds/master.m3u8"),
@@ -291,11 +317,28 @@ LIVE_STREAM_GROUPS = [
     ("SR", [
         ("SR",                        "http://sr-live.ard-mcdn.de/sr/live/hls/de/master.m3u8"),
     ]),
+    ("SRF", [
+        ("SRF",                       "https://srfs.akamaized.net/hls/live/689649/srfsgeo/index.m3u8"),
+    ]),
     ("SWR", [
-        ("SWR",                       "http://mcdn.swr.de/swr/swrbwd/master.m3u8"),
+        ("SWR Baden-W\xc3\xbcrttemberg", "http://mcdn.swr.de/swr/swrbwd/master.m3u8"),
+        ("SWR Rheinland-Pfalz",       "https://swrrpd-hls.akamaized.net/hls/live/2018676/swrrpd/master.m3u8"),
     ]),
     ("WDR", [
         ("WDR",                       "http://wdr-live.ard-mcdn.de/wdr/live/hls/de/master.m3u8"),
+    ]),
+    ("WDR Lokalzeit", [
+        ("WDR Lokalzeit Aachen",      "https://wdrlokalzeit.akamaized.net/hls/live/2018019-b/wdrlz_aachen/master.m3u8"),
+        ("WDR Lokalzeit Bielefeld",   "https://wdrlokalzeit.akamaized.net/hls/live/2018026-b/wdrlz_bielefeld/master.m3u8"),
+        ("WDR Lokalzeit Bonn",        "https://wdrlokalzeit.akamaized.net/hls/live/2018021-b/wdrlz_bonn/master.m3u8"),
+        ("WDR Lokalzeit Dortmund",    "https://wdrlokalzeit.akamaized.net/hls/live/2018022-b/wdrlz_dortmund/master.m3u8"),
+        ("WDR Lokalzeit D\xc3\xbcsseldorf", "https://wdrlokalzeit.akamaized.net/hls/live/2018023-b/wdrlz_duesseldorf/master.m3u8"),
+        ("WDR Lokalzeit Duisburg",    "https://wdrlokalzeit.akamaized.net/hls/live/2018024-b/wdrlz_duisburg/master.m3u8"),
+        ("WDR Lokalzeit Essen",       "https://wdrlokalzeit.akamaized.net/hls/live/2018027-b/wdrlz_essen/master.m3u8"),
+        ("WDR Lokalzeit K\xc3\xb6ln", "https://wdrlokalzeit.akamaized.net/hls/live/2023550-b/wdrlz_koeln/master.m3u8"),
+        ("WDR Lokalzeit M\xc3\xbcnsterland", "https://wdrlokalzeit.akamaized.net/hls/live/2018025-b/wdrlz_muensterland/master.m3u8"),
+        ("WDR Lokalzeit Siegen",      "https://wdrlokalzeit.akamaized.net/hls/live/2018020-b/wdrlz_siegen/master.m3u8"),
+        ("WDR Lokalzeit Wuppertal",   "https://wdrlokalzeit.akamaized.net/hls/live/2018028-b/wdrlz_wuppertal/master.m3u8"),
     ]),
     ("ZDF", [
         ("ZDF",                       "https://zdf-hls-15.akamaized.net/hls/live/2016498/de/high/master.m3u8"),
@@ -1932,7 +1975,8 @@ class OeMediathekScreen(Screen):
         self._fav_sort_mode  = False   # True = Favoriten-Sortiermodus aktiv
         self._fav_grabbed    = None    # Index des gegriffenen Favoriten
         self._fav_order_backup = None  # Backup der Reihenfolge vor dem Sortieren
-        self._fav_show_episodes = False  # True = Episode-Favoriten-Ansicht aktiv
+        self._fav_show_episodes = False      # True = Episode-Favoriten-Ansicht aktiv
+        self._fav_allow_auto_switch = True   # False = User hat explizit Gruppen-Ansicht gewählt
         self._ep_fav_sort_mode = False   # True = Sortiermodus in Episode-Favoriten
         self._ep_fav_grabbed   = None    # Index des gegriffenen Episode-Favoriten
         self._ep_fav_order_backup = None # Backup der Reihenfolge
@@ -2122,8 +2166,13 @@ class OeMediathekScreen(Screen):
         _log("Fetch ok: %d Eintraege Seite %d" % (len(raw), self.page))
 
         if not raw and self.page == 0:
-            self["status_label"].setText("Keine Inhalte gefunden.")
-            self["menu_list"].setList([])
+            if self.source_name != "Meine Favoriten":
+                self["status_label"].setText("Keine Inhalte gefunden.")
+                self["menu_list"].setList([])
+                return
+            self.groups = []
+            self.groups_filtered = []
+            self._show_groups()
             return
 
         if self.sort_mode == "az":
@@ -2179,6 +2228,7 @@ class OeMediathekScreen(Screen):
                 else:
                     self["description_text"].setText(_b(""))
             elif self.mode == MODE_EPISODES:
+                self._update_blue_hint()
                 self._update_info_hint()
                 self._update_ep_sort_hint()
                 if idx is not None and idx < len(self.cur_episodes):
@@ -2245,6 +2295,17 @@ class OeMediathekScreen(Screen):
         if self.current_search:
             status_text += " (Suche: %s)" % self.current_search
         self["status_label"].setText(_b(status_text))
+
+        # Keine Gruppen-Favoriten aber Episoden-Favoriten vorhanden → direkt wechseln.
+        # Nur wenn der User nicht explizit die Gruppen-Ansicht gewählt hat (Yellow-Button).
+        if (self.source_name == "Meine Favoriten"
+                and not self._fav_sort_mode
+                and not self.groups_filtered
+                and self._fav_allow_auto_switch
+                and get_episode_favorites()):
+            self._fav_show_episodes = True
+            self._show_episode_favorites()
+            return
 
         if self._fav_sort_mode:
             # Im Sortiermodus: Hints werden von _fav_update_hints gesetzt
@@ -2528,7 +2589,7 @@ class OeMediathekScreen(Screen):
                 raw_str = gname.decode("utf-8", "replace")
             except Exception:
                 raw_str = str(gname)
-            
+
             # Trennt Sender-Praefixe wie "NDR: " vom eigentlichen Sendungsnamen
             if ": " in raw_str:
                 pure_topic = raw_str.split(": ", 1)[1]
@@ -3056,7 +3117,7 @@ class OeMediathekScreen(Screen):
                 return
             gname, gitems = self.groups_filtered[real_idx]
 
-            # Sondergruppen koennen nicht als Favorit gespeichert werden
+            # Andere Sondergruppen koennen nicht als Favorit gespeichert werden
             if gname.startswith(b">> "):
                 return
 
@@ -3536,8 +3597,10 @@ class OeMediathekScreen(Screen):
         self._fav_show_episodes = not self._fav_show_episodes
         self._fav_update_hints()
         if self._fav_show_episodes:
+            self._fav_allow_auto_switch = True
             self._show_episode_favorites()
         else:
+            self._fav_allow_auto_switch = False
             self._reload_favorites()
 
     def _show_episode_favorites(self):

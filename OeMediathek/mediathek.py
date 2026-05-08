@@ -5,6 +5,7 @@
 import json
 import os
 import threading
+import time
 
 LOG_FILE            = "/tmp/oemediathek.log"
 FAVORITES_FILE         = "/etc/enigma2/oemediathek_favorites.json"
@@ -538,6 +539,7 @@ def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by=
         return [], 0, 0
 
     results = [None] * len(favs)
+    _sem = threading.Semaphore(3)
 
     def _fetch_one(idx, fav):
         channel = fav.get("channel") or None
@@ -555,47 +557,54 @@ def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by=
                 pure_topic = group.split(": ", 1)[1]
 
         matched = []
-        try:
-            # Hole gezielt bis zu 100 Folgen genau dieser Serie.
-            # search_fields=["topic"] verhindert Beifang durch Trailer,
-            # deren Titel den Seriennamen enthalten aber ein anderes Topic haben.
-            items, _, _rc = _mvw_query(
-                channel=channel,
-                size=100,
-                offset=0,
-                search_term=pure_topic,
-                min_duration=min_duration,
-                sort_by=sort_by,
-                search_fields=["topic"],
-            )
-            # Lokal auf die exakte Gruppe filtern, um unscharfen Beifang auszublenden.
-            # Vergleich normalisiert: "BR: Schnittgut" gespeichert von "Alle" passt auch
-            # auf group_key "Schnittgut" aus der channel-spezifischen Abfrage.
-            for item in items:
-                item_group = item.get("group", b"")
-                try:
-                    item_group_str = item_group.decode("utf-8", "replace")
-                except Exception:
-                    item_group_str = str(item_group)
-                # Direkte Übereinstimmung
-                if item_group_str == group:
-                    matched.append(item)
-                    continue
-                # Fallback: gespeicherte Gruppe hat Sender-Prefix, item_group nicht
-                # z.B. group="BR: Schnittgut", item_group_str="Schnittgut"
-                if ": " in group:
-                    group_suffix = group.split(": ", 1)[1]
-                    if item_group_str == group_suffix:
+        with _sem:
+            try:
+                # Hole gezielt bis zu 100 Folgen genau dieser Serie.
+                # ["title", "topic"] statt nur ["topic"], damit Film-Favoriten gefunden
+                # werden: bei Film-Containern (topic="Spielfilm" o.ae.) ist der
+                # group_key der Filmtitel, der nur im title-Feld der API steht.
+                # Das lokale Exakt-Filter (item_group_str == group) verhindert Fehlzuordnungen.
+                items, _, _rc = _mvw_query(
+                    channel=channel,
+                    size=100,
+                    offset=0,
+                    search_term=pure_topic,
+                    min_duration=min_duration,
+                    sort_by=sort_by,
+                    search_fields=["title", "topic"],
+                )
+                # Lokal auf die exakte Gruppe filtern, um unscharfen Beifang auszublenden.
+                # Vergleich normalisiert: "BR: Schnittgut" gespeichert von "Alle" passt auch
+                # auf group_key "Schnittgut" aus der channel-spezifischen Abfrage.
+                for item in items:
+                    item_group = item.get("group", b"")
+                    try:
+                        item_group_str = item_group.decode("utf-8", "replace")
+                    except Exception:
+                        item_group_str = str(item_group)
+                    # Direkte Übereinstimmung
+                    if item_group_str == group:
                         matched.append(item)
-        except Exception as e:
-            _log("Favorit laden Fehler (%s): %s" % (group, str(e)))
+                        continue
+                    # Fallback: gespeicherte Gruppe hat Sender-Prefix, item_group nicht
+                    # z.B. group="BR: Schnittgut", item_group_str="Schnittgut"
+                    if ": " in group:
+                        group_suffix = group.split(": ", 1)[1]
+                        if item_group_str == group_suffix:
+                            matched.append(item)
+            except Exception as e:
+                _log("Favorit laden Fehler (%s): %s" % (group, str(e)))
         results[idx] = matched
 
     threads = [threading.Thread(target=_fetch_one, args=(i, fav)) for i, fav in enumerate(favs)]
     for t in threads:
+        t.daemon = True
         t.start()
+    deadline = time.time() + 60
     for t in threads:
-        t.join()
+        remaining = deadline - time.time()
+        if remaining > 0:
+            t.join(timeout=remaining)
 
     all_items = []
     for r in results:
