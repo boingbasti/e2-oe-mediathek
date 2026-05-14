@@ -238,7 +238,6 @@ def play_stream(session, stream_url, title="ÖR Mediathek", force_player_id=None
         stream_url_str = stream_url_str.replace("https://", "http://", 1)
 
     is_orf = "apasfiis.sf.apa.at" in stream_url_str
-    is_ard_mp4 = "ard-mcdn.de" in stream_url_str and stream_url_str.split("?")[0].endswith(".mp4")
     if not is_live and "ard-mcdn.de" in stream_url_str and "-progressive." not in stream_url_str and stream_url_str.split("?")[0].endswith(".m3u8"):
         is_live = True
         stream_url_str = re.sub(r'master\w+\.m3u8', 'master.m3u8', stream_url_str)
@@ -262,7 +261,7 @@ def play_stream(session, stream_url, title="ÖR Mediathek", force_player_id=None
 
     if force_player_id is not None:
         player_id = force_player_id
-    elif (is_live or is_orf or is_ard_mp4) and _has_serviceapp():
+    elif (is_live or is_orf) and _has_serviceapp():
         if is_live and autoconfigure_serviceapp:
             _configure_serviceapp_for_live()
         player_id = 5002

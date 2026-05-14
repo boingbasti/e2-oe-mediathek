@@ -75,7 +75,7 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
     """
     Fragt die MediathekViewWeb-API ab.
     search_fields: Liste der Felder fuer die Suche, Standard ["title", "topic"]
-    sort_by: "timestamp" | "duration" (API-seitig); "az" wird clientseitig behandelt
+    sort_by: "timestamp" | "duration" | "topic" (alle API-seitig)
     """
     url = "https://mediathekviewweb.de/api/query"
 
@@ -87,12 +87,17 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
         fields = search_fields if search_fields else ["title", "topic"]
         queries.append({"fields": fields, "query": search_term})
 
-    api_sort = sort_by if sort_by in ("timestamp", "duration") else "timestamp"
+    if sort_by in ("topic", "title"):
+        api_sort, sort_order = sort_by, "asc"
+    elif sort_by in ("timestamp", "duration"):
+        api_sort, sort_order = sort_by, "desc"
+    else:
+        api_sort, sort_order = "timestamp", "desc"
 
     body_dict = {
         "queries":   queries,
         "sortBy":    api_sort,
-        "sortOrder": "desc",
+        "sortOrder": sort_order,
         "future":    True,
         "offset":    offset,
         "size":      size,
