@@ -230,6 +230,31 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
 
 
 # ------------------------------------------------------------------
+# Topics-Endpunkt
+# ------------------------------------------------------------------
+def get_topics(channel=None):
+    """
+    Gibt alle Topics (Sendungsnamen) zurueck.
+    Optional gefiltert nach Sender (channel="ARD" etc.).
+    Liefert eine alphabetisch sortierte Liste von Unicode-Strings.
+    """
+    url = "https://mediathekviewweb.de/api/topics"
+    if channel:
+        url += "?channel=" + channel
+    try:
+        req = Request(url)
+        req.add_header("User-Agent", "Mozilla/5.0")
+        resp = urlopen(req, timeout=15, context=_ssl_context) if _ssl_context else urlopen(req, timeout=15)
+        data = json.loads(resp.read())
+        topics = data.get("topics", [])
+        _log("get_topics channel=%s -> %d Topics" % (channel, len(topics)))
+        return topics
+    except Exception as e:
+        _log("get_topics Fehler: " + str(e))
+        return []
+
+
+# ------------------------------------------------------------------
 # Sender-spezifische Funktionen
 # ------------------------------------------------------------------
 def get_ard_highlights(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp"):

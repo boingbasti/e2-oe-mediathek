@@ -70,6 +70,7 @@ from mediathek import (
     remove_episode_favorite,
     get_episode_favorites,
     _mvw_query,
+    get_topics,
     load_search_history,
     save_search_history,
 )
@@ -81,7 +82,19 @@ LOGO_DIR = os.path.join(os.path.dirname(__file__), "logos")
 _TMP_DIR = "/tmp/OeMediathek"
 LOG_FILE = _TMP_DIR + "/oemediathek.log"
 PAGE_SIZE = 100
+AZ_PAGE_SIZE = 100
 DEBUG = False
+
+_AZ_CH_MAP = {
+    "ARD Mediathek": "ARD", "ZDF Mediathek": "ZDF", "Arte": "ARTE",
+    "3sat": "3Sat", "NDR Mediathek": "NDR", "WDR Mediathek": "WDR",
+    "BR Mediathek": "BR", "MDR Mediathek": "MDR", "HR Mediathek": "HR",
+    "SWR Mediathek": "SWR", "rbb Mediathek": "RBB", "SR Mediathek": "SR",
+    "ZDF Info": "ZDFinfo", "ZDF Neo": "ZDFneo", "KiKA": "KiKA",
+    "Phoenix": "PHOENIX", "Radio Bremen": "Radio Bremen TV", "funk": "Funk.net",
+    "ARD alpha": "ARD-alpha", "ONE": "ONE", "tagesschau24": "tagesschau24",
+    "DW": "DW", "ORF": "ORF", "SRF": "SRF",
+}
 
 try:
     import xml.etree.ElementTree as _ET
@@ -226,6 +239,17 @@ LIVE_EVENT_GROUPS = [
         ("MDR Event 11",              "http://mdr-event.ard-mcdn.de/sportschau/event11/hls/de/master.m3u8"),
         ("MDR Event 12",              "http://mdr-event.ard-mcdn.de/sportschau/event12/hls/de/master.m3u8"),
         ("MDR Event 13",              "http://mdr-event.ard-mcdn.de/sportschau/event13/hls/de/master.m3u8"),
+    ]),
+    ("NDR Event", [
+        ("NDR Event 1",               "https://ndrevent.akamaized.net/hls/live/2020100/ndr/event_1/master.m3u8"),
+        ("NDR Event 2",               "https://ndrevent.akamaized.net/hls/live/2020101/ndr/event_1/master.m3u8"),
+        ("NDR Event 3",               "https://ndrevent.akamaized.net/hls/live/2020102/ndr/event_1/master.m3u8"),
+        ("NDR Event 4",               "https://ndrevent.akamaized.net/hls/live/2020103/ndr/event_1/master.m3u8"),
+        ("NDR Event 5",               "https://ndrevent.akamaized.net/hls/live/2020104/ndr/event_1/master.m3u8"),
+        ("NDR Event 6",               "https://ndrevent.akamaized.net/hls/live/2020105/ndr/event_1/master.m3u8"),
+        ("NDR Event 7",               "https://ndrevent.akamaized.net/hls/live/2020106/ndr/event_1/master.m3u8"),
+        ("NDR Event 8",               "https://ndrevent.akamaized.net/hls/live/2020107/ndr/event_1/master.m3u8"),
+        ("NDR Event 9",               "https://ndrevent.akamaized.net/hls/live/2020108/ndr/event_1/master.m3u8"),
     ]),
     ("MDR Event (weltweit)", [
         ("MDR Event 1 (weltweit)",    "https://mdrevent1wwhls.akamaized.net/hls/live/2025205/mdrevent1ww/master.m3u8"),
@@ -461,7 +485,13 @@ def _episode_label(title_bytes, topic_bytes=None, watched=False):
         clean   = re.sub(r'\s*\(S\d+/E\d+\)', '', title).strip()
         label   = "S%02dE%02d  %s" % (season, episode, clean)
     else:
-        label = title
+        m2 = re.search(r'\|\s*(?:Folge\s+)?(\d+)', title)
+        if m2:
+            folge = int(m2.group(1))
+            clean = re.sub(r'\s*\xb7.*$', '', title).strip()
+            label = "F%04d  %s" % (folge, clean)
+        else:
+            label = title
     if topic_bytes:
         try:
             topic = topic_bytes.decode("utf-8", "replace")
@@ -541,7 +571,7 @@ def _inject_direct_hits(groups, search_term):
                 title_str = t.decode("utf-8", "replace").lower()
             except Exception:
                 title_str = str(t).lower()
-            if all(w in title_str for w in terms):
+            if all(w in (group_name + " " + title_str) for w in terms):
                 direct.append(ep)
 
     if not direct:
@@ -606,6 +636,11 @@ def _build_groups(items, sort_mode="timestamp", flat=False):
     if sort_mode == "az":
         try:
             groups_order.sort(key=lambda k: k.decode("utf-8", "replace").lower())
+        except Exception:
+            pass
+    elif sort_mode == "za":
+        try:
+            groups_order.sort(key=lambda k: k.decode("utf-8", "replace").lower(), reverse=True)
         except Exception:
             pass
     return [(k, groups_dict[k]) for k in groups_order]
@@ -1544,10 +1579,44 @@ def _check_stream_status(url, callback):
             try:
                 resp = urlopen(req, timeout=5)
                 code = resp.getcode()
+                master = resp.read().decode("utf-8", "replace")
                 try:
                     resp.close()
                 except Exception:
                     pass
+                # HLS Live-Erkennung: Segment-Playlist laden und letzten
+                # EXT-X-PROGRAM-DATE-TIME prüfen.
+                # < 30s → "live", >= 30s → "slate", kein Tag → Fallback 200
+                if code == 200 and ".m3u8" in url:
+                    try:
+                        import time as _time, calendar as _cal, datetime as _dt
+                        try:
+                            from urlparse import urlparse as _up
+                        except ImportError:
+                            from urllib.parse import urlparse as _up
+                        seg_url = None
+                        for line in master.splitlines():
+                            line = line.strip()
+                            if line.startswith("https://") and ".m3u8" in line:
+                                seg_url = line
+                                break
+                            elif line.startswith("/") and ".m3u8" in line:
+                                _b = _up(url)
+                                seg_url = _b.scheme + "://" + _b.netloc + line
+                                break
+                        if seg_url:
+                            req2 = Request(seg_url)
+                            req2.add_header("User-Agent", "Mozilla/5.0")
+                            seg = urlopen(req2, timeout=5).read().decode("utf-8", "replace")
+                            dates = [l.split(":", 1)[1] for l in seg.splitlines()
+                                     if l.startswith("#EXT-X-PROGRAM-DATE-TIME:")]
+                            if dates:
+                                raw = dates[-1].replace("Z", "").replace("+00:00", "")[:19]
+                                dt = _dt.datetime.strptime(raw, "%Y-%m-%dT%H:%M:%S")
+                                age = _time.time() - _cal.timegm(dt.timetuple())
+                                code = "live" if age < 30 else "slate"
+                    except Exception:
+                        pass  # Fallback: code bleibt 200
             except HTTPError as e:
                 code = e.code
         except Exception:
@@ -1826,6 +1895,10 @@ class OeMediathekLiveScreen(Screen):
                 code = self._status[idx]
                 if code == "checking":
                     status_line = "Status: pr\xc3\xbcfe..."
+                elif code == "live":
+                    status_line = "Stream aktiv"
+                elif code == "slate":
+                    status_line = "Tafel / Bereitschaft"
                 elif code == 200:
                     status_line = "URL erreichbar"
                 elif code == 403:
@@ -1985,6 +2058,9 @@ class OeMediathekScreen(Screen):
         self._ep_api_has_more = False  # API hat noch Daten nach letztem Episoden-Fetch
         self._ep_next_api_offset = 0  # Naechster API-Offset fuer Episoden-Paging
         self._sn_mode        = False   # True = Demnächst-Filter aktiv
+        self._sv_sn_date_str  = ""
+
+        self._az_topics_cache = None
 
         self._fetching      = False
         self._loaded        = False   # False bis erster Fetch abgeschlossen
@@ -2108,16 +2184,24 @@ class OeMediathekScreen(Screen):
 
     def _fetch_thread(self):
         try:
-            if self.sort_mode == "az":
-                res, total, _rc = self.loader(
-                    offset=0,
-                    size=1000,
-                    search_term=self.current_search,
-                    min_duration=self.min_duration,
-                    sort_by="timestamp",
-                )
-                self._fetch_result = res
-                self._fetch_total  = total
+            if self.sort_mode in ("az", "za"):
+                if self.page == 0:
+                    self._az_topics_cache = None
+                if self._az_topics_cache is None:
+                    ch = _AZ_CH_MAP.get(self.source_name)
+                    self._az_topics_cache = get_topics(channel=ch)
+                start = self.page * AZ_PAGE_SIZE
+                topics = self._az_topics_cache if self.sort_mode == "az" else self._az_topics_cache[::-1]
+                page_topics = topics[start:start + AZ_PAGE_SIZE]
+                ch_str = _AZ_CH_MAP.get(self.source_name)
+                ch_bytes = ch_str.encode("utf-8") if ch_str else b""
+                self._fetch_result = [
+                    {"group": t.encode("utf-8"), "title": t.encode("utf-8"),
+                     "channel": ch_bytes, "topic": t.encode("utf-8")}
+                    for t in page_topics
+                ]
+                self._fetch_total = len(self._az_topics_cache)
+                self._fetch_az_has_more = (start + AZ_PAGE_SIZE) < len(self._az_topics_cache)
             else:
                 FETCH_SIZE = PAGE_SIZE * 5
                 api_offset = self._groups_next_api_offset
@@ -2170,8 +2254,10 @@ class OeMediathekScreen(Screen):
             self._show_groups()
             return
 
-        if self.sort_mode == "az":
-            self._has_more = False
+        if self.sort_mode in ("az", "za"):
+            self._has_more = getattr(self, "_fetch_az_has_more", False)
+            self._paged_total    = self._fetch_total
+            self._paged_has_more = self._has_more
         else:
             self._has_more = getattr(self, "_fetch_last_rc_full", False)
             self._groups_next_api_offset = getattr(self, "_fetch_next_api_offset", (self.page + 1) * PAGE_SIZE)
@@ -2458,7 +2544,7 @@ class OeMediathekScreen(Screen):
             self["status_label"].setText(_b("Keine Sendungen am %s" % date_str))
             return
 
-        self._apply_sv_sn_sort()
+        self._show_sv_sn_flat(date_str)
 
     def _open_sn_date_picker(self):
         import time as _time
@@ -2513,7 +2599,7 @@ class OeMediathekScreen(Screen):
             self["status_label"].setText(_b("Keine Sendungen am %s" % date_str))
             return
 
-        self._apply_sv_sn_sort()
+        self._show_sv_sn_flat(date_str)
 
     def _sv_reset(self):
         """SV/SN-Filter aufheben — zurück zur vollständigen Gruppenansicht."""
@@ -2522,12 +2608,41 @@ class OeMediathekScreen(Screen):
         self.groups_filtered = _relevance_sort(self.groups, self.current_search)
         self._show_groups()
 
-    def _apply_sv_sn_sort(self):
-        built = _build_groups(self._sv_sn_items, self.sort_mode, flat=True)
-        if self.sort_mode == "az":
-            built.sort(key=lambda kv: (kv[0].decode("utf-8", "replace") if isinstance(kv[0], bytes) else kv[0]).lower())
-        self.groups_filtered = _relevance_sort(built, self.current_search)
-        self._show_groups()
+    def _show_sv_sn_flat(self, date_str):
+        """Zeigt SV/SN-Items direkt als flache Episodenliste, ohne Gruppen-Zwischenschritt."""
+        self._sv_sn_date_str = date_str
+        if self._ep_sort_mode == "title":
+            def _sk(i):
+                lb = _episode_label(i["title"])
+                try: return lb.decode("utf-8", "replace").lower()
+                except Exception: return str(lb).lower()
+            items = sorted(self._sv_sn_items, key=_sk)
+        else:
+            items = sorted(self._sv_sn_items, key=lambda i: i.get("timestamp", 0))
+        self.mode = MODE_EPISODES
+        self.cur_episodes = items
+        self.cur_group_name = b""
+        self.ep_page = 0
+        self.ep_total = len(items)
+        self.ep_has_more = False
+        self._ep_next_api_offset = 0
+
+        self["title_label"].setText(self.source_name + b" | " + _b(date_str))
+        self["menu_list"].setList([
+            _episode_label(i["title"], i.get("group"),
+                           watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""))
+            for i in items
+        ])
+        self["status_label"].setText(_b("%d Sendungen" % len(items)))
+        self["sort_label"].setText(_b("A-Z" if self._ep_sort_mode == "title" else "nach Uhrzeit"))
+        self["hint_red"].setText(_b("Download"))
+        self["hint_yellow"].setText(_b("Suche (Server)"))
+        self["hint_blue"].setText(_b("Favorit"))
+        self["hint_page"].setText(_b(""))
+        self._update_ep_sort_hint()
+        self._update_info_hint()
+        self._focus_list(0)
+        self.last_index = -2
 
     def _update_page_hint(self):
         if self.mode == MODE_EPISODES:
@@ -2544,9 +2659,6 @@ class OeMediathekScreen(Screen):
             self["hint_page"].setText(_b(""))
             return
         if self._sv_mode or self._sn_mode:
-            self["hint_page"].setText(_b(""))
-            return
-        if self.mode == MODE_GROUPS and self.sort_mode == "az":
             self["hint_page"].setText(_b(""))
             return
         page_num = self.page + 1
@@ -2612,7 +2724,7 @@ class OeMediathekScreen(Screen):
             else:
                 pure_topic = raw_str
 
-            api_sort = "title" if self._ep_sort_mode == "title" else "timestamp"
+            api_sort = "title" if self._ep_sort_mode == "title_all" else "timestamp"
 
             # Sender aus erstem lokalem Item lesen fuer gezielten Channel-Filter
             ch = None
@@ -2631,6 +2743,7 @@ class OeMediathekScreen(Screen):
             total = 0
             last_res_full = False
             MAX_ROUNDS = 10  # max. 10x PAGE_SIZE = 1000 Eintraege pro Seite
+            max_exact = 1000 if self._ep_sort_mode == "title" else PAGE_SIZE
             for _ in range(MAX_ROUNDS):
                 res, total, raw_cnt = _mvw_query(
                     channel=ch,
@@ -2647,16 +2760,16 @@ class OeMediathekScreen(Screen):
                         ig_str = ig.decode("utf-8", "replace")
                     except Exception:
                         ig_str = str(ig)
-                    # Bei Channel-Filter liefert die API group_key ohne Sender-Prefix
-                    # (z.B. "Sportschau" statt "ARD: Sportschau") → gegen pure_topic vergleichen.
-                    # Ohne Channel-Filter enthält group_key den Prefix → gegen raw_str vergleichen.
-                    if ig_str == (pure_topic if ch else raw_str):
+                    # Sender-Prefix aus dem API-group_key herausrechnen (z.B. "ARD: Sportschau" → "Sportschau"),
+                    # damit der Vergleich auch ohne Channel-Filter funktioniert (A-Z bei "Alle Mediatheken").
+                    ig_pure = ig_str.split(": ", 1)[-1] if ": " in ig_str else ig_str
+                    if ig_str == (pure_topic if ch else raw_str) or ig_pure == pure_topic:
                         exact_items.append(item)
                 api_offset += PAGE_SIZE
                 last_res_full = (raw_cnt >= PAGE_SIZE)
                 if not last_res_full:
                     break
-                if len(exact_items) >= PAGE_SIZE:
+                if len(exact_items) >= max_exact:
                     break
             self.ep_total = total
             self._ep_api_has_more = last_res_full
@@ -2677,8 +2790,18 @@ class OeMediathekScreen(Screen):
         if self._fetch_error:
             _log("Episoden Fetch Fehler: " + str(self._fetch_error))
 
-        self.cur_episodes = self._fetch_episodes_result
-        self.ep_has_more = getattr(self, "_ep_api_has_more", False)
+        if self._ep_sort_mode == "title":
+            def _sort_key(i):
+                lb = _episode_label(i["title"])
+                try:
+                    return lb.decode("utf-8", "replace").lower()
+                except Exception:
+                    return str(lb).lower()
+            self.cur_episodes = sorted(self._fetch_episodes_result, key=_sort_key)
+            self.ep_has_more = False
+        else:
+            self.cur_episodes = self._fetch_episodes_result
+            self.ep_has_more = getattr(self, "_ep_api_has_more", False)
 
         is_direct_hits = self.cur_group_name.startswith(b">> Direkte Treffer")
         show_group = is_direct_hits or self.source_name == "Meine Favoriten"
@@ -2688,7 +2811,13 @@ class OeMediathekScreen(Screen):
             self["status_label"].setText(_b("%d  \xc2\xb7  ~%d gesamt" % (len(self.cur_episodes), self.ep_total)))
         else:
             self["status_label"].setText("%d Folgen" % len(self.cur_episodes))
-        self["sort_label"].setText(_b("A-Z" if self._ep_sort_mode == "title" else "Neueste zuerst"))
+        if self._ep_sort_mode == "title":
+            _ep_sort_lbl = "A-Z lokal (1000)"
+        elif self._ep_sort_mode == "title_all":
+            _ep_sort_lbl = "A-Z (alle)"
+        else:
+            _ep_sort_lbl = "Neueste zuerst"
+        self["sort_label"].setText(_b(_ep_sort_lbl))
 
         self["hint_red"].setText(_b("Download"))
         if self.source_name != "Meine Favoriten":
@@ -2870,6 +2999,9 @@ class OeMediathekScreen(Screen):
             if self._fav_show_episodes:
                 self.close()
                 return
+            if self._sv_mode or self._sn_mode:
+                self._sv_reset()
+                return
             self["title_label"].setText(self.source_name)
             self._show_groups(restore_pos=True)
             return
@@ -3036,72 +3168,22 @@ class OeMediathekScreen(Screen):
 
     def _fetch_alpha_thread(self, letter):
         try:
-            api_sort = "topic" if self.sort_mode == "az" else self.sort_mode
+            ch = _AZ_CH_MAP.get(self.source_name)
 
-            def _pure_name(item):
-                """Gruppenname ohne Sender-Prefix (z.B. 'ARD: ' entfernen)."""
-                group_val = item.get("group") or item.get("title") or b"Sonstige"
-                try:
-                    g_str = group_val.decode("utf-8", "replace")
-                except Exception:
-                    g_str = str(group_val)
-                if ": " in g_str:
-                    return g_str.split(": ", 1)[1]
-                return g_str
-
-            # Fuer normale Buchstaben: Buchstabe als search_term, API macht die Arbeit
-            # Fuer Sonderzeichen (#): kein search_term moeglich, grosse Menge laden und lokal filtern
+            # Topics direkt vom /api/topics-Endpunkt holen (vollstaendig, auch ohne Sender-Filter)
+            all_topics = get_topics(channel=ch)
             if letter == "#":
-                res, _, _rc = self.loader(
-                    offset=0,
-                    size=2000,
-                    search_term=self.current_search,
-                    min_duration=self.min_duration,
-                    sort_by=api_sort,
-                )
-                filtered = [
-                    item for item in res
-                    if _pure_name(item)[0:1].upper() not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                ]
-                self._fetch_alpha_result = filtered
-                self._fetching = False
-                return
-
-            # search_fields=["topic"] damit nur Topics durchsucht werden (nicht Titel)
-            # Dadurch kommen alle Gruppen/Topics die den Buchstaben enthalten
-            ch = None
-            try:
-                ch_map = {
-                    "ARD Mediathek": "ARD", "ZDF Mediathek": "ZDF", "Arte": "ARTE",
-                    "3sat": "3Sat", "NDR Mediathek": "NDR", "WDR Mediathek": "WDR",
-                    "BR Mediathek": "BR", "MDR Mediathek": "MDR", "HR Mediathek": "HR",
-                    "SWR Mediathek": "SWR", "rbb Mediathek": "RBB", "SR Mediathek": "SR",
-                    "ZDF Info": "ZDFinfo", "ZDF Neo": "ZDFneo", "KiKA": "KiKA",
-                    "Phoenix": "PHOENIX", "Radio Bremen": "Radio Bremen TV", "funk": "Funk.net",
-                    "ARD alpha": "ARD-alpha", "ONE": "ONE", "tagesschau24": "tagesschau24",
-                    "DW": "DW", "ORF": "ORF", "SRF": "SRF",
-                }
-                ch = ch_map.get(self.source_name)
-            except Exception:
-                pass
-
-            res, _, _rc = _mvw_query(
-                channel=ch,
-                offset=0,
-                size=500,
-                search_term=letter,
-                min_duration=self.min_duration,
-                sort_by=api_sort,
-                search_fields=["topic"],
-            )
-
-            # Lokal auf exakten Anfangsbuchstaben einengen, Sender-Prefix ignorieren
-            filtered = []
-            for item in res:
-                if _pure_name(item)[0:1].upper() == letter:
-                    filtered.append(item)
-
-            self._fetch_alpha_result = filtered
+                filtered_topics = [t for t in all_topics
+                                   if t[0:1].upper() not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+            else:
+                filtered_topics = [t for t in all_topics
+                                   if t[0:1].upper() == letter]
+            ch_bytes = ch.encode("utf-8") if ch else b""
+            self._fetch_alpha_result = [
+                {"group": t.encode("utf-8"), "title": t.encode("utf-8"),
+                 "channel": ch_bytes, "topic": t.encode("utf-8")}
+                for t in filtered_topics
+            ]
         except Exception:
             self._fetch_error = _fmt_exc()
         self._fetching = False
@@ -3208,14 +3290,29 @@ class OeMediathekScreen(Screen):
     def _update_ep_sort_hint(self):
         if self.mode != MODE_EPISODES:
             return
-        if self._ep_sort_mode == "title":
-            self["hint_green"].setText(_b("A-Z > Neueste zuerst"))
+        if self._sv_mode or self._sn_mode:
+            if self._ep_sort_mode == "timestamp":
+                self["hint_green"].setText(_b("nach Uhrzeit > A-Z"))
+            else:
+                self["hint_green"].setText(_b("A-Z > nach Uhrzeit"))
+            return
+        if self._ep_sort_mode == "timestamp":
+            self["hint_green"].setText(_b("Neueste zuerst > A-Z lokal (1000)"))
+        elif self._ep_sort_mode == "title":
+            self["hint_green"].setText(_b("A-Z lokal (1000) > A-Z (alle)"))
         else:
-            self["hint_green"].setText(_b("Neueste zuerst > A-Z"))
+            self["hint_green"].setText(_b("A-Z (alle) > Neueste zuerst"))
 
     def cycle_ep_sort(self):
+        if self._sv_mode or self._sn_mode:
+            self._ep_sort_mode = "title" if self._ep_sort_mode == "timestamp" else "timestamp"
+            self["description_text"].setText(_b(""))
+            self._show_sv_sn_flat(self._sv_sn_date_str)
+            return
         if self._ep_sort_mode == "timestamp":
             self._ep_sort_mode = "title"
+        elif self._ep_sort_mode == "title":
+            self._ep_sort_mode = "title_all"
         else:
             self._ep_sort_mode = "timestamp"
         self.ep_page = 0
@@ -3284,8 +3381,6 @@ class OeMediathekScreen(Screen):
             return
         if self._sv_mode or self._sn_mode:
             return
-        if self.mode == MODE_GROUPS and self.sort_mode == "az":
-            return
         self.page += 1
         self._start_fetch()
 
@@ -3302,8 +3397,6 @@ class OeMediathekScreen(Screen):
         if self.page == 0:
             return
         if self._sv_mode or self._sn_mode:
-            return
-        if self.mode == MODE_GROUPS and self.sort_mode == "az":
             return
         self.page -= 1
         self._groups_next_api_offset = self.page * (PAGE_SIZE * 5)
@@ -3334,11 +3427,12 @@ class OeMediathekScreen(Screen):
             self._poll_timer.start(300, True)
 
     # In der Episodenansicht nur "timestamp" (kein "az" — wuerde nur aktuelle Seite sortieren)
-    _SORT_CYCLE_GROUPS   = ["timestamp", "az"]
+    _SORT_CYCLE_GROUPS   = ["timestamp", "az", "za"]
     _SORT_CYCLE_EPISODES = ["timestamp"]
     _SORT_LABELS = {
         "timestamp": "Neueste zuerst",
         "az":        "A-Z",
+        "za":        "Z-A",
     }
 
     def _update_sort_label(self):
@@ -3387,20 +3481,14 @@ class OeMediathekScreen(Screen):
 
             if self.mode == MODE_GROUPS:
                 if self._sv_mode or self._sn_mode:
-                    self._apply_sv_sn_sort()
-                elif self.sort_mode == "az":
-                    if self.alpha_letter:
-                        self.groups = _build_groups(self._fetch_alpha_result, self.sort_mode)
-                        self.groups_filtered = list(self.groups)
-                        self._show_groups()
-                        self["status_label"].setText("%d Sendungen  [%s]" % (len(self.groups_filtered), self.alpha_letter))
-                    else:
-                        self.page = 0
-                        self.groups = []
-                        self.groups_filtered = []
-                        self["menu_list"].setList([])
-                        self["description_text"].setText(_b(""))
-                        self._start_fetch()
+                    return
+                elif self.sort_mode in ("az", "za"):
+                    self.page = 0
+                    self.groups = []
+                    self.groups_filtered = []
+                    self["menu_list"].setList([])
+                    self["description_text"].setText(_b(""))
+                    self._start_fetch()
                 else:
                     if self.alpha_letter:
                         self.groups = _build_groups(self._fetch_alpha_result, self.sort_mode)
