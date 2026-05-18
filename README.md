@@ -8,7 +8,7 @@ Verfügbare Sender: ARD, ZDF, Arte, 3sat, NDR, WDR, BR, MDR, HR, SWR, RBB, SR, Z
 
 Zusätzlich gibt es zwei neue Kacheln:
 - **Live-Streams:** Direktlinks zu den Sender-Livestreams (21 Sender, gruppiert mit regionalen und internationalen Varianten)
-- **Live-Events:** Event-Streams der öffentlich-rechtlichen Sender für Sport und Konzerte (ARD, ZDF, WDR, HR, MDR, BR, SWR, RBB, Radio Bremen, Arte Concert) mit Live-Status-Anzeige
+- **Live-Events:** Event-Streams der öffentlich-rechtlichen Sender für Sport und Konzerte (ARD, ZDF, NDR, WDR, HR, MDR, BR, SWR, RBB, Radio Bremen, Arte Concert) mit Live-Status-Anzeige
 
 ---
 
@@ -45,7 +45,7 @@ Zusätzlich gibt es zwei neue Kacheln:
 | Rot / EXIT | Zurück |
 
 - **Live-Streams:** Zeigt alle Sender gruppiert. Gruppen mit mehreren Varianten (z.B. NDR mit vier Länderfenstern, BR mit Nord/Süd/International) öffnen eine zweite Ebene. Die URL des gewählten Streams wird im rechten Panel angezeigt.
-- **Live-Events:** Zeigt Event-Stream-Gruppen. Pro Stream wird der Live-Status per HTTP-Check angezeigt (200 = erreichbar, 403 = kein aktives Event). Arte Concert sendet dauerhaft.
+- **Live-Events:** Zeigt Event-Stream-Gruppen. Pro Stream wird der Live-Status per HTTP-Check angezeigt: „Stream aktiv" (echtes Live-Signal), „Tafel / Bereitschaft" (Stream läuft, aber kein aktives Event), „kein Event" (HTTP 403), „nicht erreichbar". Arte Concert sendet dauerhaft.
 
 ---
 
@@ -55,7 +55,7 @@ Zusätzlich gibt es zwei neue Kacheln:
 |-------|----------|
 | OK | Gruppe öffnen / Folge abspielen |
 | Rot | Zurück (Gruppenansicht) / Download (Episodenansicht) |
-| Grün | A-Z Sortierung |
+| Grün | Sortierung wechseln (Neueste zuerst / A-Z / Z-A) |
 | Gelb | Suche (Suchverlauf / Bildschirmtastatur) |
 | Blau | Favoriten (Gruppenansicht) / Folge als Favorit speichern (Episodenansicht) |
 | EXIT | Zurück / Filter aufheben (Sendung verpasst? / Demnächst) |
@@ -72,8 +72,8 @@ Zusätzlich gibt es zwei neue Kacheln:
 | CH+ / CH- | Zwischen Seiten wechseln |
 | Links / Rechts | Navigation innerhalb einer Zeile (per Einstellung: Seitenwechsel) |
 
-- **Sendung verpasst?:** Erster Eintrag in jeder Mediathek — zeigt alle Sendungen eines wählbaren Tages (bis zu 8 Tage zurück)
-- **Demnächst:** Zweiter Eintrag in jeder Mediathek — zeigt geplante Sendungen der nächsten 7 Tage
+- **Sendung verpasst?:** Erster Eintrag in jeder Mediathek — zeigt alle Sendungen eines wählbaren Tages (bis zu 8 Tage zurück) direkt als Liste, ohne Zwischenordner; Sortierung per Grün zwischen Uhrzeit und A-Z umschaltbar
+- **Demnächst:** Zweiter Eintrag in jeder Mediathek — zeigt geplante Sendungen der nächsten 7 Tage direkt als Liste, ohne Zwischenordner; Sortierung per Grün zwischen Uhrzeit und A-Z umschaltbar
 - **Sortiermodus (Hauptmenü):** Kacheln per OK greifen und ablegen; Reihenfolge wird gespeichert und überlebt Neustarts; EXIT bricht ab ohne zu speichern
 - **Favoriten sortieren:** In der Favoritenliste per Rot in den Sortiermodus wechseln, Einträge per OK greifen und mit Pfeiltasten verschieben, Grün setzt die Reihenfolge zurück, EXIT bricht ab
 - **HD/SD-Auswahl:** Wenn ein Beitrag in HD und SD verfügbar ist, wird vor dem Abspielen gefragt
@@ -85,7 +85,7 @@ Zusätzlich gibt es zwei neue Kacheln:
 - **Markierung:** Einzelne Folgen können mit `*` markiert werden (INFO/EPG-Taste)
 - **Suchverlauf:** Die letzten 10 Suchbegriffe werden gespeichert und beim nächsten Aufruf der Suche zur Auswahl angeboten
 - **Direkte Treffer:** Bei der Suche werden Episoden, deren Titel den Suchbegriff enthält (aber deren Rubrik nicht), als „>> Direkte Treffer" ganz oben angezeigt
-- **A-Z Sortierung:** Lädt vor dem Sortieren alle verfügbaren Einträge vom Server (bis zu 1000)
+- **A-Z / Z-A Sortierung:** Ruft die vollständige Topic-Liste direkt vom Server ab (via /api/topics), seitenweise angezeigt (100 pro Seite)
 - **Aktueller Sortiermodus:** Wird dauerhaft oben rechts im Screen angezeigt
 - **Versionsanzeige:** Die aktuelle Plugin-Version wird oben rechts im Hauptmenü angezeigt
 - **Hintergrundfetch:** Inhalte werden im Hintergrund geladen, die Oberfläche bleibt bedienbar
@@ -111,7 +111,7 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 Die ZIP-Datei aus dem [Releases-Bereich](../../releases) herunterladen, entpacken und die IPK-Datei auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.6.5_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.7.0_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.
