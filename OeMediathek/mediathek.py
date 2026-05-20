@@ -621,6 +621,10 @@ def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by=
                     if ": " in group:
                         group_suffix = group.split(": ", 1)[1]
                         if item_group_str == group_suffix:
+                            # group-Feld auf den gespeicherten Namen normalisieren,
+                            # damit is_favorite(gname) in der Favoriten-Ansicht korrekt matcht
+                            item = dict(item)
+                            item["group"] = group if isinstance(group, bytes) else group.encode("utf-8")
                             matched.append(item)
             except Exception as e:
                 _log("Favorit laden Fehler (%s): %s" % (group, str(e)))

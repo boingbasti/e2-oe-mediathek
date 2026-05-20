@@ -7,6 +7,7 @@ import json
 import threading
 import re
 import subprocess
+import time
 
 # Python 2/3 Kompatibilitaet
 try:
@@ -122,6 +123,42 @@ def write_info_txt(filepath, title, description=None, duration=None, topic=None)
                 f.write(u"\n\n".join(lines).encode("utf-8"))
     except Exception:
         pass
+
+def write_meta(filepath, title, description=None, duration=None):
+    """Schreibt eine Enigma2 .meta Datei neben die Download-Datei (Datum, Titel, Beschreibung)."""
+    try:
+        meta_path = os.path.splitext(filepath)[0] + ".meta"
+        def _dec(v):
+            if isinstance(v, bytes):
+                return v.decode("utf-8", "replace")
+            return v or u""
+        title_str = _dec(title)
+        desc_str  = _dec(description)
+        ts        = int(time.time())
+        dur_secs  = 0
+        dur_str   = _dec(duration)
+        if dur_str:
+            parts = dur_str.strip().split(":")
+            try:
+                if len(parts) == 3:
+                    dur_secs = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+                elif len(parts) == 2:
+                    dur_secs = int(parts[0]) * 60 + int(parts[1])
+            except (ValueError, IndexError):
+                pass
+        lines = [
+            u"",
+            title_str,
+            desc_str,
+            str(ts),
+            u"",
+            str(dur_secs) if dur_secs else u"",
+        ]
+        with open(meta_path, "w") as f:
+            f.write(u"\n".join(lines).encode("utf-8"))
+    except Exception:
+        pass
+
 
 def convert_mp4_to_ts(mp4_path, on_done=None, on_error=None):
     """Konvertiert mp4_path verlustfrei zu .ts (ffmpeg -c copy) in einem Background-Thread."""
@@ -370,6 +407,7 @@ class Downloader(object):
                     self.on_error("Abgebrochen")
             else:
                 write_info_txt(self.filepath, self.title, self.description, self.duration, self.topic)
+                write_meta(self.filepath, self.title, self.description, self.duration)
                 if self.on_done:
                     self.on_done(self.filepath)
 
