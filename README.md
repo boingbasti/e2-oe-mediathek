@@ -54,7 +54,7 @@ Zusätzlich gibt es zwei neue Kacheln:
 | Taste | Funktion |
 |-------|----------|
 | OK | Gruppe öffnen / Folge abspielen |
-| Rot | Zurück (Gruppenansicht) / Download (Episodenansicht) |
+| Rot | ABC-Auswahl (Gruppenansicht) / Download (Episodenansicht) |
 | Grün | Sortierung wechseln (Neueste zuerst / A-Z / Z-A) |
 | Gelb | Suche (Suchverlauf / Bildschirmtastatur) |
 | Blau | Favoriten (Gruppenansicht) / Folge als Favorit speichern (Episodenansicht) |
@@ -111,7 +111,7 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 Die ZIP-Datei aus dem [Releases-Bereich](../../releases) herunterladen, entpacken und die IPK-Datei auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.7.1_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.7.2_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.

@@ -127,12 +127,12 @@ def write_info_txt(filepath, title, description=None, duration=None, topic=None)
 def write_meta(filepath, title, description=None, duration=None):
     """Schreibt eine Enigma2 .meta Datei neben die Download-Datei (Datum, Titel, Beschreibung)."""
     try:
-        meta_path = os.path.splitext(filepath)[0] + ".meta"
+        meta_path = filepath + ".meta"
         def _dec(v):
             if isinstance(v, bytes):
                 return v.decode("utf-8", "replace")
             return v or u""
-        title_str = _dec(title)
+        display_name = os.path.splitext(os.path.basename(filepath))[0]
         desc_str  = _dec(description)
         ts        = int(time.time())
         dur_secs  = 0
@@ -148,7 +148,7 @@ def write_meta(filepath, title, description=None, duration=None):
                 pass
         lines = [
             u"",
-            title_str,
+            display_name,
             desc_str,
             str(ts),
             u"",

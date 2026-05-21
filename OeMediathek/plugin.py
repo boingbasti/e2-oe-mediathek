@@ -2393,6 +2393,8 @@ class OeMediathekScreen(Screen):
             status_text = "%d Sendungen" % len(self.groups_filtered)
         if self.current_search:
             status_text += " (Suche: %s)" % self.current_search
+        elif self.alpha_letter:
+            status_text += "  [%s]" % self.alpha_letter
         self["status_label"].setText(_b(status_text))
 
         # Keine Gruppen-Favoriten aber Episoden-Favoriten vorhanden → direkt wechseln.
@@ -3149,6 +3151,7 @@ class OeMediathekScreen(Screen):
             return
         _log("Starte ABC Deep-Fetch fuer: " + letter)
         self.alpha_letter = letter
+        self.page = 0
         self.mode = MODE_GROUPS
 
         self["status_label"].setText("Suche '%s' ..." % letter)
@@ -3194,13 +3197,13 @@ class OeMediathekScreen(Screen):
             self["status_label"].setText("Fehler bei der Suche!")
             return
 
+        self._has_more = False
+        self._paged_has_more = False
         self.groups = _build_groups(self._fetch_alpha_result, self.sort_mode)
         self.groups_filtered = list(self.groups)
 
-        count = len(self.groups_filtered)
-        _log("Alpha Deep-Fetch beendet: %d Gruppen" % count)
+        _log("Alpha Deep-Fetch beendet: %d Gruppen" % len(self.groups_filtered))
         self._show_groups()
-        self["status_label"].setText("%d Sendungen  [%s]" % (count, self.alpha_letter))
 
     def toggle_favorite(self):
         try:
@@ -3483,12 +3486,17 @@ class OeMediathekScreen(Screen):
                 if self._sv_mode or self._sn_mode:
                     return
                 elif self.sort_mode in ("az", "za"):
-                    self.page = 0
-                    self.groups = []
-                    self.groups_filtered = []
-                    self["menu_list"].setList([])
-                    self["description_text"].setText(_b(""))
-                    self._start_fetch()
+                    if self.alpha_letter:
+                        self.groups = _build_groups(self._fetch_alpha_result, self.sort_mode)
+                        self.groups_filtered = list(self.groups)
+                        self._show_groups()
+                    else:
+                        self.page = 0
+                        self.groups = []
+                        self.groups_filtered = []
+                        self["menu_list"].setList([])
+                        self["description_text"].setText(_b(""))
+                        self._start_fetch()
                 else:
                     if self.alpha_letter:
                         self.groups = _build_groups(self._fetch_alpha_result, self.sort_mode)
