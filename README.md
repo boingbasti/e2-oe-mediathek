@@ -80,7 +80,7 @@ Zusätzlich gibt es zwei neue Kacheln:
 - **Download:** Episoden direkt auf die Festplatte laden; läuft im Hintergrund weiter wenn der Screen per Gelb geschlossen wird; HLS/m3u8-Streams werden unterstützt; Dateiname ohne Unterstriche; zusätzlich werden eine Textdatei mit Sendungsinformationen und eine .meta-Datei erstellt (Datum und Uhrzeit im Enigma2 Movie Player)
 - **Download-Warteschlange:** Mehrere Downloads können nacheinander gestartet werden und laufen automatisch der Reihe nach ab
 - **Download-Manager:** Zeigt laufenden Download mit Fortschritt und alle wartenden Downloads; Abbrechen einzeln oder gesamt möglich
-- **Einstellungen:** Speicherort für Downloads, MP4→TS Konvertierung per ffmpeg, Kachel-Reihenfolge zurücksetzen, Navigation Links/Rechts im Hauptmenü (Seitenwechsel oder Zeilenende) und ServiceApp für Live-Streams konfigurieren (A/V-Sync-Optimierung, standardmäßig aktiv)
+- **Einstellungen:** Speicherort für Downloads, MP4→TS Konvertierung per ffmpeg, Kachel-Reihenfolge zurücksetzen, Navigation Links/Rechts im Hauptmenü (Seitenwechsel oder Zeilenende), ServiceApp für Live-Streams konfigurieren (A/V-Sync-Optimierung, standardmäßig aktiv) und Debug-Logging aktivieren
 - **Favoriten:** Sendungsgruppen und einzelne Folgen können als Favoriten gespeichert werden; in der Favoritenansicht kann zwischen Gruppen- und Folgenansicht gewechselt werden
 - **Markierung:** Einzelne Folgen können mit `*` markiert werden (INFO/EPG-Taste)
 - **Suchverlauf:** Die letzten 10 Suchbegriffe werden gespeichert und beim nächsten Aufruf der Suche zur Auswahl angeboten
@@ -111,7 +111,7 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 Die ZIP-Datei aus dem [Releases-Bereich](../../releases) herunterladen, entpacken und die IPK-Datei auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.7.2_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.7.3_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.

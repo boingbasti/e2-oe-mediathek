@@ -75,7 +75,7 @@ from mediathek import (
     save_search_history,
 )
 from player import play_stream
-from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure
+from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging
 from download_manager import OeMediathekDownloadManagerScreen
 
 LOGO_DIR = os.path.join(os.path.dirname(__file__), "logos")
@@ -83,7 +83,6 @@ _TMP_DIR = "/tmp/OeMediathek"
 LOG_FILE = _TMP_DIR + "/oemediathek.log"
 PAGE_SIZE = 100
 AZ_PAGE_SIZE = 100
-DEBUG = False
 
 _AZ_CH_MAP = {
     "ARD Mediathek": "ARD", "ZDF Mediathek": "ZDF", "Arte": "ARTE",
@@ -117,9 +116,10 @@ except Exception:
 
 
 def _log(msg):
-    if not DEBUG:
+    if not get_debug_logging():
         return
-    line = "[OeMediathek] " + str(msg)
+    import time as _time
+    line = "[OeMediathek %s] %s" % (_time.strftime("%H:%M:%S", _time.localtime()), str(msg))
     print(line)
     try:
         if not os.path.isdir(_TMP_DIR):
@@ -3889,6 +3889,7 @@ class OeMediathekSettingsScreen(Screen):
         ("MP4 -> TS Konvertierung:",       1, get_auto_convert),
         ("Seite wechseln mit Links/Rechts:", 3, get_tile_wrap_lr),
         ("ServiceApp f\xc3\xbcr Live-Streams konfigurieren:", 4, get_serviceapp_autoconfigure),
+        ("Debug-Logging:",                5, get_debug_logging),
         ("Reihenfolge zur\xc3\xbccksetzen", 2, None),
     ]
 
@@ -3999,6 +4000,8 @@ class OeMediathekSettingsScreen(Screen):
             self._toggle_tile_wrap_lr()
         elif action_id == 4:
             self._toggle_serviceapp_autoconfigure()
+        elif action_id == 5:
+            self._toggle_debug_logging()
         elif action_id == 2:
             self._reset_order()
 
@@ -4033,6 +4036,10 @@ class OeMediathekSettingsScreen(Screen):
 
     def _toggle_serviceapp_autoconfigure(self):
         set_serviceapp_autoconfigure(not get_serviceapp_autoconfigure())
+        self._refresh()
+
+    def _toggle_debug_logging(self):
+        set_debug_logging(not get_debug_logging())
         self._refresh()
 
     def _reset_order(self):

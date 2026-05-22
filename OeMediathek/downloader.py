@@ -97,6 +97,14 @@ def set_serviceapp_autoconfigure(enabled):
     s["serviceapp_autoconfigure"] = bool(enabled)
     save_settings(s)
 
+def get_debug_logging():
+    return load_settings().get("debug_logging", False)
+
+def set_debug_logging(enabled):
+    s = load_settings()
+    s["debug_logging"] = bool(enabled)
+    save_settings(s)
+
 def write_info_txt(filepath, title, description=None, duration=None, topic=None):
     """Schreibt eine .txt Datei mit Sendungsinfos neben die Download-Datei."""
     try:
@@ -178,6 +186,12 @@ def convert_mp4_to_ts(mp4_path, on_done=None, on_error=None):
                 os.remove(mp4_path)
             except Exception:
                 pass
+            try:
+                mp4_meta = mp4_path + ".meta"
+                if os.path.exists(mp4_meta):
+                    os.rename(mp4_meta, ts_path + ".meta")
+            except Exception:
+                pass
             if on_done:
                 on_done(ts_path)
         except Exception as e:
@@ -199,11 +213,8 @@ def convert_mp4_to_ts(mp4_path, on_done=None, on_error=None):
 def _sanitize(text):
     if isinstance(text, bytes):
         text = text.decode("utf-8", "replace")
-    text = text.replace(u"\xe4", "ae").replace(u"\xf6", "oe").replace(u"\xfc", "ue")
-    text = text.replace(u"\xdf", "ss")
-    text = text.replace(u"\xc4", "Ae").replace(u"\xd6", "Oe").replace(u"\xdc", "Ue")
-    text = re.sub(r'[^\w\s\-]', '', text)
-    return text.strip()
+    allowed = set(u"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_\xe4\xf6\xfc\xc4\xd6\xdc\xdf")
+    return u"".join(c for c in text if c in allowed).strip()
 
 def _make_filename(title, url, topic=None):
     # m3u8 Playlisten werden als Enigma2-freundliche .ts Datei gespeichert
@@ -217,7 +228,10 @@ def _make_filename(title, url, topic=None):
             combined = safe_title
     else:
         combined = safe_title
-    return combined[:100] + ext
+    result = combined[:100] + ext
+    if isinstance(result, bytes):
+        return result
+    return result.encode("utf-8")
 
 def get_content_length(url):
     try:
@@ -272,12 +286,16 @@ class Downloader(object):
         self._total      = 0
 
         save_dir = get_save_dir()
+        if isinstance(save_dir, bytes):
+            save_dir = save_dir.decode("utf-8", "replace")
         filename = _make_filename(title, url, topic=topic)
+        if isinstance(filename, bytes):
+            filename = filename.decode("utf-8", "replace")
         base, ext = os.path.splitext(filename)
-        candidate = os.path.join(save_dir, filename)
+        candidate = os.path.join(save_dir, filename).encode("utf-8")
         counter = 1
         while os.path.exists(candidate):
-            candidate = os.path.join(save_dir, "%s_%d%s" % (base, counter, ext))
+            candidate = os.path.join(save_dir, u"%s_%d%s" % (base, counter, ext)).encode("utf-8")
             counter += 1
         self.filepath = candidate
 
