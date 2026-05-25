@@ -4008,11 +4008,11 @@ class OeMediathekSettingsScreen(Screen):
     def _browse(self):
         try:
             cur = get_save_dir()
-            start = cur
-            while start and start != "/" and not os.path.isdir(start):
+            start = cur if isinstance(cur, bytes) else cur.encode("utf-8")
+            while start and start != b"/" and not os.path.isdir(start):
                 start = os.path.dirname(start)
             if not start or not os.path.isdir(start):
-                start = "/media"
+                start = b"/media"
             self._browser = self.session.open(OeMediathekDirBrowser, start)
             self._browser.onClose.append(self._dir_browser_closed)
         except Exception:
@@ -4022,6 +4022,8 @@ class OeMediathekSettingsScreen(Screen):
         try:
             result = self._browser._result
             if result:
+                if isinstance(result, bytes):
+                    result = result.decode("utf-8", "replace")
                 set_save_dir(result)
         except Exception:
             _log("Settings _dir_browser_closed: " + _fmt_exc())
@@ -4208,14 +4210,15 @@ class OeMediathekDownloadScreen(Screen):
                 self._dl_done = False
                 self._dl_converting = True
                 self["status_label"].setText(_b("Konvertiere zu TS ..."))
-                self["hint_label"].setText(_b("Bitte warten ..."))
-                self["hint_yellow"].setText(_b(""))
+                self["hint_label"].setText(_b("OK / EXIT = Schlie\xc3\x9fen"))
+                self["hint_yellow"].setText(_b("Im Hintergrund"))
                 convert_mp4_to_ts(fp, on_done=self._cb_convert_done, on_error=self._cb_convert_error)
                 self._poll_timer.start(500, False)
             else:
                 fname = os.path.basename(fp)
                 self["status_label"].setText(_b("Fertig: " + fname))
                 self["hint_label"].setText(_b("OK / EXIT = Schlie\xc3\x9fen"))
+                self["hint_yellow"].setText(_b(""))
             return
 
         downloaded = self._dl_downloaded
@@ -4228,7 +4231,10 @@ class OeMediathekDownloadScreen(Screen):
 
     def _to_background(self):
         global _active_downloader
-        if not self._downloader or self._dl_done or self._dl_err is not None or self._dl_converting:
+        if self._dl_converting:
+            self.close()
+            return
+        if not self._downloader or self._dl_done or self._dl_err is not None:
             return
 
         self._downloader.on_done     = _bg_download_done

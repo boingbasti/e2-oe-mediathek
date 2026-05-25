@@ -23,8 +23,23 @@ except Exception:
 
 SETTINGS_FILE    = "/etc/enigma2/oemediathek_settings.json"
 DEFAULT_SAVE_DIR = "/media/hdd/movie/OeMediathek"
+_LOG_FILE        = "/tmp/OeMediathek/oemediathek.log"
 
 _ORF_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+def _log(msg):
+    if not get_debug_logging():
+        return
+    line = "[OeMediathek %s] DL: %s" % (time.strftime("%H:%M:%S", time.localtime()), str(msg))
+    print(line)
+    try:
+        log_dir = os.path.dirname(_LOG_FILE)
+        if not os.path.isdir(log_dir):
+            os.makedirs(log_dir)
+        with open(_LOG_FILE, "a") as f:
+            f.write(line + "\n")
+    except Exception:
+        pass
 
 # --------------------------------------------------------------------------
 # Redirect-Handler (Behaelt Tarn-Header bei, blockiert aber falschen Host)
@@ -173,6 +188,7 @@ def convert_mp4_to_ts(mp4_path, on_done=None, on_error=None):
     def _run():
         ts_path = os.path.splitext(mp4_path)[0] + ".ts"
         try:
+            _log("ffmpeg Start: %s" % mp4_path)
             cmd = ["ffmpeg", "-y", "-i", mp4_path, "-c", "copy", ts_path]
             proc = subprocess.Popen(
                 cmd,
@@ -192,9 +208,11 @@ def convert_mp4_to_ts(mp4_path, on_done=None, on_error=None):
                     os.rename(mp4_meta, ts_path + ".meta")
             except Exception:
                 pass
+            _log("ffmpeg Fertig: %s" % ts_path)
             if on_done:
                 on_done(ts_path)
         except Exception as e:
+            _log("ffmpeg Fehler: %s — %s" % (mp4_path, str(e)))
             try:
                 if os.path.exists(ts_path):
                     os.remove(ts_path)
@@ -372,9 +390,11 @@ class Downloader(object):
 
     def _run(self):
         try:
+            _log("Start: %s" % self.title)
             save_dir = get_save_dir()
-            if not os.path.exists(save_dir):
-                os.makedirs(save_dir)
+            save_dir_b = save_dir if isinstance(save_dir, bytes) else save_dir.encode("utf-8")
+            if not os.path.exists(save_dir_b):
+                os.makedirs(save_dir_b)
 
             handlers = [KeepHeadersRedirectHandler()]
             if _ssl_context:
@@ -421,15 +441,18 @@ class Downloader(object):
                     os.remove(self.filepath)
                 except Exception:
                     pass
+                _log("Abgebrochen: %s" % self.title)
                 if self.on_error:
                     self.on_error("Abgebrochen")
             else:
                 write_info_txt(self.filepath, self.title, self.description, self.duration, self.topic)
                 write_meta(self.filepath, self.title, self.description, self.duration)
+                _log("Fertig: %s" % self.title)
                 if self.on_done:
                     self.on_done(self.filepath)
 
         except Exception as e:
+            _log("Fehler: %s — %s" % (self.title, str(e)))
             try:
                 if os.path.exists(self.filepath):
                     os.remove(self.filepath)
