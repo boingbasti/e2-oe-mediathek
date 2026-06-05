@@ -60,7 +60,7 @@ Zusätzlich gibt es zwei neue Kacheln:
 | Blau | Favoriten (Gruppenansicht) / Folge als Favorit speichern (Episodenansicht) |
 | EXIT | Zurück / Filter aufheben (Sendung verpasst? / Demnächst) |
 | CH+ / CH- | Seitenweise blättern (100 Einträge pro Seite) |
-| INFO / EPG | Episodendetails anzeigen / Folge markieren (*) |
+| INFO / EPG | Episodendetails anzeigen / Folge markieren (Bookmark-Icon) |
 
 ### Hauptmenü
 
@@ -72,8 +72,8 @@ Zusätzlich gibt es zwei neue Kacheln:
 | CH+ / CH- | Zwischen Seiten wechseln |
 | Links / Rechts | Navigation innerhalb einer Zeile (per Einstellung: Seitenwechsel) |
 
-- **Sendung verpasst?:** Erster Eintrag in jeder Mediathek — zeigt alle Sendungen eines wählbaren Tages (bis zu 8 Tage zurück) direkt als Liste, ohne Zwischenordner; Sortierung per Grün zwischen Uhrzeit und A-Z umschaltbar
-- **Demnächst:** Zweiter Eintrag in jeder Mediathek — zeigt geplante Sendungen der nächsten 7 Tage direkt als Liste, ohne Zwischenordner; Sortierung per Grün zwischen Uhrzeit und A-Z umschaltbar
+- **Sendung verpasst?:** Erster Eintrag in jeder Mediathek — zeigt alle Sendungen eines wählbaren Tages (bis zu 8 Tage zurück) direkt als Liste, ohne Zwischenordner; Datumsauswahl zeigt Anzahl verfügbarer Einträge pro Tag; Sortierung per Grün zwischen Uhrzeit und A-Z umschaltbar
+- **Demnächst:** Zweiter Eintrag in jeder Mediathek — zeigt geplante Sendungen der nächsten 7 Tage direkt als Liste, ohne Zwischenordner; Datumsauswahl zeigt Anzahl verfügbarer Einträge pro Tag; Sortierung per Grün zwischen Uhrzeit und A-Z umschaltbar
 - **Sortiermodus (Hauptmenü):** Kacheln per OK greifen und ablegen; Reihenfolge wird gespeichert und überlebt Neustarts; EXIT bricht ab ohne zu speichern
 - **Favoriten sortieren:** In der Favoritenliste per Rot in den Sortiermodus wechseln, Einträge per OK greifen und mit Pfeiltasten verschieben, Grün setzt die Reihenfolge zurück, EXIT bricht ab
 - **HD/SD-Auswahl:** Wenn ein Beitrag in HD und SD verfügbar ist, wird vor dem Abspielen gefragt
@@ -82,7 +82,7 @@ Zusätzlich gibt es zwei neue Kacheln:
 - **Download-Manager:** Zeigt laufenden Download mit Fortschritt und alle wartenden Downloads; Abbrechen einzeln oder gesamt möglich
 - **Einstellungen:** Speicherort für Downloads, MP4→TS Konvertierung per ffmpeg, Kachel-Reihenfolge zurücksetzen, Navigation Links/Rechts im Hauptmenü (Seitenwechsel oder Zeilenende), ServiceApp für Live-Streams konfigurieren (A/V-Sync-Optimierung, standardmäßig aktiv) und Debug-Logging aktivieren
 - **Favoriten:** Sendungsgruppen und einzelne Folgen können als Favoriten gespeichert werden; in der Favoritenansicht kann zwischen Gruppen- und Folgenansicht gewechselt werden
-- **Markierung:** Einzelne Folgen können mit `*` markiert werden (INFO/EPG-Taste)
+- **Markierung:** Einzelne Folgen können markiert werden (INFO/EPG-Taste); markierte Folgen werden in der Liste mit einem Bookmark-Icon hervorgehoben
 - **Suchverlauf:** Die letzten 10 Suchbegriffe werden gespeichert und beim nächsten Aufruf der Suche zur Auswahl angeboten
 - **Direkte Treffer:** Bei der Suche werden Episoden, deren Titel den Suchbegriff enthält (aber deren Rubrik nicht), als „>> Direkte Treffer" ganz oben angezeigt
 - **A-Z / Z-A Sortierung:** Ruft die vollständige Topic-Liste direkt vom Server ab (via /api/topics), seitenweise angezeigt (100 pro Seite)
@@ -111,7 +111,7 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 Die IPK-Datei aus dem [Releases-Bereich](../../releases) herunterladen und auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.7.4_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.8.0_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.

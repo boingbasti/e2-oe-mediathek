@@ -17,7 +17,6 @@ from Screens.Screen import Screen
 from Screens.VirtualKeyBoard import VirtualKeyBoard
 from Screens.ChoiceBox import ChoiceBox
 from Components.ActionMap import ActionMap
-from Components.MenuList import MenuList
 from Components.Label import Label
 from Components.ScrollLabel import ScrollLabel
 from enigma import eTimer, ePoint, getDesktop
@@ -240,6 +239,13 @@ LIVE_EVENT_GROUPS = [
         ("MDR Event 12",              "http://mdr-event.ard-mcdn.de/sportschau/event12/hls/de/master.m3u8"),
         ("MDR Event 13",              "http://mdr-event.ard-mcdn.de/sportschau/event13/hls/de/master.m3u8"),
     ]),
+    ("MDR Event (weltweit)", [
+        ("MDR Event 1 (weltweit)",    "https://mdrevent1wwhls.akamaized.net/hls/live/2025205/mdrevent1ww/master.m3u8"),
+        ("MDR Event 2 (weltweit)",    "https://mdrevent2wwhls.akamaized.net/hls/live/2025367/mdrevent2ww/master.m3u8"),
+        ("MDR Event 3 (weltweit)",    "https://mdrevent3wwhls.akamaized.net/hls/live/2025368/mdrevent3ww/master.m3u8"),
+        ("MDR Event 4 (weltweit)",    "https://mdrevent4wwhls.akamaized.net/hls/live/2025369/mdrevent4ww/master.m3u8"),
+        ("MDR Event 5 (weltweit)",    "https://mdrevent5wwhls.akamaized.net/hls/live/2025370/mdrevent5ww/master.m3u8"),
+    ]),
     ("NDR Event", [
         ("NDR Event 1",               "https://ndrevent.akamaized.net/hls/live/2020100/ndr/event_1/master.m3u8"),
         ("NDR Event 2",               "https://ndrevent.akamaized.net/hls/live/2020101/ndr/event_1/master.m3u8"),
@@ -250,13 +256,6 @@ LIVE_EVENT_GROUPS = [
         ("NDR Event 7",               "https://ndrevent.akamaized.net/hls/live/2020106/ndr/event_1/master.m3u8"),
         ("NDR Event 8",               "https://ndrevent.akamaized.net/hls/live/2020107/ndr/event_1/master.m3u8"),
         ("NDR Event 9",               "https://ndrevent.akamaized.net/hls/live/2020108/ndr/event_1/master.m3u8"),
-    ]),
-    ("MDR Event (weltweit)", [
-        ("MDR Event 1 (weltweit)",    "https://mdrevent1wwhls.akamaized.net/hls/live/2025205/mdrevent1ww/master.m3u8"),
-        ("MDR Event 2 (weltweit)",    "https://mdrevent2wwhls.akamaized.net/hls/live/2025367/mdrevent2ww/master.m3u8"),
-        ("MDR Event 3 (weltweit)",    "https://mdrevent3wwhls.akamaized.net/hls/live/2025368/mdrevent3ww/master.m3u8"),
-        ("MDR Event 4 (weltweit)",    "https://mdrevent4wwhls.akamaized.net/hls/live/2025369/mdrevent4ww/master.m3u8"),
-        ("MDR Event 5 (weltweit)",    "https://mdrevent5wwhls.akamaized.net/hls/live/2025370/mdrevent5ww/master.m3u8"),
     ]),
     ("BR Event", [
         ("BR Event 1",                "https://brevent.akamaized.net/hls/live/2028218/event_01/master.m3u8"),
@@ -457,8 +456,116 @@ CHANNEL_MAP = {
     "DW":            "DW",
 }
 
-MODE_GROUPS   = 0
-MODE_EPISODES = 1
+MODE_GROUPS    = 0
+MODE_EPISODES  = 1
+_LIST_ROWS     = 13   # OeMediathekScreen + Livestream + Live
+_SH_LIST_ROWS  =  7   # SearchHistoryScreen  (420px/56px FHD, 280px/37px HD)
+_DB_LIST_ROWS  =  9   # DirBrowser           (560px/58px FHD, 373px/38px HD)
+
+
+class _CustomListMixin(object):
+    """Mixin: eigener List-Renderer ohne MenuList."""
+
+    _CL_ROWS = 13
+
+    def _cl_init(self):
+        self._list_items  = []
+        self._list_sel    = 0
+        self._list_scroll = 0
+        for i in range(self._CL_ROWS):
+            self["list_sel_%d"   % i] = Label(_b(""))
+            self["list_label_%d" % i] = Label(_b(""))
+            self["list_sel_%d"   % i].hide()
+            self["list_label_%d" % i].hide()
+
+    def _set_list(self, items):
+        self._list_items  = list(items)
+        self._list_sel    = 0
+        self._list_scroll = 0
+        self._render_list()
+
+    def _get_list_index(self):
+        return self._list_sel if self._list_items else None
+
+    def _get_list_current(self):
+        if not self._list_items:
+            return None
+        return self._list_items[self._list_sel]
+
+    def _list_focus(self, idx):
+        if not self._list_items:
+            return
+        rows = self._CL_ROWS
+        self._list_sel = max(0, min(idx, len(self._list_items) - 1))
+        if self._list_sel < self._list_scroll:
+            self._list_scroll = self._list_sel
+        elif self._list_sel >= self._list_scroll + rows:
+            self._list_scroll = self._list_sel - rows + 1
+        self._list_scroll = max(0, min(self._list_scroll, max(0, len(self._list_items) - rows)))
+        self._render_list()
+
+    def _render_list(self):
+        rows  = self._CL_ROWS
+        total = len(self._list_items)
+        if total == 0:
+            self._list_sel = self._list_scroll = 0
+        else:
+            self._list_sel = max(0, min(self._list_sel, total - 1))
+            if self._list_sel < self._list_scroll:
+                self._list_scroll = self._list_sel
+            elif self._list_sel >= self._list_scroll + rows:
+                self._list_scroll = self._list_sel - rows + 1
+            self._list_scroll = max(0, min(self._list_scroll, max(0, total - rows)))
+        for i in range(rows):
+            abs_idx = self._list_scroll + i
+            if abs_idx < total:
+                item = self._list_items[abs_idx]
+                if isinstance(item, bytes):
+                    try:
+                        item = item.decode("utf-8", "replace")
+                    except Exception:
+                        item = str(item)
+                self["list_label_%d" % i].setText(_b(item))
+                self["list_label_%d" % i].show()
+                if abs_idx == self._list_sel:
+                    self["list_sel_%d" % i].show()
+                else:
+                    self["list_sel_%d" % i].hide()
+            else:
+                self["list_sel_%d"   % i].hide()
+                self["list_label_%d" % i].hide()
+
+    def _list_step(self, step):
+        total = len(self._list_items)
+        if total == 0:
+            return
+        rows       = self._CL_ROWS
+        old_sel    = self._list_sel
+        old_scroll = self._list_scroll
+        self._list_sel = (old_sel + step) % total
+        if self._list_sel < self._list_scroll:
+            self._list_scroll = self._list_sel
+        elif self._list_sel >= self._list_scroll + rows:
+            self._list_scroll = self._list_sel - rows + 1
+        self._list_scroll = max(0, min(self._list_scroll, max(0, total - rows)))
+        if self._list_scroll != old_scroll:
+            self._render_list()
+        else:
+            old_row = old_sel - old_scroll
+            new_row = self._list_sel - self._list_scroll
+            if 0 <= old_row < rows:
+                self["list_sel_%d" % old_row].hide()
+            if 0 <= new_row < rows:
+                self["list_sel_%d" % new_row].show()
+
+    def _list_page(self, direction):
+        if not self._list_items:
+            return
+        new_idx = max(0, min(
+            self._list_sel + direction * self._CL_ROWS,
+            len(self._list_items) - 1
+        ))
+        self._list_focus(new_idx)
 
 # Sondereinträge am Anfang der Gruppenansicht
 _SV_ENTRY  = b">> Sendung verpasst?"
@@ -965,10 +1072,10 @@ class OeMediathekMainScreen(Screen):
         if IS_FHD:
             return """
         <screen name="OeMediathekMainScreen" position="0,0" size="%d,%d" flags="wfNoBorder">
-            <eLabel position="0,0" size="%d,%d" backgroundColor="#66000000" zPosition="-6" />
+            <eLabel position="0,0" size="%d,%d" backgroundColor="#33000000" zPosition="-6" />
             <eLabel position="%d,%d" size="%d,%d" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
-            <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#1A333333" zPosition="-3" />
+            <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#00253850" zPosition="-3" />
             %s%s
             <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
             <eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2" />
@@ -993,10 +1100,10 @@ class OeMediathekMainScreen(Screen):
         else:
             return """
         <screen name="OeMediathekMainScreen" position="0,0" size="%d,%d" flags="wfNoBorder">
-            <eLabel position="0,0" size="%d,%d" backgroundColor="#66000000" zPosition="-6" />
+            <eLabel position="0,0" size="%d,%d" backgroundColor="#33000000" zPosition="-6" />
             <eLabel position="%d,%d" size="%d,%d" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
-            <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#1A333333" zPosition="-3" />
+            <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#00253850" zPosition="-3" />
             %s%s
             <eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5" />
             <eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2" />
@@ -1159,7 +1266,7 @@ class OeMediathekMainScreen(Screen):
             if grabbed:
                 col = gRGB(0xFF, 0xD7, 0x00, 0x55)  # Gelb, halbtransparent (alpha=0x55)
             else:
-                col = gRGB(0x33, 0x33, 0x33, 0x1A)  # Grau, leicht transparent
+                col = gRGB(0x25, 0x38, 0x50, 0x00)  # Blau, vollständig opak (wie Listenbalken)
             self["selector"].instance.setBackgroundColor(col)
             self._move_selector()
             try:
@@ -1435,73 +1542,97 @@ class OeMediathekMainScreen(Screen):
 # ------------------------------------------------------------------
 # Suchverlauf-Screen  (Vorschalt-Dialog vor der Tastatur)
 # ------------------------------------------------------------------
-class OeMediathekSearchHistoryScreen(Screen):
+class OeMediathekSearchHistoryScreen(_CustomListMixin, Screen):
 
+    _CL_ROWS    = _SH_LIST_ROWS
     _NEW_SEARCH = ">> Neue Suche..."
 
     @staticmethod
     def _make_skin():
         if IS_FHD:
-            return """
-        <screen name="OeMediathekSearchHistoryScreen" position="0,0" size="1920,1080" flags="wfNoBorder">
-            <eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6" />
-            <eLabel position="560,200" size="800,680" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="title_label" position="600,230" size="720,60" font="Regular;38" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="600,306" size="720,2" backgroundColor="#33FFFFFF" zPosition="-4" />
-            <widget name="menu_list" position="600,320" size="720,420" font="Regular;34" itemHeight="56" foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="560,770" size="800,110" backgroundColor="#1A000000" zPosition="-4" />
-            <eLabel position="580,790" size="8,60" backgroundColor="#1AEE0000" zPosition="2" />
-            <widget name="hint_red"   position="598,770" size="260,110" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ok"    position="800,770" size="260,110" font="Regular;32" halign="center" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_label" position="560,770" size="780,110" font="Regular;32" halign="right" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-        </screen>
-            """
+            lx, ly0, lw, rh, rf = 600, 320, 720, 56, 34
         else:
-            return """
-        <screen name="OeMediathekSearchHistoryScreen" position="0,0" size="1280,720" flags="wfNoBorder">
-            <eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6" />
-            <eLabel position="373,133" size="534,453" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="title_label" position="400,153" size="480,40" font="Regular;25" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="400,204" size="480,1" backgroundColor="#33FFFFFF" zPosition="-4" />
-            <widget name="menu_list" position="400,213" size="480,280" font="Regular;22" itemHeight="37" foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="373,513" size="534,73" backgroundColor="#1A000000" zPosition="-4" />
-            <eLabel position="387,527" size="5,40" backgroundColor="#1AEE0000" zPosition="2" />
-            <widget name="hint_red"   position="399,513" size="170,73" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ok"    position="533,513" size="170,73" font="Regular;21" halign="center" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_label" position="373,513" size="520,73" font="Regular;21" halign="right" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-        </screen>
-            """
+            lx, ly0, lw, rh, rf = 400, 213, 480, 37, 22
+        rows = _SH_LIST_ROWS
+        list_xml = ""
+        for i in range(rows):
+            y = ly0 + i * rh
+            list_xml += (
+                '<widget name="list_sel_{i}" position="{x},{y}" size="{w},{rh}" '
+                'backgroundColor="#00253850" zPosition="1" transparent="0"/>'
+                '<widget name="list_label_{i}" position="{lbx},{y}" size="{lbw},{rh}" '
+                'zPosition="2" font="Regular;{rf}" halign="left" valign="center" '
+                'foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" noWrap="1"/>'
+            ).format(i=i, x=lx, y=y, w=lw, lbx=lx + 12, lbw=lw - 12, rh=rh, rf=rf)
+
+        if IS_FHD:
+            return (
+                '<screen name="OeMediathekSearchHistoryScreen" position="0,0" size="1920,1080" flags="wfNoBorder">'
+                '<eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6"/>'
+                '<eLabel position="560,200" size="800,680" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="title_label" position="600,230" size="720,60" font="Regular;38" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<eLabel position="600,306" size="720,2" backgroundColor="#33FFFFFF" zPosition="-4"/>'
+                + list_xml +
+                '<eLabel position="560,770" size="800,110" backgroundColor="#1A000000" zPosition="-4"/>'
+                '<eLabel position="580,790" size="8,60" backgroundColor="#1AEE0000" zPosition="2"/>'
+                '<widget name="hint_red"   position="598,770" size="260,110" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_ok"    position="800,770" size="260,110" font="Regular;32" halign="center" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_label" position="560,770" size="780,110" font="Regular;32" halign="right" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '</screen>'
+            )
+        else:
+            return (
+                '<screen name="OeMediathekSearchHistoryScreen" position="0,0" size="1280,720" flags="wfNoBorder">'
+                '<eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6"/>'
+                '<eLabel position="373,133" size="534,453" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="title_label" position="400,153" size="480,40" font="Regular;25" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<eLabel position="400,204" size="480,1" backgroundColor="#33FFFFFF" zPosition="-4"/>'
+                + list_xml +
+                '<eLabel position="373,513" size="534,73" backgroundColor="#1A000000" zPosition="-4"/>'
+                '<eLabel position="387,527" size="5,40" backgroundColor="#1AEE0000" zPosition="2"/>'
+                '<widget name="hint_red"   position="399,513" size="170,73" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_ok"    position="533,513" size="170,73" font="Regular;21" halign="center" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_label" position="373,513" size="520,73" font="Regular;21" halign="right" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '</screen>'
+            )
 
     def __init__(self, session):
         self.skin = self._make_skin()
         Screen.__init__(self, session)
+        self._cl_init()
 
         self["title_label"] = Label(_b("Letzte Suchen"))
-        self["menu_list"]   = MenuList([])
         self["hint_red"]    = Label(_b("L\xc3\xb6schen"))
         self["hint_ok"]     = Label(_b("OK = Ausw\xc3\xa4hlen"))
         self["hint_label"]  = Label(_b("EXIT = Abbrechen"))
 
         self["actions"] = ActionMap(
-            ["OkCancelActions", "ColorActions"],
+            ["OkCancelActions", "ColorActions", "DirectionActions", "ListboxActions"],
             {
-                "ok":     self.on_ok,
-                "cancel": self.on_cancel,
-                "red":    self.on_delete,
+                "ok":           self.on_ok,
+                "cancel":       self.on_cancel,
+                "red":          self.on_delete,
+                "up":           self.on_up,
+                "down":         self.on_down,
+                "upRepeated":   self.on_up,
+                "downRepeated": self.on_down,
+                "left":         self.on_page_up,
+                "right":        self.on_page_down,
+                "pageUp":       self.on_page_up,
+                "pageDown":     self.on_page_down,
             },
             1,
         )
         self.onShow.append(self._populate)
-        self["menu_list"].onSelectionChanged.append(self._on_selection_changed)
 
     def _populate(self):
         history = load_search_history()
         entries = [self._NEW_SEARCH] + history
-        self["menu_list"].setList([_b(e) for e in entries])
+        self._set_list([_b(e) for e in entries])
         self._on_selection_changed()
 
     def _on_selection_changed(self):
-        sel = self["menu_list"].getCurrent()
+        sel = self._get_list_current()
         try:
             text = sel.decode("utf-8", "replace") if sel else ""
         except Exception:
@@ -1511,8 +1642,24 @@ class OeMediathekSearchHistoryScreen(Screen):
         else:
             self["hint_red"].setText(_b("L\xc3\xb6schen"))
 
+    def on_up(self):
+        self._list_step(-1)
+        self._on_selection_changed()
+
+    def on_down(self):
+        self._list_step(1)
+        self._on_selection_changed()
+
+    def on_page_up(self):
+        self._list_page(-1)
+        self._on_selection_changed()
+
+    def on_page_down(self):
+        self._list_page(1)
+        self._on_selection_changed()
+
     def on_ok(self):
-        sel = self["menu_list"].getCurrent()
+        sel = self._get_list_current()
         if sel is None:
             self.close(None)
             return
@@ -1526,8 +1673,7 @@ class OeMediathekSearchHistoryScreen(Screen):
             self.close(text)
 
     def on_delete(self):
-        """Rote Taste: aktuellen Eintrag aus dem Verlauf entfernen."""
-        sel = self["menu_list"].getCurrent()
+        sel = self._get_list_current()
         if sel is None:
             return
         try:
@@ -1548,6 +1694,131 @@ class OeMediathekSearchHistoryScreen(Screen):
         self._populate()
 
     def on_cancel(self):
+        self.close(None)
+
+    def doClose(self):
+        try:
+            Screen.doClose(self)
+        except TypeError:
+            pass
+
+
+# ------------------------------------------------------------------
+# Generisches Auswahl-Popup  (Datum, Qualität, …)
+# ------------------------------------------------------------------
+
+class OeMediathekPickerScreen(_CustomListMixin, Screen):
+    """Auswahl-Popup — Panel-Höhe passt sich automatisch der Eintragsanzahl an."""
+
+    _CL_ROWS = 8  # Klassenwert, wird pro Instanz überschrieben
+
+    @staticmethod
+    def _build_skin(rows):
+        if IS_FHD:
+            px, pw  = 560, 800
+            lx, lw  = 600, 720
+            rh, rf  = 56, 34
+            tf, hf  = 38, 32
+            hint_h  = 104
+            sep_h   = 2
+            ph      = rows * rh + 258
+            py      = max(80, (1080 - ph) // 2)
+            title_y = py + 30
+            sep_y   = py + 100
+            list_y0 = py + 114
+            hint_y  = list_y0 + rows * rh + 10
+            sz      = "1920,1080"
+        else:
+            px, pw  = 373, 534
+            lx, lw  = 400, 480
+            rh, rf  = 37, 22
+            tf, hf  = 25, 21
+            hint_h  = 70
+            sep_h   = 1
+            ph      = rows * rh + 174
+            py      = max(53, (720 - ph) // 2)
+            title_y = py + 20
+            sep_y   = py + 68
+            list_y0 = py + 77
+            hint_y  = list_y0 + rows * rh + 7
+            sz      = "1280,720"
+
+        list_xml = ""
+        for i in range(rows):
+            y = list_y0 + i * rh
+            list_xml += (
+                '<widget name="list_sel_{i}" position="{x},{y}" size="{w},{rh}" '
+                'backgroundColor="#00253850" zPosition="1" transparent="0"/>'
+                '<widget name="list_label_{i}" position="{lbx},{y}" size="{lbw},{rh}" '
+                'zPosition="2" font="Regular;{rf}" halign="left" valign="center" '
+                'foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" noWrap="1"/>'
+            ).format(i=i, x=lx, y=y, w=lw, lbx=lx+12, lbw=lw-12, rh=rh, rf=rf)
+
+        return (
+            '<screen name="OeMediathekPickerScreen" position="0,0" size="{sz}" flags="wfNoBorder">'
+            '<eLabel position="0,0" size="{sz}" backgroundColor="#66000000" zPosition="-6"/>'
+            '<eLabel position="{px},{py}" size="{pw},{ph}" backgroundColor="#33000000" zPosition="-5"/>'
+            '<widget name="title_label" position="{lx},{ty}" size="{lw},{rh}" font="Regular;{tf}" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+            '<eLabel position="{lx},{sy}" size="{lw},{sh}" backgroundColor="#33FFFFFF" zPosition="-4"/>'
+        ).format(sz=sz, px=px, py=py, pw=pw, ph=ph, lx=lx, ty=title_y, lw=lw, rh=rh, tf=tf, sy=sep_y, sh=sep_h) + list_xml + (
+            '<eLabel position="{px},{hy}" size="{pw},{hh}" backgroundColor="#1A000000" zPosition="-4"/>'
+            '<widget name="hint_ok"    position="{lx},{hy}" size="360,{hh}" font="Regular;{hf}" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+            '<widget name="hint_label" position="{px},{hy}" size="{hw},{hh}" font="Regular;{hf}" halign="right" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+            '</screen>'
+        ).format(px=px, hy=hint_y, pw=pw, hh=hint_h, lx=lx, hf=hf, hw=pw-20)
+
+    def __init__(self, session, title, choices):
+        """choices: list of (label, value). Schließt mit value oder None."""
+        rows = max(1, min(len(choices), 8))
+        self._CL_ROWS = rows
+        self.skin = OeMediathekPickerScreen._build_skin(rows)
+        Screen.__init__(self, session)
+        self._cl_init()
+        self._choices = choices
+
+        self["title_label"] = Label(_b(title))
+        self["hint_ok"]     = Label(_b("OK = Ausw\xc3\xa4hlen"))
+        self["hint_label"]  = Label(_b("EXIT = Abbrechen"))
+
+        self._set_list([c[0] for c in choices])
+
+        self["actions"] = ActionMap(
+            ["OkCancelActions", "DirectionActions", "ListboxActions"],
+            {
+                "ok":           self._on_ok,
+                "cancel":       self._on_cancel,
+                "up":           self._on_up,
+                "down":         self._on_down,
+                "upRepeated":   self._on_up,
+                "downRepeated": self._on_down,
+                "left":         self._on_page_up,
+                "right":        self._on_page_down,
+                "pageUp":       self._on_page_up,
+                "pageDown":     self._on_page_down,
+            },
+            1,
+        )
+
+    def _on_up(self):
+        self._list_step(-1)
+
+    def _on_down(self):
+        self._list_step(1)
+
+    def _on_page_up(self):
+        self._list_page(-1)
+
+    def _on_page_down(self):
+        self._list_page(1)
+
+    def _on_ok(self):
+        idx = self._get_list_index()
+        if idx is None or idx >= len(self._choices):
+            self.close(None)
+            return
+        self.close(self._choices[idx][1])
+
+    def _on_cancel(self):
         self.close(None)
 
     def doClose(self):
@@ -1597,12 +1868,16 @@ def _check_stream_status(url, callback):
                         seg_url = None
                         for line in master.splitlines():
                             line = line.strip()
-                            if line.startswith("https://") and ".m3u8" in line:
+                            if (line.startswith("https://") or line.startswith("http://")) and ".m3u8" in line:
                                 seg_url = line
                                 break
                             elif line.startswith("/") and ".m3u8" in line:
-                                _b = _up(url)
-                                seg_url = _b.scheme + "://" + _b.netloc + line
+                                _pb = _up(url)
+                                seg_url = _pb.scheme + "://" + _pb.netloc + line
+                                break
+                            elif line and not line.startswith("#") and ".m3u8" in line:
+                                # relative URL: base = Verzeichnis der Master-Playlist
+                                seg_url = url.rsplit("/", 1)[0] + "/" + line
                                 break
                         if seg_url:
                             req2 = Request(seg_url)
@@ -1611,9 +1886,17 @@ def _check_stream_status(url, callback):
                             dates = [l.split(":", 1)[1] for l in seg.splitlines()
                                      if l.startswith("#EXT-X-PROGRAM-DATE-TIME:")]
                             if dates:
-                                raw = dates[-1].replace("Z", "").replace("+00:00", "")[:19]
+                                import re as _re
+                                raw = dates[-1].strip()
+                                offset_secs = 0
+                                tz_m = _re.search(r'([+-])(\d{2}):?(\d{2})$', raw)
+                                if tz_m:
+                                    sign = 1 if tz_m.group(1) == '+' else -1
+                                    offset_secs = sign * (int(tz_m.group(2)) * 3600 + int(tz_m.group(3)) * 60)
+                                raw = _re.sub(r'[.,].*', '', raw)[:19]
                                 dt = _dt.datetime.strptime(raw, "%Y-%m-%dT%H:%M:%S")
-                                age = _time.time() - _cal.timegm(dt.timetuple())
+                                utc_ts = _cal.timegm(dt.timetuple()) - offset_secs
+                                age = _time.time() - utc_ts
                                 code = "live" if age < 30 else "slate"
                     except Exception:
                         pass  # Fallback: code bleibt 200
@@ -1634,76 +1917,101 @@ def _check_stream_status(url, callback):
 # ------------------------------------------------------------------
 # Live-Streams-Screen  (flache Liste aller Sender-Livestreams)
 # ------------------------------------------------------------------
-class OeMediathekLivestreamScreen(Screen):
+class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
+
+    _CL_ROWS = _LIST_ROWS
 
     @staticmethod
     def _make_skin():
         if IS_FHD:
-            return """
-        <screen name="OeMediathekLivestreamScreen" position="0,0" size="1920,1080" flags="wfNoBorder">
-            <eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6" />
-            <eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
-            <widget name="status_label" position="910,30" size="920,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="30,140" size="1100,780" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="menu_list" position="40,150" size="1080,760" font="Regular;34" scrollbarMode="showOnDemand" itemHeight="58" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="1160,140" size="730,780" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="description_text" position="1190,160" size="670,740" font="Regular;34" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
-            <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
-            <eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2" />
-            <widget name="hint_red" position="68,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_page" position="1698,960" size="172,100" font="Regular;32" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
-        </screen>
-            """
+            lx, ly0, lw, rh, rf = 40, 150, 1080, 58, 34
         else:
-            return """
-        <screen name="OeMediathekLivestreamScreen" position="0,0" size="1280,720" flags="wfNoBorder">
-            <eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6" />
-            <eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
-            <widget name="status_label" position="610,20" size="610,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="30,90" size="733,524" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="menu_list" position="36,97" size="720,510" font="Regular;22" scrollbarMode="showOnDemand" itemHeight="38" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="773,90" size="477,524" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="description_text" position="790,103" size="443,504" font="Regular;22" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
-            <eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5" />
-            <eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2" />
-            <widget name="hint_red" position="42,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_page" position="1132,634" size="118,60" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
-        </screen>
-            """
+            lx, ly0, lw, rh, rf = 36, 97, 720, 38, 22
+        list_xml = ""
+        for i in range(_LIST_ROWS):
+            y = ly0 + i * rh
+            list_xml += (
+                '<widget name="list_sel_{i}" position="{x},{y}" size="{w},{rh}" '
+                'backgroundColor="#00253850" zPosition="1" transparent="0"/>'
+                '<widget name="list_label_{i}" position="{lbx},{y}" size="{lbw},{rh}" '
+                'zPosition="2" font="Regular;{rf}" halign="left" valign="center" '
+                'foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" noWrap="1"/>'
+            ).format(i=i, x=lx, y=y, w=lw, lbx=lx + 12, lbw=lw - 12, rh=rh, rf=rf)
+
+        if IS_FHD:
+            return (
+                '<screen name="OeMediathekLivestreamScreen" position="0,0" size="1920,1080" flags="wfNoBorder">'
+                '<eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6"/>'
+                '<eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="status_label" position="910,30" size="920,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
+                '<eLabel position="30,140" size="1100,780" backgroundColor="#33000000" zPosition="-5"/>'
+                + list_xml +
+                '<eLabel position="1160,140" size="730,780" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="description_text" position="1190,160" size="670,740" font="Regular;34" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
+                '<eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5"/>'
+                '<eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2"/>'
+                '<widget name="hint_red" position="68,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_page" position="1698,960" size="172,100" font="Regular;32" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
+                '</screen>'
+            )
+        else:
+            return (
+                '<screen name="OeMediathekLivestreamScreen" position="0,0" size="1280,720" flags="wfNoBorder">'
+                '<eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6"/>'
+                '<eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="status_label" position="610,20" size="610,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
+                '<eLabel position="30,90" size="733,524" backgroundColor="#33000000" zPosition="-5"/>'
+                + list_xml +
+                '<eLabel position="773,90" size="477,524" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="description_text" position="790,103" size="443,504" font="Regular;22" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
+                '<eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5"/>'
+                '<eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2"/>'
+                '<widget name="hint_red" position="42,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_page" position="1132,634" size="118,60" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
+                '</screen>'
+            )
 
     def __init__(self, session, streams=None, title=None):
         self.skin = self._make_skin()
         Screen.__init__(self, session)
-        self.session  = session
-        self._streams = streams  # None = Gruppenauswahl, Liste = Streamauswahl
+        self._cl_init()
+        self.session    = session
+        self._streams   = streams
         self.last_index = -1
 
         if streams is None:
-            items        = [_b(g[0]) for g in LIVE_STREAM_GROUPS]
-            status_text  = str(len(LIVE_STREAM_GROUPS)) + " Sender"
-            title_text   = "Live-Streams"
+            items       = [g[0] for g in LIVE_STREAM_GROUPS]
+            status_text = str(len(LIVE_STREAM_GROUPS)) + " Sender"
+            title_text  = "Live-Streams"
         else:
-            items        = [_b(name) for name, _ in streams]
-            status_text  = str(len(streams)) + (" Stream" if len(streams) == 1 else " Streams")
-            title_text   = title or "Live-Streams"
+            items       = [name for name, _ in streams]
+            status_text = str(len(streams)) + (" Stream" if len(streams) == 1 else " Streams")
+            title_text  = title or "Live-Streams"
 
         self["title_label"]      = Label(_b(title_text))
         self["status_label"]     = Label(_b(status_text))
-        self["menu_list"]        = MenuList(items)
         self["description_text"] = Label(_b(""))
         self["hint_red"]         = Label(_b("Zur\xc3\xbcck"))
         self["hint_page"]        = Label(_b(""))
 
+        self._set_list([_b(i) for i in items])
+
         self["actions"] = ActionMap(
-            ["OkCancelActions", "ColorActions", "DirectionActions"],
+            ["OkCancelActions", "ColorActions", "DirectionActions", "ListboxActions"],
             {
-                "ok":     self.key_ok,
-                "cancel": self.key_cancel,
-                "red":    self.key_cancel,
-                "up":     self.key_up,
-                "down":   self.key_down,
+                "ok":           self.key_ok,
+                "cancel":       self.key_cancel,
+                "red":          self.key_cancel,
+                "up":           self.key_up,
+                "down":         self.key_down,
+                "upRepeated":   self.key_up,
+                "downRepeated": self.key_down,
+                "left":         self.key_page_up,
+                "right":        self.key_page_down,
+                "pageUp":       self.key_page_up,
+                "pageDown":     self.key_page_down,
             },
             -1,
         )
@@ -1721,29 +2029,25 @@ class OeMediathekLivestreamScreen(Screen):
             pass
 
     def key_up(self):
-        try:
-            idx = self["menu_list"].getSelectedIndex()
-            n = len(LIVE_STREAM_GROUPS) if self._streams is None else len(self._streams)
-            if idx == 0:
-                self["menu_list"].instance.moveSelectionTo(n - 1)
-            else:
-                self["menu_list"].up()
-        except Exception:
-            pass
+        self._list_step(-1)
+        self._update_desc()
 
     def key_down(self):
-        try:
-            idx = self["menu_list"].getSelectedIndex()
-            n = len(LIVE_STREAM_GROUPS) if self._streams is None else len(self._streams)
-            if n > 0 and idx >= n - 1:
-                self["menu_list"].instance.moveSelectionTo(0)
-            else:
-                self["menu_list"].down()
-        except Exception:
-            pass
+        self._list_step(1)
+        self._update_desc()
+
+    def key_page_up(self):
+        self._list_page(-1)
+        self.last_index = -1
+        self._update_desc()
+
+    def key_page_down(self):
+        self._list_page(1)
+        self.last_index = -1
+        self._update_desc()
 
     def _update_desc(self):
-        idx = self["menu_list"].getSelectedIndex()
+        idx = self._get_list_index()
         if idx is None or idx == self.last_index:
             return
         self.last_index = idx
@@ -1763,7 +2067,7 @@ class OeMediathekLivestreamScreen(Screen):
             self["description_text"].setText(_b(name + "\n\n" + url))
 
     def key_ok(self):
-        idx = self["menu_list"].getSelectedIndex()
+        idx = self._get_list_index()
         if idx is None:
             return
         if self._streams is None:
@@ -1789,46 +2093,86 @@ class OeMediathekLivestreamScreen(Screen):
             pass
 
 
-class OeMediathekLiveScreen(Screen):
+class OeMediathekLiveScreen(_CustomListMixin, Screen):
 
-    _SKIN_FHD = """
-        <screen name="OeMediathekLiveScreen" position="0,0" size="1920,1080" flags="wfNoBorder">
-            <eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6" />
-            <eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="title_label" position="50,30" size="1810,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="30,130" size="1100,810" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="menu_list" position="40,140" size="1080,790" font="Regular;34" scrollbarMode="showOnDemand" itemHeight="58" foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="1160,130" size="730,810" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="info_text" position="1190,150" size="670,780" font="Regular;30" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
-            <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
-            <eLabel position="50,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_ok"   position="68,960"  size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_exit" position="468,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-        </screen>
-    """
-    _SKIN_HD = """
-        <screen name="OeMediathekLiveScreen" position="0,0" size="1280,720" flags="wfNoBorder">
-            <eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6" />
-            <eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="title_label" position="43,20" size="1177,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="30,83" size="733,540" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="menu_list" position="36,90" size="720,524" font="Regular;22" scrollbarMode="showOnDemand" itemHeight="38" foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="773,83" size="477,540" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="info_text" position="790,93" size="443,504" font="Regular;20" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
-            <eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5" />
-            <eLabel position="33,649" size="5,30" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_ok"   position="42,634"  size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_exit" position="290,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-        </screen>
-    """
+    _CL_ROWS = _LIST_ROWS
+
+    @staticmethod
+    def _make_skin():
+        if IS_FHD:
+            lx, ly0, lw, rh, rf = 40, 140, 1080, 58, 34
+            dw, dh, dx_off, dy_off, label_off = 22, 22, 12, 18, 38
+        else:
+            lx, ly0, lw, rh, rf = 36, 90, 720, 38, 22
+            dw, dh, dx_off, dy_off, label_off = 14, 14, 8, 12, 26
+        list_xml = ""
+        for i in range(_LIST_ROWS):
+            y = ly0 + i * rh
+            list_xml += (
+                '<widget name="list_sel_{i}" position="{x},{y}" size="{w},{rh}" '
+                'backgroundColor="#00253850" zPosition="1" transparent="0"/>'
+                '<widget name="list_dot_{i}" position="{dx},{dy}" size="{dw},{dh}" '
+                'alphatest="blend" scale="1" zPosition="3" transparent="1"/>'
+                '<widget name="list_label_{i}" position="{lbx},{y}" size="{lbw},{rh}" '
+                'zPosition="2" font="Regular;{rf}" halign="left" valign="center" '
+                'foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" noWrap="1"/>'
+            ).format(i=i, x=lx, y=y, w=lw,
+                     dx=lx + dx_off, dy=y + dy_off, dw=dw, dh=dh,
+                     lbx=lx + label_off, lbw=lw - label_off, rh=rh, rf=rf)
+
+        if IS_FHD:
+            return (
+                '<screen name="OeMediathekLiveScreen" position="0,0" size="1920,1080" flags="wfNoBorder">'
+                '<eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6"/>'
+                '<eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="title_label" position="50,30" size="1810,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<eLabel position="30,130" size="1100,810" backgroundColor="#33000000" zPosition="-5"/>'
+                + list_xml +
+                '<eLabel position="1160,130" size="730,810" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="info_text" position="1190,150" size="670,780" font="Regular;30" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
+                '<eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5"/>'
+                '<eLabel position="50,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2"/>'
+                '<widget name="hint_ok"   position="68,960"  size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_exit" position="468,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '</screen>'
+            )
+        else:
+            return (
+                '<screen name="OeMediathekLiveScreen" position="0,0" size="1280,720" flags="wfNoBorder">'
+                '<eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6"/>'
+                '<eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="title_label" position="43,20" size="1177,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<eLabel position="30,83" size="733,540" backgroundColor="#33000000" zPosition="-5"/>'
+                + list_xml +
+                '<eLabel position="773,83" size="477,540" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="info_text" position="790,93" size="443,504" font="Regular;20" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
+                '<eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5"/>'
+                '<eLabel position="33,649" size="5,30" backgroundColor="#1A00AA00" zPosition="2"/>'
+                '<widget name="hint_ok"   position="42,634"  size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_exit" position="290,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '</screen>'
+            )
 
     def __init__(self, session, streams=None, title=None):
-        self.skin = self._SKIN_FHD if IS_FHD else self._SKIN_HD
+        self.skin = self._make_skin()
         Screen.__init__(self, session)
-        self.session = session
-        self._streams = streams  # None = Gruppenauswahl, Liste = Streamauswahl
-        self._status  = {}       # idx -> HTTP-Code oder "checking"
+        self._cl_init()
+        self.session  = session
+        self._streams = streams
+        self._status  = {}
         self._closed  = False
+        self._pix_green  = None
+        self._pix_yellow = None
+        self._pix_red    = None
+
+        for i in range(_LIST_ROWS):
+            try:
+                self["list_dot_%d" % i] = _Pixmap() if _Pixmap else Label(_b(""))
+            except Exception:
+                self["list_dot_%d" % i] = Label(_b(""))
+            self["list_dot_%d" % i].hide()
+
+        self.onShow.append(self.__on_show)
 
         if streams is None:
             items   = [g[0] for g in LIVE_EVENT_GROUPS]
@@ -1843,35 +2187,89 @@ class OeMediathekLiveScreen(Screen):
         self["hint_ok"]     = Label(_b(hint_ok))
         self["hint_exit"]   = Label(_b("EXIT = Zur\xc3\xbcck"))
         self["info_text"]   = Label(_b(""))
-        self["menu_list"]   = MenuList([_b(i) for i in items])
+
+        self._set_list([_b(i) for i in items])
 
         self["actions"] = ActionMap(
-            ["OkCancelActions", "DirectionActions"],
+            ["OkCancelActions", "DirectionActions", "ListboxActions"],
             {
-                "ok":     self.key_ok,
-                "cancel": self.key_cancel,
-                "up":     self.key_up,
-                "down":   self.key_down,
+                "ok":           self.key_ok,
+                "cancel":       self.key_cancel,
+                "up":           self.key_up,
+                "down":         self.key_down,
+                "upRepeated":   self.key_up,
+                "downRepeated": self.key_down,
+                "left":         self.key_page_up,
+                "right":        self.key_page_down,
+                "pageUp":       self.key_page_up,
+                "pageDown":     self.key_page_down,
             },
             -1,
         )
-        self["menu_list"].onSelectionChanged.append(self._on_selection_changed)
         self._on_selection_changed()
+
+    def __on_show(self):
+        if self._pix_green is None and _Pixmap and _LoadPixmap:
+            try:
+                import os as _os
+                _d = _os.path.dirname(__file__)
+                self._pix_green  = _LoadPixmap(_os.path.join(_d, "live_green.png"))
+                self._pix_yellow = _LoadPixmap(_os.path.join(_d, "live_yellow.png"))
+                self._pix_red    = _LoadPixmap(_os.path.join(_d, "live_red.png"))
+            except Exception as e:
+                _log("live PNGs load failed: " + str(e))
+        self._update_dots()
+
+    def _status_to_pix(self, code):
+        if code == "live":
+            return self._pix_green
+        if code in ("slate", 200):
+            return self._pix_yellow
+        if code == "checking" or code is None:
+            return None
+        return self._pix_red
+
+    def _update_dots(self):
+        if self._streams is None or not _Pixmap:
+            for i in range(_LIST_ROWS):
+                self["list_dot_%d" % i].hide()
+            return
+        scroll = self._list_scroll
+        total  = len(self._list_items)
+        for i in range(_LIST_ROWS):
+            abs_idx = scroll + i
+            if abs_idx >= total:
+                self["list_dot_%d" % i].hide()
+                continue
+            name, url = self._streams[abs_idx]
+            if _is_checkable(url) and abs_idx not in self._status:
+                self._status[abs_idx] = "checking"
+                self._start_check(abs_idx, url)
+            pix = self._status_to_pix(self._status.get(abs_idx))
+            if pix:
+                try:
+                    self["list_dot_%d" % i].instance.setPixmap(pix)
+                    self["list_dot_%d" % i].show()
+                except Exception:
+                    self["list_dot_%d" % i].hide()
+            else:
+                self["list_dot_%d" % i].hide()
 
     def _start_check(self, idx, url):
         def on_result(code):
             if self._closed:
                 return
             self._status[idx] = code
+            self._update_dots()
             try:
-                if self["menu_list"].getSelectedIndex() == idx:
+                if self._get_list_index() == idx:
                     self._on_selection_changed()
             except Exception:
                 pass
         _check_stream_status(url, on_result)
 
     def _on_selection_changed(self):
-        idx = self["menu_list"].getSelectedIndex()
+        idx = self._get_list_index()
         if idx is None:
             self["info_text"].setText(_b(""))
             return
@@ -1912,31 +2310,26 @@ class OeMediathekLiveScreen(Screen):
             self["info_text"].setText(_b(
                 name + "\n\n" + status_line + "\n\n" + url
             ))
+        self._update_dots()
 
     def key_up(self):
-        try:
-            idx = self["menu_list"].getSelectedIndex()
-            n = len(LIVE_EVENT_GROUPS) if self._streams is None else len(self._streams)
-            if idx == 0:
-                self["menu_list"].instance.moveSelectionTo(n - 1)
-            else:
-                self["menu_list"].up()
-        except Exception:
-            pass
+        self._list_step(-1)
+        self._on_selection_changed()
 
     def key_down(self):
-        try:
-            idx = self["menu_list"].getSelectedIndex()
-            n = len(LIVE_EVENT_GROUPS) if self._streams is None else len(self._streams)
-            if n > 0 and idx >= n - 1:
-                self["menu_list"].instance.moveSelectionTo(0)
-            else:
-                self["menu_list"].down()
-        except Exception:
-            pass
+        self._list_step(1)
+        self._on_selection_changed()
+
+    def key_page_up(self):
+        self._list_page(-1)
+        self._on_selection_changed()
+
+    def key_page_down(self):
+        self._list_page(1)
+        self._on_selection_changed()
 
     def key_ok(self):
-        idx = self["menu_list"].getSelectedIndex()
+        idx = self._get_list_index()
         if idx is None:
             return
         if self._streams is None:
@@ -1970,55 +2363,77 @@ class OeMediathekScreen(Screen):
     @staticmethod
     def _make_skin():
         if IS_FHD:
-            return """
-        <screen name="OeMediathekScreen" position="0,0" size="1920,1080" flags="wfNoBorder">
-            <eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6" />
-            <eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
-            <widget name="sort_label" position="910,30" size="220,80" font="Regular;28" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
-            <widget name="status_label" position="1140,30" size="690,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="30,140" size="1100,780" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="menu_list" position="40,150" size="1080,760" font="Regular;34" scrollbarMode="showOnDemand" itemHeight="58" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="1160,140" size="730,780" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="description_text" position="1190,160" size="670,740" font="Regular;34" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
-            <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
-            <eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2" />
-            <widget name="hint_red" position="68,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="450,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_green" position="468,960" size="300,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="808,980" size="8,60" backgroundColor="#1AAAAA00" zPosition="2" />
-            <widget name="hint_yellow" position="826,960" size="292,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="1158,980" size="8,60" backgroundColor="#1A0044DD" zPosition="2" />
-            <widget name="hint_blue" position="1176,960" size="242,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_info" position="1468,960" size="220,100" font="Regular;26" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_page" position="1698,960" size="172,100" font="Regular;32" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
-        </screen>
-            """
+            lx, ly0, lw, rh, rf = 40, 150, 1080, 58, 34
+            dw, dh, dx_off, dy_off, label_off = 28, 24, 12, 17, 44
         else:
-            return """
-        <screen name="OeMediathekScreen" position="0,0" size="1280,720" flags="wfNoBorder">
-            <eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6" />
-            <eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
-            <widget name="sort_label" position="610,20" size="147,53" font="Regular;18" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
-            <widget name="status_label" position="760,20" size="460,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="30,90" size="733,524" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="menu_list" position="36,97" size="720,510" font="Regular;22" scrollbarMode="showOnDemand" itemHeight="38" backgroundColor="#33000000" transparent="1" />
-            <eLabel position="773,90" size="477,524" backgroundColor="#33000000" zPosition="-5" />
-            <widget name="description_text" position="790,103" size="443,504" font="Regular;22" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
-            <eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5" />
-            <eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2" />
-            <widget name="hint_red" position="42,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="300,649" size="5,30" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_green" position="309,634" size="200,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="539,649" size="5,30" backgroundColor="#1AAAAA00" zPosition="2" />
-            <widget name="hint_yellow" position="548,634" size="195,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="772,649" size="5,30" backgroundColor="#1A0044DD" zPosition="2" />
-            <widget name="hint_blue" position="781,634" size="161,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_info" position="978,634" size="147,60" font="Regular;17" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_page" position="1132,634" size="118,60" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1" />
-        </screen>
-            """
+            lx, ly0, lw, rh, rf = 36, 97, 720, 38, 22
+            dw, dh, dx_off, dy_off, label_off = 18, 16, 8, 11, 30
+
+        list_xml = ""
+        for i in range(_LIST_ROWS):
+            y = ly0 + i * rh
+            list_xml += (
+                '<widget name="list_sel_{i}" position="{x},{y}" size="{w},{rh}" '
+                'backgroundColor="#00253850" zPosition="1" transparent="0"/>'
+                '<widget name="list_dot_{i}" position="{dx},{dy}" size="{dw},{dh}" '
+                'alphatest="blend" scale="1" zPosition="3" transparent="1"/>'
+                '<widget name="list_label_{i}" position="{lbx},{y}" size="{lbw},{rh}" '
+                'zPosition="2" font="Regular;{rf}" halign="left" valign="center" '
+                'foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" noWrap="1"/>'
+            ).format(i=i, x=lx, y=y, w=lw,
+                     dx=lx + dx_off, dy=y + dy_off, dw=dw, dh=dh,
+                     lbx=lx + label_off, lbw=lw - label_off, rh=rh, rf=rf)
+
+        if IS_FHD:
+            return (
+                '<screen name="OeMediathekScreen" position="0,0" size="1920,1080" flags="wfNoBorder">'
+                '<eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6"/>'
+                '<eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="sort_label" position="910,30" size="220,80" font="Regular;28" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="status_label" position="1140,30" size="690,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
+                '<eLabel position="30,140" size="1100,780" backgroundColor="#33000000" zPosition="-5"/>'
+                + list_xml +
+                '<eLabel position="1160,140" size="730,780" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="description_text" position="1190,160" size="670,740" font="Regular;34" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
+                '<eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5"/>'
+                '<eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2"/>'
+                '<widget name="hint_red" position="68,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="450,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2"/>'
+                '<widget name="hint_green" position="468,960" size="300,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="808,980" size="8,60" backgroundColor="#1AAAAA00" zPosition="2"/>'
+                '<widget name="hint_yellow" position="826,960" size="292,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="1158,980" size="8,60" backgroundColor="#1A0044DD" zPosition="2"/>'
+                '<widget name="hint_blue" position="1176,960" size="242,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_info" position="1468,960" size="220,100" font="Regular;26" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_page" position="1698,960" size="172,100" font="Regular;32" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
+                '</screen>'
+            )
+        else:
+            return (
+                '<screen name="OeMediathekScreen" position="0,0" size="1280,720" flags="wfNoBorder">'
+                '<eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6"/>'
+                '<eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="sort_label" position="610,20" size="147,53" font="Regular;18" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="status_label" position="760,20" size="460,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
+                '<eLabel position="30,90" size="733,524" backgroundColor="#33000000" zPosition="-5"/>'
+                + list_xml +
+                '<eLabel position="773,90" size="477,524" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="description_text" position="790,103" size="443,504" font="Regular;22" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
+                '<eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5"/>'
+                '<eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2"/>'
+                '<widget name="hint_red" position="42,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="300,649" size="5,30" backgroundColor="#1A00AA00" zPosition="2"/>'
+                '<widget name="hint_green" position="309,634" size="200,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="539,649" size="5,30" backgroundColor="#1AAAAA00" zPosition="2"/>'
+                '<widget name="hint_yellow" position="548,634" size="195,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="772,649" size="5,30" backgroundColor="#1A0044DD" zPosition="2"/>'
+                '<widget name="hint_blue" position="781,634" size="161,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_info" position="978,634" size="147,60" font="Regular;17" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_page" position="1132,634" size="118,60" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
+                '</screen>'
+            )
 
     def __init__(self, session, source_name, loader):
         self.skin = self._make_skin()
@@ -2080,9 +2495,23 @@ class OeMediathekScreen(Screen):
 
         self["title_label"]  = Label(source_name)
         self["status_label"] = Label("Lade Inhalte ...")
-        self["menu_list"]    = MenuList([])
         self["description_text"] = ScrollLabel(_b(""))
-        
+
+        self._list_items  = []
+        self._list_sel    = 0
+        self._list_scroll = 0
+        self._dot_pix = None
+        for i in range(_LIST_ROWS):
+            self["list_sel_%d"   % i] = Label(_b(""))
+            self["list_label_%d" % i] = Label(_b(""))
+            try:
+                self["list_dot_%d" % i] = _Pixmap() if _Pixmap else Label(_b(""))
+            except Exception:
+                self["list_dot_%d" % i] = Label(_b(""))
+            self["list_sel_%d"   % i].hide()
+            self["list_label_%d" % i].hide()
+            self["list_dot_%d"   % i].hide()
+
         self["sort_label"]   = Label("")
         self["hint_red"]     = Label("")
         self["hint_green"]   = Label("")
@@ -2093,7 +2522,7 @@ class OeMediathekScreen(Screen):
 
         self["actions"] = ActionMap(
             ["OkCancelActions", "ColorActions", "DirectionActions",
-             "ChannelSelectBaseActions", "EPGSelectActions"],
+             "ChannelSelectBaseActions", "EPGSelectActions", "ListboxActions"],
             {
                 "ok":           self.on_ok,
                 "cancel":       self.on_cancel,
@@ -2106,7 +2535,13 @@ class OeMediathekScreen(Screen):
                 "nextBouquet":  self.next_page,
                 "prevBouquet":  self.prev_page,
                 "up":           self.on_up,
+                "upRepeated":   self.on_up,
                 "down":         self.on_down,
+                "downRepeated": self.on_down,
+                "left":         self.on_page_up,
+                "right":        self.on_page_down,
+                "pageUp":       self.on_page_up,
+                "pageDown":     self.on_page_down,
             },
             -1,
         )
@@ -2132,12 +2567,19 @@ class OeMediathekScreen(Screen):
         self.onClose.append(self.__stop_timers)
 
     def __on_show(self):
-        try:
-            self["menu_list"].instance.moveSelectionTo(
-                self["menu_list"].getSelectedIndex() or 0
-            )
-        except Exception:
-            pass
+        if self._dot_pix is None and _Pixmap and _LoadPixmap:
+            try:
+                import os as _os
+                _path = _os.path.join(_os.path.dirname(__file__), "mark.png")
+                self._dot_pix = _LoadPixmap(_path)
+                if self._dot_pix:
+                    for i in range(_LIST_ROWS):
+                        try:
+                            self["list_dot_%d" % i].instance.setPixmap(self._dot_pix)
+                        except Exception:
+                            pass
+            except Exception as e:
+                _log("mark.png load failed: " + str(e))
 
     def __stop_timers(self):
         try:
@@ -2247,7 +2689,7 @@ class OeMediathekScreen(Screen):
         if not raw and self.page == 0:
             if self.source_name != "Meine Favoriten":
                 self["status_label"].setText("Keine Inhalte gefunden.")
-                self["menu_list"].setList([])
+                self._set_list([])
                 return
             self.groups = []
             self.groups_filtered = []
@@ -2280,7 +2722,7 @@ class OeMediathekScreen(Screen):
             else:
                 self._show_toast("Download fehlgeschlagen!", added=False)
         try:
-            idx = self["menu_list"].getSelectedIndex()
+            idx = self._get_list_index()
             if idx is None or idx < 0:
                 return
             if idx == self.last_index:
@@ -2383,7 +2825,7 @@ class OeMediathekScreen(Screen):
         for gname, gitems in self.groups_filtered:
             # Keine Zahlen mehr in der Vorschau anhängen
             entries.append(gname)
-        self["menu_list"].setList(entries)
+        self._set_list(entries)
 
         if self._sv_mode:
             status_text = "Sendung verpasst? \xe2\x80\x94 %d Sendungen" % len(self.groups_filtered)
@@ -2429,7 +2871,7 @@ class OeMediathekScreen(Screen):
         self["hint_info"].setText(_b(""))
         self._update_page_hint()
         pos = self.cur_group_idx if restore_pos and self.cur_group_idx is not None else 0
-        self._focus_list(pos)
+        self._list_focus(pos)
         self.last_index = -2
         # Einmaliger Timer: nach 300ms nochmals erzwingen, damit VTi das Widget
         # tatsaechlich neu zeichnet (setText direkt nach setList wird ignoriert).
@@ -2444,12 +2886,18 @@ class OeMediathekScreen(Screen):
     def _prefetch_sv_sn(self, mode):
         """Laedt bis zu 1000 Eintraege bevor SV/SN-Datepicker geoeffnet wird."""
         SV_SN_FETCH_SIZE = 1000
-        if len(self.all_items) >= SV_SN_FETCH_SIZE or self._fetching:
-            # Genug Daten vorhanden oder Fetch laeuft bereits
+        if len(self.all_items) >= SV_SN_FETCH_SIZE:
+            # Genug Daten vorhanden
             if mode == "sv":
                 self._open_sv_date_picker()
             else:
                 self._open_sn_date_picker()
+            return
+        if self._fetching:
+            if self._fetch_target == "sv_sn_prefetch":
+                # Prefetch laeuft bereits — Ergebnis wird in _on_sv_sn_prefetch_done verarbeitet
+                self._sv_sn_pending = mode
+            # Anderer Fetch laeuft (z.B. Gruppen) — SV/SN erst nach Fertigstellung starten
             return
         self["status_label"].setText("Lade Sendungen ...")
         self._fetching = True
@@ -2500,30 +2948,34 @@ class OeMediathekScreen(Screen):
         now    = _time.localtime()
         # Mitternacht des heutigen Tages als Ankerpunkt — vermeidet Sommerzeit-Fehler
         today_midnight = int(_time.mktime((now.tm_year, now.tm_mon, now.tm_mday, 0, 0, 0, 0, 0, -1)))
+        all_items = getattr(self, "all_items", []) or []
         for i in range(8):
-            day_ts = today_midnight - i * 86400
-            t   = _time.localtime(day_ts)
-            ds  = "%04d-%02d-%02d" % (t.tm_year, t.tm_mon, t.tm_mday)
-            dsp = "%02d.%02d.%04d" % (t.tm_mday, t.tm_mon, t.tm_year)
+            day_ts   = today_midnight - i * 86400
+            t        = _time.localtime(day_ts)
+            ds       = "%04d-%02d-%02d" % (t.tm_year, t.tm_mon, t.tm_mday)
+            dsp      = "%02d.%02d.%04d" % (t.tm_mday, t.tm_mon, t.tm_year)
+            start_ts = int(_time.mktime((t.tm_year, t.tm_mon, t.tm_mday, 0, 0, 0, 0, 0, -1)))
+            end_ts   = start_ts + 86399
+            count    = sum(1 for item in all_items
+                           if start_ts <= item.get("timestamp", 0) <= end_ts)
             if i == 0:
-                label = _b("Heute (%s)" % dsp)
+                label = _b("Heute (%s) - %d" % (dsp, count))
             elif i == 1:
-                label = _b("Gestern (%s)" % dsp)
+                label = _b("Gestern (%s) - %d" % (dsp, count))
             else:
                 wd    = _WEEKDAYS[t.tm_wday]
-                label = wd + _b(" (%s)" % dsp)
+                label = wd + _b(" (%s) - %d" % (dsp, count))
             choices.append((label, ds))
         self.session.openWithCallback(
             self._on_sv_date_chosen,
-            ChoiceBox,
-            title="Sendung verpasst? — Datum wählen:",
-            list=choices,
+            OeMediathekPickerScreen,
+            title="Sendung verpasst? \xe2\x80\x94 Datum w\xc3\xa4hlen:",
+            choices=choices,
         )
 
-    def _on_sv_date_chosen(self, choice):
-        if not choice:
+    def _on_sv_date_chosen(self, date_str):
+        if not date_str:
             return
-        date_str = choice[1]   # "YYYY-MM-DD"
         try:
             import time as _time
             parts = date_str.split("-")
@@ -2557,28 +3009,32 @@ class OeMediathekScreen(Screen):
         choices = []
         now    = _time.localtime()
         today_midnight = int(_time.mktime((now.tm_year, now.tm_mon, now.tm_mday, 0, 0, 0, 0, 0, -1)))
+        all_items = getattr(self, "all_items", []) or []
         for i in range(1, 8):
-            day_ts = today_midnight + i * 86400
-            t   = _time.localtime(day_ts)
-            ds  = "%04d-%02d-%02d" % (t.tm_year, t.tm_mon, t.tm_mday)
-            dsp = "%02d.%02d.%04d" % (t.tm_mday, t.tm_mon, t.tm_year)
+            day_ts   = today_midnight + i * 86400
+            t        = _time.localtime(day_ts)
+            ds       = "%04d-%02d-%02d" % (t.tm_year, t.tm_mon, t.tm_mday)
+            dsp      = "%02d.%02d.%04d" % (t.tm_mday, t.tm_mon, t.tm_year)
+            start_ts = int(_time.mktime((t.tm_year, t.tm_mon, t.tm_mday, 0, 0, 0, 0, 0, -1)))
+            end_ts   = start_ts + 86399
+            count    = sum(1 for item in all_items
+                           if start_ts <= item.get("timestamp", 0) <= end_ts)
             if i == 1:
-                label = _b("Morgen (%s)" % dsp)
+                label = _b("Morgen (%s) - %d" % (dsp, count))
             else:
                 wd    = _WEEKDAYS[t.tm_wday]
-                label = wd + _b(" (%s)" % dsp)
+                label = wd + _b(" (%s) - %d" % (dsp, count))
             choices.append((label, ds))
         self.session.openWithCallback(
             self._on_sn_date_chosen,
-            ChoiceBox,
-            title="Demn\xc3\xa4chst — Datum w\xc3\xa4hlen:",
-            list=choices,
+            OeMediathekPickerScreen,
+            title="Demn\xc3\xa4chst \xe2\x80\x94 Datum w\xc3\xa4hlen:",
+            choices=choices,
         )
 
-    def _on_sn_date_chosen(self, choice):
-        if not choice:
+    def _on_sn_date_chosen(self, date_str):
+        if not date_str:
             return
-        date_str = choice[1]
         try:
             import time as _time
             parts = date_str.split("-")
@@ -2630,7 +3086,7 @@ class OeMediathekScreen(Screen):
         self._ep_next_api_offset = 0
 
         self["title_label"].setText(self.source_name + b" | " + _b(date_str))
-        self["menu_list"].setList([
+        self._set_list([
             _episode_label(i["title"], i.get("group"),
                            watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""))
             for i in items
@@ -2643,7 +3099,7 @@ class OeMediathekScreen(Screen):
         self["hint_page"].setText(_b(""))
         self._update_ep_sort_hint()
         self._update_info_hint()
-        self._focus_list(0)
+        self._list_focus(0)
         self.last_index = -2
 
     def _update_page_hint(self):
@@ -2700,8 +3156,8 @@ class OeMediathekScreen(Screen):
         self["title_label"].setText(title_text)
         
         self["status_label"].setText("Lade alle Folgen ...")
-            
-        self["menu_list"].setList([])
+
+        self._set_list([])
         self["description_text"].setText(_b(""))
         
         self._update_red_hint()
@@ -2807,7 +3263,7 @@ class OeMediathekScreen(Screen):
 
         is_direct_hits = self.cur_group_name.startswith(b">> Direkte Treffer")
         show_group = is_direct_hits or self.source_name == "Meine Favoriten"
-        self["menu_list"].setList([_episode_label(i["title"], i.get("group") if show_group else None, watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b"")) for i in self.cur_episodes])
+        self._set_list([_episode_label(i["title"], i.get("group") if show_group else None, watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b"")) for i in self.cur_episodes])
 
         if self.ep_total > 0 and (self.ep_has_more or self.ep_page > 0):
             self["status_label"].setText(_b("%d  \xc2\xb7  ~%d gesamt" % (len(self.cur_episodes), self.ep_total)))
@@ -2831,7 +3287,7 @@ class OeMediathekScreen(Screen):
 
         self._update_page_hint()
         self._update_info_hint()
-        self._focus_list(0)
+        self._list_focus(0)
         self.last_index = -2
         try:
             self._first_desc_timer.stop()
@@ -2841,18 +3297,93 @@ class OeMediathekScreen(Screen):
         self._first_desc_timer.callback.append(self._force_first_desc)
         self._first_desc_timer.start(300, True)
 
-    def _focus_list(self, idx=0):
-        try:
-            self["menu_list"].instance.moveSelectionTo(idx)
-        except Exception:
-            pass
+    def _set_list(self, items):
+        self._list_items  = list(items)
+        self._list_sel    = 0
+        self._list_scroll = 0
+        self._render_list()
+
+    def _get_list_index(self):
+        if not self._list_items:
+            return None
+        return self._list_sel
+
+    def _list_focus(self, idx):
+        if not self._list_items:
+            return
+        self._list_sel = max(0, min(idx, len(self._list_items) - 1))
+        if self._list_sel < self._list_scroll:
+            self._list_scroll = self._list_sel
+        elif self._list_sel >= self._list_scroll + _LIST_ROWS:
+            self._list_scroll = self._list_sel - _LIST_ROWS + 1
+        self._list_scroll = max(0, min(self._list_scroll, max(0, len(self._list_items) - _LIST_ROWS)))
+        self._render_list()
+
+    def _render_list(self):
+        total = len(self._list_items)
+        if total == 0:
+            self._list_sel = self._list_scroll = 0
+        else:
+            self._list_sel = max(0, min(self._list_sel, total - 1))
+            if self._list_sel < self._list_scroll:
+                self._list_scroll = self._list_sel
+            elif self._list_sel >= self._list_scroll + _LIST_ROWS:
+                self._list_scroll = self._list_sel - _LIST_ROWS + 1
+            self._list_scroll = max(0, min(self._list_scroll, max(0, total - _LIST_ROWS)))
+        for i in range(_LIST_ROWS):
+            abs_idx = self._list_scroll + i
+            if abs_idx < total:
+                item = self._list_items[abs_idx]
+                if isinstance(item, bytes):
+                    try:
+                        item = item.decode("utf-8", "replace")
+                    except Exception:
+                        item = str(item)
+                if item.startswith("* "):
+                    self["list_dot_%d" % i].show()
+                    item = item[2:]
+                else:
+                    self["list_dot_%d" % i].hide()
+                self["list_label_%d" % i].setText(_b(item))
+                self["list_label_%d" % i].show()
+                if abs_idx == self._list_sel:
+                    self["list_sel_%d" % i].show()
+                else:
+                    self["list_sel_%d" % i].hide()
+            else:
+                self["list_sel_%d"   % i].hide()
+                self["list_label_%d" % i].hide()
+                self["list_dot_%d"   % i].hide()
+
+    def _list_step(self, step):
+        total = len(self._list_items)
+        if total == 0:
+            return
+        old_sel    = self._list_sel
+        old_scroll = self._list_scroll
+        new_sel    = (old_sel + step) % total
+        self._list_sel = new_sel
+        if self._list_sel < self._list_scroll:
+            self._list_scroll = self._list_sel
+        elif self._list_sel >= self._list_scroll + _LIST_ROWS:
+            self._list_scroll = self._list_sel - _LIST_ROWS + 1
+        self._list_scroll = max(0, min(self._list_scroll, max(0, total - _LIST_ROWS)))
+        if self._list_scroll != old_scroll:
+            self._render_list()
+        else:
+            old_row = old_sel - old_scroll
+            new_row = self._list_sel - self._list_scroll
+            if 0 <= old_row < _LIST_ROWS:
+                self["list_sel_%d" % old_row].hide()
+            if 0 <= new_row < _LIST_ROWS:
+                self["list_sel_%d" % new_row].show()
 
     def on_download(self):
         global _active_downloader, _download_queue
         if self.mode != MODE_EPISODES:
             return
         try:
-            idx = self["menu_list"].getSelectedIndex()
+            idx = self._get_list_index()
             if idx is None or idx >= len(self.cur_episodes):
                 return
             item = self.cur_episodes[idx]
@@ -2907,7 +3438,7 @@ class OeMediathekScreen(Screen):
 
     def on_ok(self):
         try:
-            idx = self["menu_list"].getSelectedIndex()
+            idx = self._get_list_index()
             _log("on_ok mode=%d idx=%s" % (self.mode, str(idx)))
             if idx is None:
                 return
@@ -2915,20 +3446,21 @@ class OeMediathekScreen(Screen):
             if self._ep_fav_sort_mode:
                 if self._ep_fav_grabbed is None:
                     self._ep_fav_grabbed = idx
-                    self["menu_list"].setList(self._ep_fav_list_entries())
-                    self._focus_list(idx)
+                    self._list_items = self._ep_fav_list_entries()
+                    self._list_focus(idx)
                     self._ep_fav_update_hints()
                 else:
                     self._ep_fav_grabbed = None
-                    self["menu_list"].setList(self._ep_fav_list_entries())
+                    self._list_items = self._ep_fav_list_entries()
+                    self._render_list()
                     self._ep_fav_update_hints()
                 return
             # Favoriten-Sortiermodus: OK = Greifen oder Ablegen
             if self._fav_sort_mode:
                 if self._fav_grabbed is None:
                     self._fav_grabbed = idx
-                    self["menu_list"].setList(self._fav_list_entries())
-                    self._focus_list(idx)
+                    self._list_items = self._fav_list_entries()
+                    self._list_focus(idx)
                     self._fav_update_hints()
                 else:
                     self._fav_grabbed = None
@@ -2951,16 +3483,17 @@ class OeMediathekScreen(Screen):
                     
                     options = []
                     if url_hd:
-                        options.append(("Hohe Qualitaet (HD)", url_hd))
+                        options.append((_b("Hohe Qualit\xc3\xa4t (HD)"), url_hd))
                     if url_sd and url_sd != url_hd:
-                        options.append(("Normale Qualitaet (SD - datensparend)", url_sd))
-                        
+                        options.append((_b("Normale Qualit\xc3\xa4t (SD)"), url_sd))
+
                     if len(options) > 1:
+                        _title = item["title"]
                         self.session.openWithCallback(
-                            lambda ret: self.play_selected_quality(ret, item["title"]),
-                            ChoiceBox,
-                            title="Qualität wählen:",
-                            list=options
+                            lambda url, t=_title: self.play_selected_quality(url, t),
+                            OeMediathekPickerScreen,
+                            title="Qualit\xc3\xa4t w\xc3\xa4hlen:",
+                            choices=options,
                         )
                     elif len(options) == 1:
                         _log("Starte direkt: " + str(item["title"]))
@@ -2971,10 +3504,10 @@ class OeMediathekScreen(Screen):
         except Exception:
             _log("on_ok Fehler: " + _fmt_exc())
 
-    def play_selected_quality(self, ret, title):
-        if ret:
+    def play_selected_quality(self, url, title):
+        if url:
             _log("Starte (Auswahl): " + str(title))
-            play_stream(self.session, ret[1], title)
+            play_stream(self.session, url, title)
 
     def on_cancel(self):
         if self._ep_fav_sort_mode:
@@ -2983,7 +3516,8 @@ class OeMediathekScreen(Screen):
             self._ep_fav_sort_mode = False
             self._ep_fav_grabbed = None
             self._ep_fav_order_backup = None
-            self["menu_list"].setList(self._ep_fav_list_entries())
+            self._list_items = self._ep_fav_list_entries()
+            self._render_list()
             self._ep_fav_update_hints()
             return
         if self._fav_sort_mode:
@@ -3018,7 +3552,7 @@ class OeMediathekScreen(Screen):
             self.all_items = []
             self.groups = []
             self.groups_filtered = []
-            self["menu_list"].setList([])
+            self._set_list([])
             self["description_text"].setText(_b(""))
             self._start_fetch()
         else:
@@ -3087,8 +3621,8 @@ class OeMediathekScreen(Screen):
             self.groups_filtered[new_idx], self.groups_filtered[idx]
         self._fav_grabbed = new_idx
         # Liste neu aufbauen und Cursor auf neuer Position setzen
-        self["menu_list"].setList(self._fav_list_entries())
-        self._focus_list(new_idx)
+        self._list_items = self._fav_list_entries()
+        self._list_focus(new_idx)
 
     def _fav_list_entries(self):
         """Erstellt die MenuList-Eintraege fuer den Favoriten-Sortiermodus.
@@ -3113,16 +3647,7 @@ class OeMediathekScreen(Screen):
         elif self._fav_sort_mode and self._fav_grabbed is not None:
             self._fav_move(-1)
         else:
-            try:
-                idx = self["menu_list"].getSelectedIndex()
-                if idx == 0:
-                    last = self._list_len() - 1
-                    if last > 0:
-                        self["menu_list"].instance.moveSelectionTo(last)
-                else:
-                    self["menu_list"].up()
-            except Exception:
-                pass
+            self._list_step(-1)
 
     def on_down(self):
         if self._ep_fav_sort_mode and self._ep_fav_grabbed is not None:
@@ -3130,15 +3655,25 @@ class OeMediathekScreen(Screen):
         elif self._fav_sort_mode and self._fav_grabbed is not None:
             self._fav_move(1)
         else:
-            try:
-                idx = self["menu_list"].getSelectedIndex()
-                n = self._list_len()
-                if n > 0 and idx >= n - 1:
-                    self["menu_list"].instance.moveSelectionTo(0)
-                else:
-                    self["menu_list"].down()
-            except Exception:
-                pass
+            self._list_step(1)
+
+    def on_page_up(self):
+        if self._fav_sort_mode and self._fav_grabbed is not None:
+            return
+        if self._ep_fav_sort_mode and self._ep_fav_grabbed is not None:
+            return
+        if not self._list_items:
+            return
+        self._list_focus(max(0, self._list_sel - _LIST_ROWS))
+
+    def on_page_down(self):
+        if self._fav_sort_mode and self._fav_grabbed is not None:
+            return
+        if self._ep_fav_sort_mode and self._ep_fav_grabbed is not None:
+            return
+        if not self._list_items:
+            return
+        self._list_focus(min(len(self._list_items) - 1, self._list_sel + _LIST_ROWS))
 
     def open_alpha_picker(self):
         try:
@@ -3155,7 +3690,7 @@ class OeMediathekScreen(Screen):
         self.mode = MODE_GROUPS
 
         self["status_label"].setText("Suche '%s' ..." % letter)
-        self["menu_list"].setList([])
+        self._set_list([])
         self["description_text"].setText(_b(""))
 
         self._fetching = True
@@ -3207,7 +3742,7 @@ class OeMediathekScreen(Screen):
 
     def toggle_favorite(self):
         try:
-            idx = self["menu_list"].getSelectedIndex()
+            idx = self._get_list_index()
             if idx is None:
                 return
             # Sondereintraege koennen nicht als Favorit hinzugefuegt werden,
@@ -3242,7 +3777,7 @@ class OeMediathekScreen(Screen):
                     new_len = len(self.groups_filtered)
                     if new_len > 0:
                         new_pos = min(real_idx, new_len - 1)
-                        self["menu_list"].instance.moveSelectionTo(new_pos)
+                        self._list_focus(new_pos)
             else:
                 add_favorite(gname, channel)
                 self._show_toast("Favorit hinzugefügt!", added=True)
@@ -3279,7 +3814,7 @@ class OeMediathekScreen(Screen):
         if self.mode != MODE_EPISODES:
             return
         try:
-            idx = self["menu_list"].getSelectedIndex()
+            idx = self._get_list_index()
             if idx is not None and idx < len(self.cur_episodes):
                 item = self.cur_episodes[idx]
                 url = item.get("stream_url_hd") or item.get("stream_url_sd") or b""
@@ -3321,14 +3856,14 @@ class OeMediathekScreen(Screen):
         self.ep_page = 0
         self._ep_next_api_offset = 0
         self.ep_has_more = False
-        self["menu_list"].setList([])
+        self._set_list([])
         self["description_text"].setText(_b(""))
         self._start_episode_fetch(self.cur_group_idx - self._sv_sn_offset(), reset_sort=False)
 
     def _update_blue_hint(self):
         if self.mode == MODE_EPISODES:
             try:
-                idx = self["menu_list"].getSelectedIndex()
+                idx = self._get_list_index()
                 if idx is not None and idx < len(self.cur_episodes):
                     item = self.cur_episodes[idx]
                     url = item.get("stream_url_hd") or item.get("stream_url_sd") or b""
@@ -3340,7 +3875,7 @@ class OeMediathekScreen(Screen):
             self["hint_blue"].setText(_b("Favorit"))
             return
         try:
-            idx = self["menu_list"].getSelectedIndex()
+            idx = self._get_list_index()
             if idx is not None:
                 offset = self._sv_sn_offset()
                 if idx < offset:
@@ -3421,7 +3956,7 @@ class OeMediathekScreen(Screen):
         self._fetch_target = "episodes"
         self._fetch_episodes_result = []
         self["status_label"].setText("Lade Seite %d ..." % (self.ep_page + 1))
-        self["menu_list"].setList([])
+        self._set_list([])
         self._update_page_hint()
         t = threading.Thread(target=self._fetch_episodes_thread, args=(gname, gitems))
         t.daemon = True
@@ -3461,7 +3996,8 @@ class OeMediathekScreen(Screen):
                 if self._ep_fav_order_backup is not None:
                     self.cur_episodes = list(self._ep_fav_order_backup)
                     self._ep_fav_grabbed = None
-                    self["menu_list"].setList(self._ep_fav_list_entries())
+                    self._list_items = self._ep_fav_list_entries()
+                    self._render_list()
                     self._ep_fav_update_hints()
                     self._show_toast(_b("Reihenfolge zur\xc3\xbcckgesetzt"), added=True)
                 return
@@ -3471,7 +4007,8 @@ class OeMediathekScreen(Screen):
                     backed = {gname: gitems for gname, gitems in self.groups_filtered}
                     self.groups_filtered = [(g, backed.get(g, [])) for g in self._fav_order_backup if g in backed]
                     self._fav_grabbed = None
-                    self["menu_list"].setList(self._fav_list_entries())
+                    self._list_items = self._fav_list_entries()
+                    self._render_list()
                     self._fav_update_hints()
                     self._show_toast(_b("Reihenfolge zur\xc3\xbcckgesetzt"), added=True)
                 return
@@ -3494,7 +4031,7 @@ class OeMediathekScreen(Screen):
                         self.page = 0
                         self.groups = []
                         self.groups_filtered = []
-                        self["menu_list"].setList([])
+                        self._set_list([])
                         self["description_text"].setText(_b(""))
                         self._start_fetch()
                 else:
@@ -3510,12 +4047,12 @@ class OeMediathekScreen(Screen):
                         self.all_items = []
                         self.groups = []
                         self.groups_filtered = []
-                        self["menu_list"].setList([])
+                        self._set_list([])
                         self["description_text"].setText(_b(""))
                         self._start_fetch()
             else:
                 self.ep_page = 0
-                self["menu_list"].setList([])
+                self._set_list([])
                 self["description_text"].setText(_b(""))
                 self._start_episode_fetch(self.cur_group_idx - self._sv_sn_offset())
         except Exception:
@@ -3535,7 +4072,7 @@ class OeMediathekScreen(Screen):
 
     def on_toggle_watched(self):
         try:
-            idx = self["menu_list"].getSelectedIndex()
+            idx = self._get_list_index()
             if idx is None or idx >= len(self.cur_episodes):
                 return
             item = self.cur_episodes[idx]
@@ -3545,15 +4082,15 @@ class OeMediathekScreen(Screen):
             toggle_watched(url)
             is_direct_hits = self.cur_group_name.startswith(b">> Direkte Treffer")
             show_group = is_direct_hits or self.source_name == "Meine Favoriten"
-            self["menu_list"].setList([_episode_label(i["title"], i.get("group") if show_group else None, watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b"")) for i in self.cur_episodes])
-            self["menu_list"].moveToIndex(idx)
+            self._list_items = [_episode_label(i["title"], i.get("group") if show_group else None, watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b"")) for i in self.cur_episodes]
+            self._list_focus(idx)
             self._update_info_hint()
         except Exception:
             _log("on_toggle_watched: " + _fmt_exc())
 
     def toggle_episode_favorite(self):
         try:
-            idx = self["menu_list"].getSelectedIndex()
+            idx = self._get_list_index()
             if idx is None or idx >= len(self.cur_episodes):
                 return
             item = self.cur_episodes[idx]
@@ -3565,11 +4102,13 @@ class OeMediathekScreen(Screen):
                 self._show_toast(_b("Favorit entfernt"), added=False)
                 if self.source_name == "Meine Favoriten" and self._fav_show_episodes:
                     self.cur_episodes = [i for i in self.cur_episodes if (i.get("stream_url_hd") or i.get("stream_url_sd") or b"") != url]
-                    self["menu_list"].setList([_episode_label(i["title"], i.get("group"), watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b"")) for i in self.cur_episodes])
+                    self._list_items = [_episode_label(i["title"], i.get("group"), watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b"")) for i in self.cur_episodes]
                     self["status_label"].setText(_b("%d Einzelfolgen" % len(self.cur_episodes)))
                     new_idx = min(idx, len(self.cur_episodes) - 1)
                     if new_idx >= 0:
-                        self["menu_list"].instance.moveSelectionTo(new_idx)
+                        self._list_focus(new_idx)
+                    else:
+                        self._render_list()
             else:
                 add_episode_favorite(item)
                 self._show_toast(_b("Favorit hinzugef\xc3\xbcgt!"), added=True)
@@ -3604,7 +4143,7 @@ class OeMediathekScreen(Screen):
     def _show_episode_favorites(self):
         items = get_episode_favorites()
         self["status_label"].setText(_b("%d Einzelfolgen" % len(items)))
-        self["menu_list"].setList([_episode_label(i["title"], i.get("group"), watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b"")) for i in items])
+        self._set_list([_episode_label(i["title"], i.get("group"), watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b"")) for i in items])
         self.cur_episodes = items
         self.mode = MODE_EPISODES
         self.last_index = -1
@@ -3638,7 +4177,8 @@ class OeMediathekScreen(Screen):
             self._ep_fav_grabbed = None
             self._ep_fav_order_backup = list(self.cur_episodes)
             self._ep_fav_update_hints()
-            self["menu_list"].setList(self._ep_fav_list_entries())
+            self._list_items = self._ep_fav_list_entries()
+            self._render_list()
         else:
             self._ep_fav_sort_mode = False
             self._ep_fav_grabbed = None
@@ -3646,7 +4186,8 @@ class OeMediathekScreen(Screen):
             from mediathek import _save_episode_favorites, _item_to_unicode
             _save_episode_favorites([_item_to_unicode(i) for i in self.cur_episodes])
             self._show_toast(_b("Reihenfolge gespeichert"), added=True)
-            self["menu_list"].setList(self._ep_fav_list_entries())
+            self._list_items = self._ep_fav_list_entries()
+            self._render_list()
             self._ep_fav_update_hints()
 
     def _ep_fav_list_entries(self):
@@ -3668,8 +4209,8 @@ class OeMediathekScreen(Screen):
         self.cur_episodes[idx], self.cur_episodes[new_idx] = \
             self.cur_episodes[new_idx], self.cur_episodes[idx]
         self._ep_fav_grabbed = new_idx
-        self["menu_list"].setList(self._ep_fav_list_entries())
-        self._focus_list(new_idx)
+        self._list_items = self._ep_fav_list_entries()
+        self._list_focus(new_idx)
 
     def _reload_favorites(self):
         self.mode = MODE_GROUPS
@@ -3679,7 +4220,7 @@ class OeMediathekScreen(Screen):
         self.all_items = []
         self.groups = []
         self.groups_filtered = []
-        self["menu_list"].setList([])
+        self._set_list([])
         self["description_text"].setText(_b(""))
         self._start_fetch()
 
@@ -3734,7 +4275,7 @@ class OeMediathekScreen(Screen):
                 self.all_items = []
                 self.groups = []
                 self.groups_filtered = []
-                self["menu_list"].setList([])
+                self._set_list([])
                 self["description_text"].setText(_b(""))
                 self._start_fetch()
         except Exception:
@@ -3745,41 +4286,72 @@ class OeMediathekScreen(Screen):
 # Dateibrowser für Ordnerauswahl
 # --------------------------------------------------------------------------
 
-class OeMediathekDirBrowser(Screen):
-    if IS_FHD:
-        skin = """
-        <screen name="OeMediathekDirBrowser" position="260,140" size="1400,800" flags="wfNoBorder">
-            <eLabel position="0,0" size="1400,800" backgroundColor="#33000000" zPosition="-6" />
-            <widget name="title_label" position="40,20" size="1320,60" font="Regular;38" halign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="path_label" position="40,90" size="1320,50" font="Regular;32" foregroundColor="#AAAAAA" transparent="1" />
-            <widget name="menu_list" position="40,150" size="1320,560" font="Regular;34" scrollbarMode="showOnDemand" itemHeight="58" backgroundColor="#33000000" transparent="1" />
-            <widget name="hint_label" position="40,730" size="1320,50" font="Regular;32" halign="center" foregroundColor="#AAAAAA" transparent="1" />
-        </screen>"""
-    else:
-        skin = """
-        <screen name="OeMediathekDirBrowser" position="173,93" size="933,534" flags="wfNoBorder">
-            <eLabel position="0,0" size="933,534" backgroundColor="#33000000" zPosition="-6" />
-            <widget name="title_label" position="27,13" size="880,40" font="Regular;25" halign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="path_label" position="27,60" size="880,33" font="Regular;21" foregroundColor="#AAAAAA" transparent="1" />
-            <widget name="menu_list" position="27,100" size="880,373" font="Regular;22" scrollbarMode="showOnDemand" itemHeight="38" backgroundColor="#33000000" transparent="1" />
-            <widget name="hint_label" position="27,487" size="880,33" font="Regular;21" halign="center" foregroundColor="#AAAAAA" transparent="1" />
-        </screen>"""
+class OeMediathekDirBrowser(_CustomListMixin, Screen):
+
+    _CL_ROWS = _DB_LIST_ROWS
+
+    @staticmethod
+    def _make_skin():
+        if IS_FHD:
+            lx, ly0, lw, rh, rf = 40, 150, 1320, 58, 34
+        else:
+            lx, ly0, lw, rh, rf = 27, 100, 880, 38, 22
+        list_xml = ""
+        for i in range(_DB_LIST_ROWS):
+            y = ly0 + i * rh
+            list_xml += (
+                '<widget name="list_sel_{i}" position="{x},{y}" size="{w},{rh}" '
+                'backgroundColor="#00253850" zPosition="1" transparent="0"/>'
+                '<widget name="list_label_{i}" position="{lbx},{y}" size="{lbw},{rh}" '
+                'zPosition="2" font="Regular;{rf}" halign="left" valign="center" '
+                'foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" noWrap="1"/>'
+            ).format(i=i, x=lx, y=y, w=lw, lbx=lx + 12, lbw=lw - 12, rh=rh, rf=rf)
+
+        if IS_FHD:
+            return (
+                '<screen name="OeMediathekDirBrowser" position="260,140" size="1400,800" flags="wfNoBorder">'
+                '<eLabel position="0,0" size="1400,800" backgroundColor="#33000000" zPosition="-6"/>'
+                '<widget name="title_label" position="40,20" size="1320,60" font="Regular;38" halign="center" foregroundColor="#FFFFFF" transparent="1"/>'
+                '<widget name="path_label" position="40,90" size="1320,50" font="Regular;32" foregroundColor="#AAAAAA" transparent="1"/>'
+                + list_xml +
+                '<widget name="hint_label" position="40,730" size="1320,50" font="Regular;32" halign="center" foregroundColor="#AAAAAA" transparent="1"/>'
+                '</screen>'
+            )
+        else:
+            return (
+                '<screen name="OeMediathekDirBrowser" position="173,93" size="933,534" flags="wfNoBorder">'
+                '<eLabel position="0,0" size="933,534" backgroundColor="#33000000" zPosition="-6"/>'
+                '<widget name="title_label" position="27,13" size="880,40" font="Regular;25" halign="center" foregroundColor="#FFFFFF" transparent="1"/>'
+                '<widget name="path_label" position="27,60" size="880,33" font="Regular;21" foregroundColor="#AAAAAA" transparent="1"/>'
+                + list_xml +
+                '<widget name="hint_label" position="27,487" size="880,33" font="Regular;21" halign="center" foregroundColor="#AAAAAA" transparent="1"/>'
+                '</screen>'
+            )
 
     def __init__(self, session, start_dir=None):
+        self.skin = self._make_skin()
         Screen.__init__(self, session)
+        self._cl_init()
         self._cur = start_dir or "/"
 
         self["title_label"] = Label(_b("Ordner auswählen"))
         self["path_label"]  = Label(_b(self._cur))
-        self["menu_list"]   = MenuList([])
         self["hint_label"]  = Label(_b("OK = Öffnen/Wählen   |   Gelb = Neuer Ordner   |   EXIT = Abbrechen"))
 
         self["actions"] = ActionMap(
-            ["OkCancelActions", "DirectionActions", "ColorActions"],
+            ["OkCancelActions", "DirectionActions", "ColorActions", "ListboxActions"],
             {
-                "ok":     self._on_ok,
-                "cancel": self._on_cancel,
-                "yellow": self._new_folder,
+                "ok":           self._on_ok,
+                "cancel":       self._on_cancel,
+                "yellow":       self._new_folder,
+                "up":           self._on_up,
+                "down":         self._on_down,
+                "upRepeated":   self._on_up,
+                "downRepeated": self._on_down,
+                "left":         self._on_page_up,
+                "right":        self._on_page_down,
+                "pageUp":       self._on_page_up,
+                "pageDown":     self._on_page_down,
             },
             -1,
         )
@@ -3821,11 +4393,23 @@ class OeMediathekDirBrowser(Screen):
             _log("DirBrowser _fill Fehler: " + _fmt_exc())
 
         self._entries = entries
-        self["menu_list"].setList([_b(e[0]) for e in entries])
+        self._set_list([_b(e[0]) for e in entries])
         self["path_label"].setText(_b(path))
 
+    def _on_up(self):
+        self._list_step(-1)
+
+    def _on_down(self):
+        self._list_step(1)
+
+    def _on_page_up(self):
+        self._list_page(-1)
+
+    def _on_page_down(self):
+        self._list_page(1)
+
     def _on_ok(self):
-        idx = self["menu_list"].getSelectedIndex()
+        idx = self._get_list_index()
         if idx is None or idx >= len(self._entries):
             return
         label, full = self._entries[idx]
@@ -3915,9 +4499,9 @@ class OeMediathekSettingsScreen(Screen):
         for i in range(n):
             ry = y0 + i * rh
             rows += """
-            <widget name="sel_{i}"   position="{x},{ry}"  size="{iw},{rh}" backgroundColor="#1A0066FF" zPosition="-3" />
-            <widget name="lbl_{i}"   position="{x},{ry}"  size="{lw},{rh}" font="Regular;{fr}" valign="center" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="stat_{i}"  position="{sx},{ry}" size="{sw},{rh}" font="Regular;{fr}" valign="center" halign="right" foregroundColor="#FFDD00" transparent="1" />
+            <widget name="sel_{i}"   position="{x},{ry}"  size="{iw},{rh}" backgroundColor="#00253850" zPosition="1" transparent="0" />
+            <widget name="lbl_{i}"   position="{x},{ry}"  size="{lw},{rh}" font="Regular;{fr}" valign="center" foregroundColor="#FFFFFF" backgroundColor="#33000000" transparent="1" zPosition="2" noWrap="1" />
+            <widget name="stat_{i}"  position="{sx},{ry}" size="{sw},{rh}" font="Regular;{fr}" valign="center" halign="right" foregroundColor="#FFDD00" backgroundColor="#33000000" transparent="1" zPosition="2" />
             """.format(i=i, x=x, ry=ry, iw=iw, rh=rh, lw=lw, sx=x+lw+10, sw=sw, fr=fr)
 
         return """
@@ -3955,10 +4539,12 @@ class OeMediathekSettingsScreen(Screen):
         self["actions"] = ActionMap(
             ["OkCancelActions", "DirectionActions"],
             {
-                "ok":     self._on_ok,
-                "cancel": self.close,
-                "up":     self._move_up,
-                "down":   self._move_down,
+                "ok":          self._on_ok,
+                "cancel":      self.close,
+                "up":          self._move_up,
+                "upRepeated":  self._move_up,
+                "down":        self._move_down,
+                "downRepeated": self._move_down,
             },
             -1,
         )
