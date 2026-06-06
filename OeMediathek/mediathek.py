@@ -153,7 +153,8 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
             continue
         
         # HD und SD getrennt auslesen
-        url_hd     = entry.get("url_video_hd") or ""
+        # ORF: Q8C (HD) seit 2026-06 auf "video_not_available"-Tafel umgeleitet — kein HD anbieten
+        url_hd     = "" if ch.upper() == "ORF" else (entry.get("url_video_hd") or "")
         url_sd     = entry.get("url_video") or ""
         
         desc       = entry.get("description", "")

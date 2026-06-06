@@ -25,7 +25,7 @@ SETTINGS_FILE    = "/etc/enigma2/oemediathek_settings.json"
 DEFAULT_SAVE_DIR = "/media/hdd/movie/OeMediathek"
 _LOG_FILE        = "/tmp/OeMediathek/oemediathek.log"
 
-_ORF_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+_ORF_USER_AGENT = "OeMediathek/1.0"
 
 def _log(msg):
     if not get_debug_logging():
@@ -289,6 +289,9 @@ class Downloader(object):
     CHUNK_SIZE = 256 * 1024
 
     def __init__(self, url, title, topic=None, description=None, duration=None, on_progress=None, on_done=None, on_error=None):
+        # ORF _episodes: Q-Varianten gesperrt, QXA funktioniert
+        if "apasfiis.sf.apa.at" in url and "_episodes" in url:
+            url = re.sub(r'_Q[^./]+\.mp4', '_QXA.mp4', url)
         self.url         = url
         self.title       = title
         self.description = description
@@ -324,6 +327,131 @@ class Downloader(object):
 
     def cancel(self):
         self._cancelled = True
+
+    def _download_hls_parallel(self, workers=4):
+        """Laedt HLS-Segmente parallel (workers gleichzeitig) und muxiert Audio+Video mit ffmpeg."""
+        import threading
+        try:
+            from urlparse import urljoin
+        except ImportError:
+            from urllib.parse import urljoin
+
+        try:
+            _fetch_opener = build_opener(HTTPSHandler(context=_ssl_context)) if _ssl_context else None
+        except Exception:
+            _fetch_opener = None
+
+        def fetch(url, retries=4):
+            for attempt in range(retries):
+                try:
+                    r = Request(url)
+                    r.add_header("User-Agent", _ORF_USER_AGENT)
+                    if _fetch_opener:
+                        return _fetch_opener.open(r, timeout=30).read()
+                    return urlopen(r, timeout=30).read()
+                except Exception as e:
+                    if attempt < retries - 1:
+                        time.sleep(2 ** attempt)
+                    else:
+                        raise
+
+        def get_segments(playlist_url):
+            data = fetch(playlist_url).decode("utf-8", "ignore")
+            return [urljoin(playlist_url, l.strip())
+                    for l in data.splitlines()
+                    if l.strip() and not l.strip().startswith("#")]
+
+        # Master-Playlist auswerten
+        master = fetch(self.url).decode("utf-8", "ignore")
+        lines = master.splitlines()
+        audio_url, best_bw, best_video_url = None, -1, None
+        for line in lines:
+            if line.startswith("#EXT-X-MEDIA") and "TYPE=AUDIO" in line:
+                m = re.search(r'URI="([^"]+)"', line)
+                if m:
+                    audio_url = urljoin(self.url, m.group(1))
+        i = 0
+        while i < len(lines):
+            if lines[i].startswith("#EXT-X-STREAM-INF"):
+                bw_m = re.search(r"BANDWIDTH=(\d+)", lines[i])
+                bw = int(bw_m.group(1)) if bw_m else 0
+                for j in range(i + 1, len(lines)):
+                    v = lines[j].strip()
+                    if v and not v.startswith("#"):
+                        if bw > best_bw:
+                            best_bw, best_video_url = bw, urljoin(self.url, v)
+                        break
+            i += 1
+        if not best_video_url:
+            best_video_url = self.url
+
+        video_segs = get_segments(best_video_url)
+        audio_segs = get_segments(audio_url) if audio_url else []
+        _log("ORF parallel: %d Video + %d Audio Segmente, %d workers" % (len(video_segs), len(audio_segs), workers))
+
+        fp = self.filepath if isinstance(self.filepath, str) else self.filepath.decode("utf-8", "replace")
+        vid_tmp = fp + ".vid.tmp"
+        aud_tmp = fp + ".aud.tmp"
+        self._total = 0
+        self._downloaded = 0
+
+        def download_batched(segs, out_path):
+            with open(out_path, "wb") as f:
+                for start in range(0, len(segs), workers):
+                    if self._cancelled:
+                        return
+                    batch = segs[start:start + workers]
+                    results = [None] * len(batch)
+                    errors = [None]
+
+                    def _worker(url, idx):
+                        try:
+                            results[idx] = fetch(url)
+                        except Exception as e:
+                            errors[0] = e
+
+                    threads = [threading.Thread(target=_worker, args=(url, idx))
+                               for idx, url in enumerate(batch)]
+                    for t in threads:
+                        t.start()
+                    for t in threads:
+                        t.join()
+                    if errors[0]:
+                        raise errors[0]
+                    for data in results:
+                        if data:
+                            f.write(data)
+                            self._downloaded += len(data)
+                            if self.on_progress:
+                                self.on_progress(self._downloaded, 0)
+
+        download_batched(video_segs, vid_tmp)
+        if self._cancelled:
+            for p in (vid_tmp,):
+                try: os.remove(p)
+                except Exception: pass
+            return
+
+        if audio_segs:
+            download_batched(audio_segs, aud_tmp)
+            if self._cancelled:
+                for p in (vid_tmp, aud_tmp):
+                    try: os.remove(p)
+                    except Exception: pass
+                return
+            cmd = ["ffmpeg", "-y", "-i", vid_tmp, "-i", aud_tmp,
+                   "-c", "copy", "-f", "mpegts", fp]
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            proc.wait()
+            for p in (vid_tmp, aud_tmp):
+                try: os.remove(p)
+                except Exception: pass
+            if proc.returncode != 0:
+                err = proc.stderr.read()[-300:]
+                raise Exception("ffmpeg Mux Fehler (Code %d): %s" % (proc.returncode, err))
+        else:
+            os.rename(vid_tmp, fp)
+        _log("ORF parallel fertig: %s" % fp)
 
     def _download_m3u8(self, opener, url):
         """Laedt HLS-Streams (m3u8) herunter, indem alle .ts Segmente aneinandergehaengt werden."""
@@ -403,8 +531,10 @@ class Downloader(object):
             
             is_m3u8 = self.url.split("?")[0].lower().endswith((".m3u8", ".m3u"))
             
-            if is_m3u8:
-                # Nutzt den neuen HLS/m3u8 Ripper
+            if is_m3u8 and "apasfiis.sf.apa.at" in self.url:
+                # ORF HLS: parallele Segment-Downloads (umgeht CDN-Drosselung pro Verbindung)
+                self._download_hls_parallel(workers=4)
+            elif is_m3u8:
                 self._download_m3u8(opener, self.url)
             else:
                 # Standard MP4-Download

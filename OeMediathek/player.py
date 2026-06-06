@@ -42,7 +42,7 @@ class OeStreamPlayer(MoviePlayer):
         pass
 
 
-_ORF_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+_ORF_USER_AGENT = "OeMediathek/1.0"
 
 _TMP_DIR      = "/tmp/OeMediathek"
 _TMP_PLAYLIST = _TMP_DIR + "/live.m3u8"
@@ -157,7 +157,7 @@ def _build_single_quality_playlist(master_url):
     """
     try:
         req = _Request(master_url)
-        req.add_header('User-Agent', 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36')
+        req.add_header('User-Agent', _ORF_USER_AGENT)
         resp = urlopen(req, timeout=4)
         content = resp.read().decode('utf-8', 'replace')
         lines = content.splitlines()
@@ -243,6 +243,15 @@ def play_stream(session, stream_url, title="ÖR Mediathek", force_player_id=None
         stream_url_str = re.sub(r'master\w+\.m3u8', 'master.m3u8', stream_url_str)
 
 
+    # ORF _episodes: Q-Varianten sind gesperrt, QXA nicht (bis zu 720p, kein Login nötig)
+    if is_orf and "_episodes" in stream_url_str:
+        stream_url_str = re.sub(r'_Q[^./]+\.mp4', '_QXA.mp4', stream_url_str)
+
+    # ORF VOD: Beste Qualität aus Master-Playlist wählen (VOR UA-Anhang)
+    if is_orf and not is_live and stream_url_str.split("?")[0].split("#")[0].endswith(".m3u8"):
+        stream_url_str = _build_single_quality_playlist(stream_url_str)
+
+    # ORF: UA-Header setzen (nach Playlist-Auflösung, damit er an der finalen URL hängt)
     if is_orf and "#" not in stream_url_str:
         stream_url_str = stream_url_str + "#User-Agent=" + _ORF_USER_AGENT
 
@@ -262,7 +271,7 @@ def play_stream(session, stream_url, title="ÖR Mediathek", force_player_id=None
     if force_player_id is not None:
         player_id = force_player_id
     elif (is_live or is_orf) and _has_serviceapp():
-        if is_live and autoconfigure_serviceapp:
+        if (is_live or is_orf) and autoconfigure_serviceapp:
             _configure_serviceapp_for_live()
         player_id = 5002
     else:
