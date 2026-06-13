@@ -111,7 +111,7 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 Die IPK-Datei aus dem [Releases-Bereich](../../releases) herunterladen und auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.8.1_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.8.2_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.

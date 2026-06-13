@@ -187,8 +187,21 @@ def _build_single_quality_playlist(master_url):
 
         out = ['#EXTM3U', '#EXT-X-VERSION:4', '#EXT-X-INDEPENDENT-SEGMENTS', '']
 
+        # Nur den Default-Audio-Track der passenden Gruppe behalten.
+        # ZDF hat 3 Audio-Tracks (TV Ton, Klare Sprache, Audio-Deskription) plus
+        # eine Backup-CDN-Gruppe — exteplayer3 lädt alle vorab → langer Start.
+        # Lösung: nur TYPE=AUDIO mit passendem GROUP-ID und DEFAULT=YES behalten.
+        audio_group_m = re.search(r'AUDIO="([^"]+)"', best_stream_inf or '')
+        audio_group = audio_group_m.group(1) if audio_group_m else None
+
         for line in lines:
             if line.startswith('#EXT-X-MEDIA'):
+                if 'TYPE=AUDIO' not in line:
+                    continue
+                if audio_group and ('GROUP-ID="%s"' % audio_group) not in line:
+                    continue
+                if 'DEFAULT=YES' not in line:
+                    continue
                 line = re.sub(
                     r'URI="([^"]+)"',
                     lambda m: 'URI="' + _urljoin(master_url, m.group(1)) + '"',
