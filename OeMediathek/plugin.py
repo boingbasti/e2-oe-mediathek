@@ -76,8 +76,12 @@ from mediathek import (
 from player import play_stream
 from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging
 from download_manager import OeMediathekDownloadManagerScreen
+from Screens.MessageBox import MessageBox as _MessageBox  # für Download-Notification
 
 LOGO_DIR = os.path.join(os.path.dirname(__file__), "logos")
+
+
+_notify_title_timers = []
 _TMP_DIR = "/tmp/OeMediathek"
 LOG_FILE = _TMP_DIR + "/oemediathek.log"
 PAGE_SIZE = 100
@@ -105,7 +109,11 @@ except Exception:
 # Download-Queue: aktiver Downloader, wartende Items, ausstehende Benachrichtigung
 _active_downloader  = None
 _download_queue     = []    # Liste von {"title": ..., "url": ..., "topic": ...}
-_bg_download_result = None  # None | "ok" | "err:<meldung>"
+_bg_download_result = None  # None | "ok" | "cancelled" | "err:<meldung>"
+_user_cancelled_all = False  # True wenn "Alle abbrechen" gedrückt wurde
+
+# True solange der OeMediathek Haupt-Screen geöffnet ist
+_plugin_open = False
 
 # Auflösungs-Weiche: True = FHD (1920×1080), False = HD (1280×720)
 try:
@@ -992,12 +1000,30 @@ def _bg_convert_done():
     _queue_next()
 
 
+def _cancel_current_download():
+    if _active_downloader:
+        _active_downloader.cancel()
+
+
+def _cancel_all_downloads():
+    global _download_queue, _user_cancelled_all
+    _download_queue = []
+    if _active_downloader:
+        _user_cancelled_all = True
+        _active_downloader.cancel()
+
+
 def _queue_next():
     """Startet den nächsten Download aus der Queue, oder meldet alle fertig."""
-    global _active_downloader, _download_queue, _bg_download_result
+    global _active_downloader, _download_queue, _bg_download_result, _user_cancelled_all
     if not _download_queue:
         _active_downloader  = None
-        _bg_download_result = "ok"
+        if _user_cancelled_all:
+            _bg_download_result = "cancelled"
+            _user_cancelled_all = False
+        else:
+            _bg_download_result = "ok"
+            _notify_downloads_done()
         return
     item = _download_queue.pop(0)
     try:
@@ -1022,6 +1048,45 @@ def _queue_error(msg):
     _active_downloader  = None
     _bg_download_result = "err:" + str(msg)
     _queue_next()
+
+
+def _fire_download_notification():
+    """Läuft auf dem Enigma2-Hauptthread — zeigt Popup wenn Plugin geschlossen ist."""
+    if _plugin_open:
+        return
+    try:
+        from Tools.Notifications import AddPopup, current_notifications
+        _id = "oemediathek_dl_done"
+        AddPopup("Alle Downloads abgeschlossen", _MessageBox.TYPE_INFO, timeout=5, id=_id)
+
+        def _set_title():
+            global _notify_title_timers
+            _notify_title_timers = []
+            for entry in current_notifications:
+                try:
+                    if entry[0] == _id:
+                        entry[1].origTitle = "\xc3\x96R Mediathek"
+                        entry[1].setTitle("\xc3\x96R Mediathek")
+                except Exception:
+                    pass
+
+        t = eTimer()
+        t.callback.append(_set_title)
+        t.start(100, True)
+        _notify_title_timers.append(t)
+    except Exception:
+        pass
+
+
+def _notify_downloads_done():
+    """Wird aus dem Download-Thread aufgerufen — wechselt auf den Hauptthread."""
+    if _plugin_open:
+        return
+    try:
+        from twisted.internet import reactor
+        reactor.callFromThread(_fire_download_notification)
+    except Exception:
+        pass
 
 
 # ------------------------------------------------------------------
@@ -1127,9 +1192,12 @@ class OeMediathekMainScreen(Screen):
             )
 
     def __init__(self, session):
+        global _plugin_open
+        _plugin_open = True
         self.skin = self._make_skin()
         _log("MainScreen init")
         Screen.__init__(self, session)
+        self.onClose.append(self.__on_plugin_close)
         self.session       = session
         self.selected      = 0
         self.main_page     = 0
@@ -1176,6 +1244,16 @@ class OeMediathekMainScreen(Screen):
         self.onShow.append(self.__on_show)
         _log("MainScreen init OK")
 
+    def __on_plugin_close(self):
+        global _plugin_open
+        _plugin_open = False
+        if getattr(self, "_dl_poll_timer", None):
+            try:
+                self._dl_poll_timer.stop()
+            except Exception:
+                pass
+            self._dl_poll_timer = None
+
     def __on_show(self):
         try:
             self._refresh_page()
@@ -1186,19 +1264,33 @@ class OeMediathekMainScreen(Screen):
 
     def _update_download_hint(self):
         t = _active_downloader and _active_downloader._thread
-        if (t and t.is_alive()) or _download_queue:
+        converting = _active_downloader and getattr(_active_downloader, "_converting", False)
+        if (t and t.is_alive()) or _download_queue or converting:
             self["hint_yellow"].setText(_b("Downloads"))
+            if not getattr(self, "_dl_poll_timer", None):
+                self._dl_poll_timer = eTimer()
+                self._dl_poll_timer.callback.append(self._update_download_hint)
+            self._dl_poll_timer.start(2000, True)
         else:
             self["hint_yellow"].setText(_b(""))
+            if getattr(self, "_dl_poll_timer", None):
+                try:
+                    self._dl_poll_timer.stop()
+                except Exception:
+                    pass
+                self._dl_poll_timer = None
 
     def open_download_manager(self):
         t = _active_downloader and _active_downloader._thread
-        if not ((t and t.is_alive()) or _download_queue):
+        converting = _active_downloader and getattr(_active_downloader, "_converting", False)
+        if not ((t and t.is_alive()) or _download_queue or converting):
             return
         self.session.open(
             OeMediathekDownloadManagerScreen,
             lambda: _active_downloader,
             lambda: _download_queue,
+            _cancel_all_downloads,
+            _cancel_current_download,
         )
 
     def _refresh_page(self):
@@ -2719,6 +2811,8 @@ class OeMediathekScreen(Screen):
             _bg_download_result = None
             if result == "ok":
                 self["status_label"].setText(_b("Alle Downloads abgeschlossen!"))
+            elif result == "cancelled":
+                self["status_label"].setText(_b("Downloads abgebrochen"))
             else:
                 self._show_toast("Download fehlgeschlagen!", added=False)
         try:
@@ -4809,7 +4903,15 @@ class OeMediathekDownloadScreen(Screen):
 
         downloaded = self._dl_downloaded
         total      = self._dl_total
-        if total > 0:
+        muxing     = getattr(self._downloader, "_muxing", False) if self._downloader else False
+        segs_done  = getattr(self._downloader, "_segs_done", 0) if self._downloader else 0
+        total_segs = getattr(self._downloader, "_total_segs", 0) if self._downloader else 0
+        if muxing:
+            self["status_label"].setText(_b("Verbinde Video & Audio ..."))
+        elif total_segs > 0:
+            pct = int(segs_done * 100 / total_segs)
+            self["status_label"].setText(_b("%d%% (%s)" % (pct, format_size(downloaded))))
+        elif total > 0:
             pct = int(downloaded * 100 / total)
             self["status_label"].setText(_b("%d%% von %s" % (pct, format_size(total))))
         elif downloaded > 0:

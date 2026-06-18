@@ -61,12 +61,14 @@ class OeMediathekDownloadManagerScreen(Screen):
             <widget name="hint_exit"     position="587,452" size="186,33"  font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
 
-    def __init__(self, session, active_downloader_ref, queue_ref):
+    def __init__(self, session, active_downloader_ref, queue_ref, cancel_all_fn, cancel_current_fn):
         Screen.__init__(self, session)
 
-        # Referenzen auf die globalen Objekte aus plugin.py
-        self._get_active = active_downloader_ref
-        self._get_queue  = queue_ref
+        # Referenzen auf die globalen Objekte/Funktionen aus plugin.py
+        self._get_active     = active_downloader_ref
+        self._get_queue      = queue_ref
+        self._cancel_all_fn     = cancel_all_fn
+        self._cancel_current_fn = cancel_current_fn
 
         self["title_label"]    = Label(_b("Download-Manager"))
         self["active_head"]    = Label(_b("Laufender Download:"))
@@ -119,12 +121,20 @@ class OeMediathekDownloadManagerScreen(Screen):
                 # Fortschritt aus dem Downloader lesen (thread-safe: nur lesen)
                 try:
                     converting = getattr(active, "_converting", False)
+                    muxing     = getattr(active, "_muxing", False)
                     if converting:
                         self["progress_label"].setText(_b("Konvertiere zu TS ..."))
+                    elif muxing:
+                        self["progress_label"].setText(_b("Verbinde Video & Audio ..."))
                     else:
-                        dl_bytes = active._downloaded if hasattr(active, "_downloaded") else 0
-                        total    = active._total      if hasattr(active, "_total")      else 0
-                        if total > 0:
+                        dl_bytes   = active._downloaded if hasattr(active, "_downloaded") else 0
+                        total      = active._total      if hasattr(active, "_total")      else 0
+                        segs_done  = getattr(active, "_segs_done", 0)
+                        total_segs = getattr(active, "_total_segs", 0)
+                        if total_segs > 0:
+                            pct = int(segs_done * 100 / total_segs)
+                            self["progress_label"].setText(_b("%d%% (%s)" % (pct, format_size(dl_bytes))))
+                        elif total > 0:
                             pct = int(dl_bytes * 100 / total)
                             self["progress_label"].setText(_b("%d%% von %s" % (pct, format_size(total))))
                         elif dl_bytes > 0:
@@ -149,23 +159,14 @@ class OeMediathekDownloadManagerScreen(Screen):
 
     def _cancel_current(self):
         try:
-            active = self._get_active()
-            if active:
-                active.cancel()
+            self._cancel_current_fn()
         except Exception:
             pass
         self.close()
 
     def _cancel_all(self):
         try:
-            import sys
-            _plugin = sys.modules.get("plugin")
-            if _plugin is not None:
-                _plugin._download_queue = []
-                _plugin._active_downloader = None
-            active = self._get_active()
-            if active:
-                active.cancel()
+            self._cancel_all_fn()
         except Exception:
             pass
         self.close()

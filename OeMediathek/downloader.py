@@ -274,7 +274,7 @@ def get_content_length(url):
 
 def format_size(size_bytes):
     if size_bytes <= 0:
-        return "unbekannte Groesse"
+        return "unbekannte Größe"
     if size_bytes >= 1024 * 1024 * 1024:
         return "%.1f GB" % (size_bytes / 1024.0 / 1024.0 / 1024.0)
     if size_bytes >= 1024 * 1024:
@@ -364,12 +364,7 @@ class Downloader(object):
         # Master-Playlist auswerten
         master = fetch(self.url).decode("utf-8", "ignore")
         lines = master.splitlines()
-        audio_url, best_bw, best_video_url = None, -1, None
-        for line in lines:
-            if line.startswith("#EXT-X-MEDIA") and "TYPE=AUDIO" in line:
-                m = re.search(r'URI="([^"]+)"', line)
-                if m:
-                    audio_url = urljoin(self.url, m.group(1))
+        audio_url, best_bw, best_video_url, best_stream_inf = None, -1, None, None
         i = 0
         while i < len(lines):
             if lines[i].startswith("#EXT-X-STREAM-INF"):
@@ -380,8 +375,24 @@ class Downloader(object):
                     if v and not v.startswith("#"):
                         if bw > best_bw:
                             best_bw, best_video_url = bw, urljoin(self.url, v)
+                            best_stream_inf = lines[i]
                         break
             i += 1
+
+        # Nur den Default-Audio-Track der passenden Gruppe verwenden.
+        # ORF hat mehrere Audio-Tracks (Standard, Audiodeskription) — ohne Filterung
+        # wird der letzte Eintrag genommen, was die Audiodeskription sein kann.
+        audio_group_m = re.search(r'AUDIO="([^"]+)"', best_stream_inf or '')
+        audio_group = audio_group_m.group(1) if audio_group_m else None
+        for line in lines:
+            if line.startswith("#EXT-X-MEDIA") and "TYPE=AUDIO" in line:
+                if audio_group and ('GROUP-ID="%s"' % audio_group) not in line:
+                    continue
+                if "DEFAULT=YES" not in line:
+                    continue
+                m = re.search(r'URI="([^"]+)"', line)
+                if m:
+                    audio_url = urljoin(self.url, m.group(1))
         if not best_video_url:
             best_video_url = self.url
 
@@ -394,6 +405,9 @@ class Downloader(object):
         aud_tmp = fp + ".aud.tmp"
         self._total = 0
         self._downloaded = 0
+        self._muxing = False
+        self._total_segs = len(video_segs) + len(audio_segs)
+        self._segs_done = 0
 
         def download_batched(segs, out_path):
             with open(out_path, "wb") as f:
@@ -422,6 +436,7 @@ class Downloader(object):
                         if data:
                             f.write(data)
                             self._downloaded += len(data)
+                            self._segs_done += 1
                             if self.on_progress:
                                 self.on_progress(self._downloaded, 0)
 
@@ -441,8 +456,10 @@ class Downloader(object):
                 return
             cmd = ["ffmpeg", "-y", "-i", vid_tmp, "-i", aud_tmp,
                    "-c", "copy", "-f", "mpegts", fp]
+            self._muxing = True
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             proc.wait()
+            self._muxing = False
             for p in (vid_tmp, aud_tmp):
                 try: os.remove(p)
                 except Exception: pass
