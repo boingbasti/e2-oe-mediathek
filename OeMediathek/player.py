@@ -2,6 +2,7 @@
 # player.py
 # Startet einen Stream im angepassten Enigma2-Mediaplayer
 
+import hashlib
 import os
 import re
 
@@ -16,6 +17,25 @@ except ImportError:
     from urllib.parse import urljoin as _urljoin
 
 from enigma import eServiceReference
+
+from downloader import get_debug_logging
+
+_LOG_FILE = "/tmp/OeMediathek/oemediathek.log"
+
+
+def _log(msg):
+    if not get_debug_logging():
+        return
+    import time
+    line = "[OeMediathek %s] PL: %s" % (time.strftime("%H:%M:%S", time.localtime()), str(msg))
+    print(line)
+    try:
+        if not os.path.isdir(_TMP_DIR):
+            os.makedirs(_TMP_DIR)
+        with open(_LOG_FILE, "a") as f:
+            f.write(line + "\n")
+    except Exception:
+        pass
 
 try:
     from Screens.MoviePlayer import MoviePlayer
@@ -44,8 +64,16 @@ class OeStreamPlayer(MoviePlayer):
 
 _ORF_USER_AGENT = "OeMediathek/1.0"
 
-_TMP_DIR      = "/tmp/OeMediathek"
-_TMP_PLAYLIST = _TMP_DIR + "/live.m3u8"
+_TMP_DIR = "/tmp/OeMediathek"
+
+
+def _tmp_playlist_path(master_url):
+    """Eindeutiger Dateiname pro Stream-URL, damit alte exteplayer3-Versionen
+    (hls_explorer) zwei verschiedene Sender nicht ueber denselben file://-Pfad
+    verwechseln und gecachte Sub-Streams des vorherigen Senders weiterspielen."""
+    url_bytes = master_url.encode("utf-8") if isinstance(master_url, str) else master_url
+    h = hashlib.md5(url_bytes).hexdigest()[:12]
+    return _TMP_DIR + "/live_" + h + ".m3u8"
 
 
 def _has_serviceapp():
@@ -155,6 +183,7 @@ def _build_single_quality_playlist(master_url):
     da file:// nicht unterstuetzt wird. Sonst wird sie nach /tmp/ geschrieben.
     Gibt master_url zurueck bei Fehler.
     """
+    _log("build_single_quality_playlist: master_url=" + str(master_url))
     try:
         req = _Request(master_url)
         req.add_header('User-Agent', _ORF_USER_AGENT)
@@ -183,7 +212,10 @@ def _build_single_quality_playlist(master_url):
             i += 1
 
         if not best_variant:
+            _log("build_single_quality_playlist: kein best_variant gefunden, master_url unveraendert")
             return master_url
+
+        _log("build_single_quality_playlist: best_variant=" + str(best_variant) + " bw=" + str(best_bw))
 
         out = ['#EXTM3U', '#EXT-X-VERSION:4', '#EXT-X-INDEPENDENT-SEGMENTS', '']
 
@@ -219,17 +251,20 @@ def _build_single_quality_playlist(master_url):
         if _has_new_exteplayer3():
             # v181: file:// funktioniert nicht, stattdessen localhost HTTP
             http_url = _serve_playlist_via_http(playlist)
+            _log("build_single_quality_playlist: serviere via HTTP " + str(http_url))
             if http_url:
                 return http_url
         else:
             if not os.path.isdir(_TMP_DIR):
                 os.makedirs(_TMP_DIR)
-            with open(_TMP_PLAYLIST, 'w') as f:
+            tmp_path = _tmp_playlist_path(master_url)
+            with open(tmp_path, 'w') as f:
                 f.write(playlist)
-            return 'file://' + _TMP_PLAYLIST
+            _log("build_single_quality_playlist: serviere via Datei " + tmp_path)
+            return 'file://' + tmp_path
 
-    except Exception:
-        pass
+    except Exception as e:
+        _log("build_single_quality_playlist: Fehler " + str(e) + " -> master_url unveraendert")
     return master_url
 
 
@@ -246,6 +281,8 @@ def play_stream(session, stream_url, title="ÖR Mediathek", force_player_id=None
         stream_url_str = stream_url.decode('utf-8', 'replace')
     else:
         stream_url_str = stream_url
+
+    _log("play_stream: title=" + str(title) + " is_live=" + str(is_live) + " url=" + str(stream_url_str))
 
     if "ard-mcdn.de" in stream_url_str:
         stream_url_str = stream_url_str.replace("https://", "http://", 1)
@@ -289,6 +326,8 @@ def play_stream(session, stream_url, title="ÖR Mediathek", force_player_id=None
         player_id = 5002
     else:
         player_id = 4097
+
+    _log("play_stream: finale url=" + str(stream_url_str) + " player_id=" + str(player_id))
 
     ref = eServiceReference(player_id, 0, stream_url_bytes)
     ref.setName(title_bytes)

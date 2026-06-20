@@ -348,9 +348,6 @@ LIVE_STREAM_GROUPS = [
     ("SR", [
         ("SR",                        "http://sr-live.ard-mcdn.de/sr/live/hls/de/master.m3u8"),
     ]),
-    ("SRF", [
-        ("SRF",                       "https://srfs.akamaized.net/hls/live/689649/srfsgeo/index.m3u8"),
-    ]),
     ("SWR", [
         ("SWR Baden-W\xc3\xbcrttemberg", "http://mcdn.swr.de/swr/swrbwd/master.m3u8"),
         ("SWR Rheinland-Pfalz",       "https://swrrpd-hls.akamaized.net/hls/live/2018676/swrrpd/master.m3u8"),
