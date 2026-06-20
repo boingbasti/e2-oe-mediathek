@@ -335,6 +335,11 @@ LIVE_STREAM_GROUPS = [
     ("ONE", [
         ("ONE",                       "http://mcdn-one.ard.de/ardone/hls/master.m3u8"),
     ]),
+    # ORF III ist laut offizieller ORF-API (is_drm_protected=false) unverschluesselt,
+    # anders als ORF1/ORF2/ORF Sport+/ORF Kids (DRM). Funktioniert nur mit AT-IP (Geoblock).
+    ("ORF III", [
+        ("ORF III",                   "https://orf3.mdn.ors.at/orf/orf3/qxa/manifest.m3u8"),
+    ]),
     ("PHOENIX", [
         ("PHOENIX",                   "https://zdf-hls-19.akamaized.net/hls/live/2016502/de/high/master.m3u8"),
     ]),
