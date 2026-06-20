@@ -282,6 +282,14 @@ LIVE_EVENT_GROUPS = [
         ("RBB Event 1",               "https://rbbevent01-hls.akamaized.net/hls/live/685984/rbbevent01/master.m3u8"),
         ("RBB Event 2",               "https://rbbevent02-hls.akamaized.net/hls/live/685985/rbbevent02/master.m3u8"),
     ]),
+    # Wie ORF III unverschluesselt (is_drm_protected=false laut offizieller ORF-API),
+    # braucht AT-IP. Anonyme Zusatzkanaele ohne festen Namen, werden fuer Sport-/
+    # Sonderuebertragungen genutzt (z.B. EM-Quali-Parallelspiele).
+    ("ORF Event", [
+        ("ORF Event 1",               "https://web03.mdn.ors.at/orf/web03/qxa/manifest.m3u8"),
+        ("ORF Event 2",               "https://web04.mdn.ors.at/orf/web04/qxa/manifest.m3u8"),
+        ("ORF Event 3",               "https://web05.mdn.ors.at/orf/web05/qxa/manifest.m3u8"),
+    ]),
     ("Radio Bremen", [
         ("Radio Bremen Event 1",      "https://rbhlsevent1.akamaized.net/hls/live/2027612/event1/master.m3u8"),
         ("Radio Bremen Event 2",      "https://rbhlsevent2.akamaized.net/hls/live/2027613/event2/master.m3u8"),
@@ -1977,11 +1985,16 @@ def _check_stream_status(url, callback):
                             req2 = Request(seg_url)
                             req2.add_header("User-Agent", "Mozilla/5.0")
                             seg = urlopen(req2, timeout=5).read().decode("utf-8", "replace")
-                            dates = [l.split(":", 1)[1] for l in seg.splitlines()
-                                     if l.startswith("#EXT-X-PROGRAM-DATE-TIME:")]
-                            if dates:
+                            seg_lines = seg.splitlines()
+                            last_idx = None
+                            last_date = None
+                            for i, l in enumerate(seg_lines):
+                                if l.startswith("#EXT-X-PROGRAM-DATE-TIME:"):
+                                    last_idx = i
+                                    last_date = l.split(":", 1)[1]
+                            if last_date:
                                 import re as _re
-                                raw = dates[-1].strip()
+                                raw = last_date.strip()
                                 offset_secs = 0
                                 tz_m = _re.search(r'([+-])(\d{2}):?(\d{2})$', raw)
                                 if tz_m:
@@ -1990,6 +2003,15 @@ def _check_stream_status(url, callback):
                                 raw = _re.sub(r'[.,].*', '', raw)[:19]
                                 dt = _dt.datetime.strptime(raw, "%Y-%m-%dT%H:%M:%S")
                                 utc_ts = _cal.timegm(dt.timetuple()) - offset_secs
+                                # Manche Packager (z.B. ORF/ORS) setzen den Tag nur einmal
+                                # am Playlist-Anfang statt pro Segment - verbleibende
+                                # Segmentdauern bis zum Playlist-Ende addieren, sonst wirkt
+                                # ein laufender Live-Stream faelschlich wie "slate".
+                                for l in seg_lines[last_idx + 1:]:
+                                    if l.startswith("#EXTINF:"):
+                                        m = _re.match(r'#EXTINF:([\d.]+)', l)
+                                        if m:
+                                            utc_ts += float(m.group(1))
                                 age = _time.time() - utc_ts
                                 code = "live" if age < 30 else "slate"
                     except Exception:
