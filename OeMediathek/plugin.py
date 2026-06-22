@@ -561,10 +561,15 @@ class _CustomListMixin(object):
         old_sel    = self._list_sel
         old_scroll = self._list_scroll
         self._list_sel = (old_sel + step) % total
-        if self._list_sel < self._list_scroll:
-            self._list_scroll = self._list_sel
-        elif self._list_sel >= self._list_scroll + rows:
-            self._list_scroll = self._list_sel - rows + 1
+        if self._list_sel < old_scroll or self._list_sel >= old_scroll + rows:
+            # Beim Verlassen der sichtbaren Seite springt der neue Eintrag an den
+            # Seitenrand in Bewegungsrichtung (Systemlisten-Verhalten: runter ->
+            # Eintrag oben, hoch -> Eintrag unten), statt zeilenweise mit dem
+            # Cursor am Rand kleben zu bleiben. Deckt Wrap-around automatisch mit ab.
+            if step > 0:
+                self._list_scroll = self._list_sel
+            else:
+                self._list_scroll = self._list_sel - rows + 1
         self._list_scroll = max(0, min(self._list_scroll, max(0, total - rows)))
         if self._list_scroll != old_scroll:
             self._render_list()
@@ -3481,10 +3486,15 @@ class OeMediathekScreen(Screen):
         old_scroll = self._list_scroll
         new_sel    = (old_sel + step) % total
         self._list_sel = new_sel
-        if self._list_sel < self._list_scroll:
-            self._list_scroll = self._list_sel
-        elif self._list_sel >= self._list_scroll + _LIST_ROWS:
-            self._list_scroll = self._list_sel - _LIST_ROWS + 1
+        if self._list_sel < old_scroll or self._list_sel >= old_scroll + _LIST_ROWS:
+            # Beim Verlassen der sichtbaren Seite springt der neue Eintrag an den
+            # Seitenrand in Bewegungsrichtung (Systemlisten-Verhalten: runter ->
+            # Eintrag oben, hoch -> Eintrag unten), statt zeilenweise mit dem
+            # Cursor am Rand kleben zu bleiben. Deckt Wrap-around automatisch mit ab.
+            if step > 0:
+                self._list_scroll = self._list_sel
+            else:
+                self._list_scroll = self._list_sel - _LIST_ROWS + 1
         self._list_scroll = max(0, min(self._list_scroll, max(0, total - _LIST_ROWS)))
         if self._list_scroll != old_scroll:
             self._render_list()
