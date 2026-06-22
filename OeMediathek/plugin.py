@@ -643,6 +643,18 @@ def _episode_label(title_bytes, topic_bytes=None, watched=False):
         return str(label)
 
 
+def _episode_stream_url(item):
+    """Liefert die bevorzugte (HD, sonst SD) Stream-URL eines Episoden-Dicts
+    als dekodierten str, oder "" falls keiner vorhanden ist."""
+    url_hd = item.get("stream_url_hd", b"")
+    url_sd = item.get("stream_url_sd", b"")
+    if isinstance(url_hd, bytes):
+        url_hd = url_hd.decode("utf-8", "replace")
+    if isinstance(url_sd, bytes):
+        url_sd = url_sd.decode("utf-8", "replace")
+    return url_hd if url_hd else url_sd
+
+
 def _relevance_sort(groups, search_term):
     """
     Sortiert Gruppen nach Relevanz zum Suchbegriff:
@@ -1090,6 +1102,21 @@ def _enqueue_download(title, url, topic, description, duration):
     _download_queue.append(entry)
     _queue_next()
     return "started"
+
+
+def _is_download_pending(url):
+    """True, wenn url gerade aktiv heruntergeladen wird oder noch in der
+    Warteschlange steht (fuer das Download-Icon in der Episodenliste)."""
+    if not url:
+        return False
+    if _active_downloader is not None:
+        t = _active_downloader._thread
+        if t is not None and t.is_alive() and _active_downloader.url == url:
+            return True
+    for entry in _download_queue:
+        if entry.get("url") == url:
+            return True
+    return False
 
 
 def _fire_download_notification():
@@ -2514,10 +2541,10 @@ class OeMediathekScreen(Screen):
     def _make_skin():
         if IS_FHD:
             lx, ly0, lw, rh, rf = 40, 150, 1080, 58, 34
-            dw, dh, dx_off, dy_off, label_off = 28, 24, 12, 17, 44
+            dw, dh, dx_off, dy_off, dl_off, label_off = 28, 24, 12, 17, 44, 80
         else:
             lx, ly0, lw, rh, rf = 36, 97, 720, 38, 22
-            dw, dh, dx_off, dy_off, label_off = 18, 16, 8, 11, 30
+            dw, dh, dx_off, dy_off, dl_off, label_off = 18, 16, 8, 11, 30, 54
 
         list_xml = ""
         for i in range(_LIST_ROWS):
@@ -2527,11 +2554,13 @@ class OeMediathekScreen(Screen):
                 'backgroundColor="#00253850" zPosition="1" transparent="0"/>'
                 '<widget name="list_dot_{i}" position="{dx},{dy}" size="{dw},{dh}" '
                 'alphatest="blend" scale="1" zPosition="3" transparent="1"/>'
+                '<widget name="list_dl_{i}" position="{dlx},{dy}" size="{dw},{dh}" '
+                'alphatest="blend" scale="1" zPosition="3" transparent="1"/>'
                 '<widget name="list_label_{i}" position="{lbx},{y}" size="{lbw},{rh}" '
                 'zPosition="2" font="Regular;{rf}" halign="left" valign="center" '
                 'foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" noWrap="1"/>'
             ).format(i=i, x=lx, y=y, w=lw,
-                     dx=lx + dx_off, dy=y + dy_off, dw=dw, dh=dh,
+                     dx=lx + dx_off, dlx=lx + dl_off, dy=y + dy_off, dw=dw, dh=dh,
                      lbx=lx + label_off, lbw=lw - label_off, rh=rh, rf=rf)
 
         if IS_FHD:
@@ -2651,6 +2680,7 @@ class OeMediathekScreen(Screen):
         self._list_sel    = 0
         self._list_scroll = 0
         self._dot_pix = None
+        self._dl_pix  = None
         for i in range(_LIST_ROWS):
             self["list_sel_%d"   % i] = Label(_b(""))
             self["list_label_%d" % i] = Label(_b(""))
@@ -2658,9 +2688,14 @@ class OeMediathekScreen(Screen):
                 self["list_dot_%d" % i] = _Pixmap() if _Pixmap else Label(_b(""))
             except Exception:
                 self["list_dot_%d" % i] = Label(_b(""))
+            try:
+                self["list_dl_%d" % i] = _Pixmap() if _Pixmap else Label(_b(""))
+            except Exception:
+                self["list_dl_%d" % i] = Label(_b(""))
             self["list_sel_%d"   % i].hide()
             self["list_label_%d" % i].hide()
             self["list_dot_%d"   % i].hide()
+            self["list_dl_%d"    % i].hide()
 
         self["sort_label"]   = Label("")
         self["hint_red"]     = Label("")
@@ -2730,6 +2765,19 @@ class OeMediathekScreen(Screen):
                             pass
             except Exception as e:
                 _log("mark.png load failed: " + str(e))
+        if self._dl_pix is None and _Pixmap and _LoadPixmap:
+            try:
+                import os as _os
+                _path = _os.path.join(_os.path.dirname(__file__), "download.png")
+                self._dl_pix = _LoadPixmap(_path)
+                if self._dl_pix:
+                    for i in range(_LIST_ROWS):
+                        try:
+                            self["list_dl_%d" % i].instance.setPixmap(self._dl_pix)
+                        except Exception:
+                            pass
+            except Exception as e:
+                _log("download.png load failed: " + str(e))
 
     def __stop_timers(self):
         try:
@@ -2750,6 +2798,12 @@ class OeMediathekScreen(Screen):
         self._poll_timer  = None
         self._desc_timer  = None
         self._toast_timer = None
+        if getattr(self, "_dl_poll_timer", None):
+            try:
+                self._dl_poll_timer.stop()
+            except Exception:
+                pass
+            self._dl_poll_timer = None
 
     def doClose(self):
         _log("doClose")
@@ -3499,6 +3553,11 @@ class OeMediathekScreen(Screen):
                     item = item[2:]
                 else:
                     self["list_dot_%d" % i].hide()
+                if self.mode == MODE_EPISODES and abs_idx < len(self.cur_episodes) and \
+                   _is_download_pending(_episode_stream_url(self.cur_episodes[abs_idx])):
+                    self["list_dl_%d" % i].show()
+                else:
+                    self["list_dl_%d" % i].hide()
                 self["list_label_%d" % i].setText(_b(item))
                 self["list_label_%d" % i].show()
                 if abs_idx == self._list_sel:
@@ -3509,6 +3568,26 @@ class OeMediathekScreen(Screen):
                 self["list_sel_%d"   % i].hide()
                 self["list_label_%d" % i].hide()
                 self["list_dot_%d"   % i].hide()
+                self["list_dl_%d"    % i].hide()
+        self._sync_dl_poll()
+
+    def _sync_dl_poll(self):
+        pending = self.mode == MODE_EPISODES and bool(
+            _download_queue or (_active_downloader and _active_downloader._thread
+                                 and _active_downloader._thread.is_alive()))
+        if pending:
+            if not getattr(self, "_dl_poll_timer", None):
+                self._dl_poll_timer = eTimer()
+                self._dl_poll_timer.callback.append(self._poll_dl_icons)
+            self._dl_poll_timer.start(2000, True)
+        elif getattr(self, "_dl_poll_timer", None):
+            try:
+                self._dl_poll_timer.stop()
+            except Exception:
+                pass
+
+    def _poll_dl_icons(self):
+        self._render_list()
 
     def _list_step(self, step):
         total = len(self._list_items)
@@ -3549,13 +3628,7 @@ class OeMediathekScreen(Screen):
             if idx is None or idx >= len(self.cur_episodes):
                 return
             item = self.cur_episodes[idx]
-            url_hd = item.get("stream_url_hd", b"")
-            url_sd = item.get("stream_url_sd", b"")
-            if isinstance(url_hd, bytes):
-                url_hd = url_hd.decode("utf-8", "replace")
-            if isinstance(url_sd, bytes):
-                url_sd = url_sd.decode("utf-8", "replace")
-            url = url_hd if url_hd else url_sd
+            url = _episode_stream_url(item)
             if not url:
                 self["status_label"].setText(_b("Kein Stream verfügbar"))
                 return
@@ -3569,6 +3642,7 @@ class OeMediathekScreen(Screen):
                 self._show_toast("Zur Warteschlange hinzugef\xc3\xbcgt", added=True)
             else:
                 self._show_toast("Download gestartet", added=True)
+            self._render_list()
         except Exception:
             _log("on_download Fehler: " + _fmt_exc())
 
