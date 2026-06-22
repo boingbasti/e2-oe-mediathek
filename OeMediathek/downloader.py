@@ -664,7 +664,13 @@ class Downloader(object):
                 req.add_header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
                 req.add_header("Accept-Language", "de-DE,de;q=0.9,en-AT;q=0.8,en;q=0.7")
                 
-                resp = opener.open(req, timeout=30)
+                # Kurzer Timeout statt 30s: gilt in urllib2/urllib.request fuer die
+                # gesamte Socket-Lebensdauer, nicht nur den Verbindungsaufbau -
+                # jeder read()-Call unten respektiert ihn also auch. Ohne das kann
+                # ein einzelner read()-Call bei einer traegen Quelle minutenlang
+                # blockieren, wodurch cancel() (nur ein kooperatives Flag, geprueft
+                # zwischen zwei read()-Aufrufen) entsprechend lange nicht greift.
+                resp = opener.open(req, timeout=5)
 
                 total = 0
                 try:
@@ -677,7 +683,16 @@ class Downloader(object):
                 downloaded = 0
                 with open(self.filepath, "wb") as f:
                     while not self._cancelled:
-                        chunk = resp.read(self.CHUNK_SIZE)
+                        try:
+                            chunk = resp.read(self.CHUNK_SIZE)
+                        except Exception as e:
+                            # Bei HTTPS landet ein Read-Timeout je nach Python-/SSL-
+                            # Version als socket.timeout ODER als ssl.SSLError -
+                            # ssl.SSLError ist KEIN Subtyp von socket.timeout, daher
+                            # hier ueber die Meldung statt die exakte Klasse pruefen.
+                            if "timed out" in str(e).lower():
+                                continue
+                            raise
                         if not chunk:
                             break
                         f.write(chunk)
