@@ -16,6 +16,16 @@ except ImportError:
     from urllib.request import urlopen, Request, HTTPRedirectHandler, build_opener, HTTPSHandler
 
 try:
+    from urlparse import urlparse, urljoin
+except ImportError:
+    from urllib.parse import urlparse, urljoin
+
+try:
+    import httplib as _httplib
+except ImportError:
+    import http.client as _httplib
+
+try:
     import ssl
     _ssl_context = ssl._create_unverified_context()
 except Exception:
@@ -282,6 +292,92 @@ def format_size(size_bytes):
     return "%.0f KB" % (size_bytes / 1024.0)
 
 # --------------------------------------------------------------------------
+# Keep-Alive-Fetcher fuer HLS-Segment-Downloads
+# --------------------------------------------------------------------------
+# build_opener(...).open(...) baut bei jedem Aufruf eine komplett neue
+# TCP+TLS-Verbindung auf. Auf der schwachen ARM-CPU der VU+ Uno 4K SE
+# (Software-TLS) dominiert der Handshake pro Segment die gesamte
+# Downloadzeit - gemessen: 16 HLS-Segmente (107MB) brauchten 22.6s mit je
+# einer neuen Verbindung, nur 5.3s mit einer wiederverwendeten Verbindung
+# (4-5x schneller, reine CPU-Ersparnis, keine zusaetzliche Bandbreite).
+# httplib/http.client-HTTPSConnection-Objekte sind nicht parallel
+# benutzbar - deshalb eine eigene Connection PRO WORKER-SLOT statt ein
+# global geteilter Pool, jede Connection wird nur sequenziell von genau
+# einem Worker-Thread benutzt.
+# --------------------------------------------------------------------------
+class _KeepAliveFetcher(object):
+
+    def __init__(self, headers):
+        self._headers = headers
+        self._conns   = {}  # slot -> (scheme, host, HTTPSConnection/HTTPConnection)
+
+    def fetch(self, url, slot, timeout=30, retries=3, max_redirects=5):
+        last_exc = None
+        for attempt in range(retries):
+            try:
+                cur_url = url
+                for _ in range(max_redirects):
+                    parsed = urlparse(cur_url)
+                    path = parsed.path + ("?" + parsed.query if parsed.query else "")
+                    conn = self._get_conn(slot, parsed.scheme, parsed.netloc, timeout)
+                    conn.request("GET", path, headers=self._headers)
+                    resp = conn.getresponse()
+                    if resp.status in (301, 302, 303, 307, 308):
+                        # Manche CDNs (z.B. ORF apasfiis, Varnish-Reverse-Proxy) leiten
+                        # JEDEN Segment-Request per 301 um - Redirect-Body verwerfen und
+                        # demselben Slot folgen, damit Connection-Reuse erhalten bleibt.
+                        location = resp.getheader("Location") or resp.getheader("location")
+                        resp.read()
+                        if not location:
+                            raise Exception("HTTP %d ohne Location fuer %s" % (resp.status, cur_url))
+                        cur_url = urljoin(cur_url, location)
+                        continue
+                    data = resp.read()
+                    if resp.status >= 400:
+                        raise Exception("HTTP %d fuer %s" % (resp.status, cur_url))
+                    return data
+                raise Exception("Zu viele Redirects fuer %s" % url)
+            except Exception as e:
+                last_exc = e
+                self._drop_conn(slot)
+                if attempt < retries - 1:
+                    time.sleep(0.5)
+        raise last_exc
+
+    def _get_conn(self, slot, scheme, host, timeout):
+        cached = self._conns.get(slot)
+        if cached and cached[0] == scheme and cached[1] == host:
+            return cached[2]
+        if cached:
+            try:
+                cached[2].close()
+            except Exception:
+                pass
+        if scheme == "https":
+            conn = _httplib.HTTPSConnection(host, timeout=timeout, context=_ssl_context)
+        else:
+            conn = _httplib.HTTPConnection(host, timeout=timeout)
+        self._conns[slot] = (scheme, host, conn)
+        return conn
+
+    def _drop_conn(self, slot):
+        cached = self._conns.pop(slot, None)
+        if cached:
+            try:
+                cached[2].close()
+            except Exception:
+                pass
+
+    def close_all(self):
+        for cached in self._conns.values():
+            try:
+                cached[2].close()
+            except Exception:
+                pass
+        self._conns.clear()
+
+
+# --------------------------------------------------------------------------
 # Download
 # --------------------------------------------------------------------------
 
@@ -409,6 +505,11 @@ class Downloader(object):
         self._total_segs = len(video_segs) + len(audio_segs)
         self._segs_done = 0
 
+        # Eine Connection pro Worker-Slot, wiederverwendet ueber alle Batches
+        # UND ueber Video- und Audio-Download hinweg (meist derselbe Host) -
+        # vermeidet den TLS-Handshake pro Segment, siehe Klassen-Docstring.
+        keepalive = _KeepAliveFetcher({"User-Agent": _ORF_USER_AGENT})
+
         def download_batched(segs, out_path):
             with open(out_path, "wb") as f:
                 for start in range(0, len(segs), workers):
@@ -420,7 +521,7 @@ class Downloader(object):
 
                     def _worker(url, idx):
                         try:
-                            results[idx] = fetch(url)
+                            results[idx] = keepalive.fetch(url, idx)
                         except Exception as e:
                             errors[0] = e
 
@@ -440,35 +541,38 @@ class Downloader(object):
                             if self.on_progress:
                                 self.on_progress(self._downloaded, 0)
 
-        download_batched(video_segs, vid_tmp)
-        if self._cancelled:
-            for p in (vid_tmp,):
-                try: os.remove(p)
-                except Exception: pass
-            return
-
-        if audio_segs:
-            download_batched(audio_segs, aud_tmp)
+        try:
+            download_batched(video_segs, vid_tmp)
             if self._cancelled:
-                for p in (vid_tmp, aud_tmp):
+                for p in (vid_tmp,):
                     try: os.remove(p)
                     except Exception: pass
                 return
-            cmd = ["ffmpeg", "-y", "-i", vid_tmp, "-i", aud_tmp,
-                   "-c", "copy", "-f", "mpegts", fp]
-            self._muxing = True
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            proc.wait()
-            self._muxing = False
-            for p in (vid_tmp, aud_tmp):
-                try: os.remove(p)
-                except Exception: pass
-            if proc.returncode != 0:
-                err = proc.stderr.read()[-300:]
-                raise Exception("ffmpeg Mux Fehler (Code %d): %s" % (proc.returncode, err))
-        else:
-            os.rename(vid_tmp, fp)
-        _log("ORF parallel fertig: %s" % fp)
+
+            if audio_segs:
+                download_batched(audio_segs, aud_tmp)
+                if self._cancelled:
+                    for p in (vid_tmp, aud_tmp):
+                        try: os.remove(p)
+                        except Exception: pass
+                    return
+                cmd = ["ffmpeg", "-y", "-i", vid_tmp, "-i", aud_tmp,
+                       "-c", "copy", "-f", "mpegts", fp]
+                self._muxing = True
+                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                proc.wait()
+                self._muxing = False
+                for p in (vid_tmp, aud_tmp):
+                    try: os.remove(p)
+                    except Exception: pass
+                if proc.returncode != 0:
+                    err = proc.stderr.read()[-300:]
+                    raise Exception("ffmpeg Mux Fehler (Code %d): %s" % (proc.returncode, err))
+            else:
+                os.rename(vid_tmp, fp)
+            _log("ORF parallel fertig: %s" % fp)
+        finally:
+            keepalive.close_all()
 
     def _download_m3u8(self, opener, url):
         """Laedt HLS-Streams (m3u8) herunter, indem alle .ts Segmente aneinandergehaengt werden."""
