@@ -108,7 +108,7 @@ except Exception:
 
 # Download-Queue: aktiver Downloader, wartende Items, ausstehende Benachrichtigung
 _active_downloader  = None
-_download_queue     = []    # Liste von {"title": ..., "url": ..., "topic": ...}
+_download_queue     = []    # Liste von {"title": ..., "url": ..., "topic": ..., "description": ..., "duration": ...}
 _bg_download_result = None  # None | "ok" | "cancelled" | "err:<meldung>"
 _user_cancelled_all = False  # True wenn "Alle abbrechen" gedrückt wurde
 
@@ -1071,6 +1071,27 @@ def _queue_error(msg):
     _queue_next()
 
 
+def _enqueue_download(title, url, topic, description, duration):
+    """Reiht einen Download ein und startet ihn sofort, falls gerade nichts
+    laeuft. Gibt "queued" oder "started" fuer eine kurze Statusmeldung zurueck."""
+    global _active_downloader, _download_queue
+    entry = {
+        "title":       title,
+        "url":         url,
+        "topic":       topic,
+        "description": description,
+        "duration":    duration,
+    }
+    active_thread = _active_downloader._thread if _active_downloader else None
+    if active_thread is not None and active_thread.is_alive():
+        _download_queue.append(entry)
+        return "queued"
+    _active_downloader = None
+    _download_queue.append(entry)
+    _queue_next()
+    return "started"
+
+
 def _fire_download_notification():
     """Läuft auf dem Enigma2-Hauptthread — zeigt Popup wenn Plugin geschlossen ist."""
     if _plugin_open:
@@ -1166,14 +1187,14 @@ class OeMediathekMainScreen(Screen):
             <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
             <eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2" />
             <widget name="hint_red"    position="68,960"   size="244,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="352,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_green"  position="370,960"  size="214,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ok"     position="624,960"  size="215,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ch"     position="879,960"  size="355,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_nav"    position="1274,960" size="255,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="1569,980" size="8,60" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow" position="1587,960" size="144,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="page_label"  position="1771,960" size="80,100"  font="Regular;28" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="337,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2" />
+            <widget name="hint_green"  position="355,960"  size="214,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ok"     position="594,960"  size="215,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ch"     position="834,960"  size="355,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_nav"    position="1214,960" size="255,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="1494,980" size="8,60" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow" position="1512,960" size="220,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="page_label"  position="1761,960" size="90,100"  font="Regular;28" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
             <widget name="version_label" position="1530,30" size="330,80" font="Regular;24" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
         </screen>
         """ % (
@@ -1194,14 +1215,14 @@ class OeMediathekMainScreen(Screen):
             <eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5" />
             <eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2" />
             <widget name="hint_red"    position="42,634"  size="162,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="240,649" size="5,30" backgroundColor="#1A00AA00" zPosition="2" />
-            <widget name="hint_green"  position="253,634" size="142,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ok"     position="422,634" size="143,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_ch"     position="592,634" size="237,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="hint_nav"    position="856,634" size="170,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <eLabel position="1053,649" size="5,30" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow" position="1066,634" size="95,60"  font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
-            <widget name="page_label"  position="1188,634" size="62,60"  font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="222,649" size="5,30" backgroundColor="#1A00AA00" zPosition="2" />
+            <widget name="hint_green"  position="235,634" size="142,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ok"     position="395,634" size="143,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_ch"     position="556,634" size="237,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="hint_nav"    position="811,634" size="170,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <eLabel position="999,649" size="5,30" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow" position="1012,634" size="140,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
+            <widget name="page_label"  position="1170,634" size="80,60"  font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
             <widget name="version_label" position="1010,20" size="220,53" font="Regular;16" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
         </screen>
         """ % (
@@ -1286,8 +1307,10 @@ class OeMediathekMainScreen(Screen):
     def _update_download_hint(self):
         t = _active_downloader and _active_downloader._thread
         converting = _active_downloader and getattr(_active_downloader, "_converting", False)
-        if (t and t.is_alive()) or _download_queue or converting:
-            self["hint_yellow"].setText(_b("Downloads"))
+        active = (t and t.is_alive()) or converting
+        if active or _download_queue:
+            n = len(_download_queue) + (1 if active else 0)
+            self["hint_yellow"].setText(_b("Downloads (%d)" % n))
             if not getattr(self, "_dl_poll_timer", None):
                 self._dl_poll_timer = eTimer()
                 self._dl_poll_timer.callback.append(self._update_download_hint)
@@ -3519,7 +3542,6 @@ class OeMediathekScreen(Screen):
                 self["list_sel_%d" % new_row].show()
 
     def on_download(self):
-        global _active_downloader, _download_queue
         if self.mode != MODE_EPISODES:
             return
         try:
@@ -3542,36 +3564,11 @@ class OeMediathekScreen(Screen):
             dur  = item.get("duration", b"")
             dl_topic = item.get("group") or self.cur_group_name if self.cur_group_name.startswith(b">> Direkte Treffer") else self.cur_group_name
 
-            # Läuft bereits ein Download → in Queue einreihen
-            if _active_downloader is not None:
-                t = _active_downloader._thread
-                if t is not None and t.is_alive():
-                    _download_queue.append({
-                        "title":       item["title"],
-                        "url":         url,
-                        "topic":       dl_topic,
-                        "description": desc,
-                        "duration":    dur,
-                    })
-                    self._show_toast("Zur Warteschlange hinzugef\xc3\xbcgt", added=True)
-                    return
-                # Thread bereits beendet aber Queue hat noch Items: neuen Download
-                # einreihen und Queue komplett abarbeiten (kein Screen öffnen)
-                _active_downloader = None
-                if _download_queue:
-                    _download_queue.append({
-                        "title":       item["title"],
-                        "url":         url,
-                        "topic":       dl_topic,
-                        "description": desc,
-                        "duration":    dur,
-                    })
-                    self._show_toast("Zur Warteschlange hinzugef\xc3\xbcgt", added=True)
-                    _queue_next()
-                    return
-
-            # Kein laufender Download → Screen öffnen
-            self.session.open(OeMediathekDownloadScreen, item["title"], url, topic=dl_topic, description=desc, duration=dur)
+            state = _enqueue_download(item["title"], url, dl_topic, desc, dur)
+            if state == "queued":
+                self._show_toast("Zur Warteschlange hinzugef\xc3\xbcgt", added=True)
+            else:
+                self._show_toast("Download gestartet", added=True)
         except Exception:
             _log("on_download Fehler: " + _fmt_exc())
 
@@ -4651,7 +4648,7 @@ class OeMediathekSettingsScreen(Screen):
             <eLabel position="{x},{y_line1}" size="{iw},2" backgroundColor="#44FFFFFF" zPosition="-4" />
             {rows}
             <eLabel position="{x},{y_line2}" size="{iw},2" backgroundColor="#44FFFFFF" zPosition="-4" />
-            <widget name="hint_label" position="{x},{y_hint}" size="{iw},{fh}" font="Regular;{fh_size}" halign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <widget name="hint_label" position="{x},{y_hint}" size="{iw},{fh}" font="Regular;{fh_size}" halign="center" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
         </screen>""".format(
             px=(1920 - w) // 2 if IS_FHD else (1280 - w) // 2,
             py=(1080 - total_h) // 2 if IS_FHD else (720 - total_h) // 2,
@@ -4783,211 +4780,6 @@ class OeMediathekSettingsScreen(Screen):
 
 
     def doClose(self):
-        try:
-            Screen.doClose(self)
-        except TypeError:
-            pass
-
-
-# --------------------------------------------------------------------------
-# Download-Screen
-# --------------------------------------------------------------------------
-
-class OeMediathekDownloadScreen(Screen):
-    if IS_FHD:
-        skin = """
-        <screen name="OeMediathekDownloadScreen" position="460,300" size="1000,450" flags="wfNoBorder">
-            <eLabel position="0,0" size="1000,450" backgroundColor="#33000000" zPosition="-6" />
-            <widget name="title_label" position="40,30" size="920,110" font="Regular;36" halign="center" valign="top" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="status_label" position="40,160" size="920,170" font="Regular;34" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
-            <eLabel position="200,383" size="8,28" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow" position="216,380" size="260,36" font="Regular;26" halign="left" foregroundColor="#CCCCCC" transparent="1" />
-            <widget name="hint_label" position="520,380" size="280,36" font="Regular;26" halign="left" foregroundColor="#AAAAAA" transparent="1" />
-        </screen>"""
-    else:
-        skin = """
-        <screen name="OeMediathekDownloadScreen" position="307,200" size="666,300" flags="wfNoBorder">
-            <eLabel position="0,0" size="666,300" backgroundColor="#33000000" zPosition="-6" />
-            <widget name="title_label" position="27,20" size="613,76" font="Regular;24" halign="center" valign="top" foregroundColor="#FFFFFF" transparent="1" />
-            <widget name="status_label" position="27,106" size="613,120" font="Regular;22" halign="center" valign="center" foregroundColor="#AAAAAA" transparent="1" />
-            <eLabel position="130,258" size="5,20" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow" position="140,254" size="175,28" font="Regular;19" halign="left" foregroundColor="#CCCCCC" transparent="1" />
-            <widget name="hint_label" position="345,254" size="190,28" font="Regular;19" halign="left" foregroundColor="#AAAAAA" transparent="1" />
-        </screen>"""
-
-    def __init__(self, session, title, url, topic=None, description=None, duration=None):
-        Screen.__init__(self, session)
-        self._url         = url
-        self._topic       = topic
-        self._description = description
-        self._duration    = duration
-        self._done  = False
-        self._err   = None
-
-        # Shared state zwischen Thread und Hauptthread (nur schreiben im Thread, lesen im Timer)
-        self._dl_downloaded  = 0
-        self._dl_total       = 0
-        self._dl_done        = False
-        self._dl_err         = None
-        self._dl_filepath    = None
-        self._dl_converting  = False
-
-        if isinstance(title, bytes):
-            title_str = title.decode("utf-8", "replace")
-        else:
-            title_str = title
-        self._title_str = title_str
-
-        self["title_label"]  = Label(_b(title_str))
-        self["status_label"] = Label(_b("Starte Download ..."))
-        self["hint_yellow"]  = Label(_b("Im Hintergrund"))
-        self["hint_label"]   = Label(_b("EXIT = Abbrechen"))
-
-        self["actions"] = ActionMap(
-            ["OkCancelActions", "ColorActions"],
-            {
-                "cancel": self._on_cancel,
-                "ok":     self._on_cancel,
-                "yellow": self._to_background,
-            },
-            -1,
-        )
-
-        self._downloader = None
-
-        # Einmaliger Start-Timer
-        self._start_timer = eTimer()
-        self._start_timer.callback.append(self._start_download)
-        self._start_timer.start(300, True)
-
-        # Poll-Timer: aktualisiert UI aus dem Hauptthread
-        self._poll_timer = eTimer()
-        self._poll_timer.callback.append(self._poll)
-
-        self.onClose.append(self.__stop_timers)
-
-    def __stop_timers(self):
-        try:
-            self._start_timer.stop()
-        except Exception:
-            pass
-        try:
-            self._poll_timer.stop()
-        except Exception:
-            pass
-
-    def _start_download(self):
-        try:
-            self._downloader = Downloader(
-                self._url,
-                self._title_str,
-                topic=self._topic,
-                description=self._description,
-                duration=self._duration,
-                on_progress=self._cb_progress,
-                on_done=self._cb_done,
-                on_error=self._cb_error,
-            )
-            self._downloader.start()
-            # Poll alle 500ms
-            self._poll_timer.start(500, False)
-        except Exception:
-            _log("DownloadScreen _start_download: " + _fmt_exc())
-            self["status_label"].setText(_b("Fehler beim Starten"))
-
-    # Callbacks aus dem Background-Thread — NUR einfache Wertzuweisungen, kein UI!
-    def _cb_progress(self, downloaded, total):
-        self._dl_downloaded = downloaded
-        self._dl_total      = total
-
-    def _cb_done(self, filepath):
-        self._dl_filepath = filepath
-        self._dl_done     = True
-
-    def _cb_error(self, msg):
-        self._dl_err = msg
-
-    def _cb_convert_done(self, ts_path):
-        self._dl_filepath   = ts_path
-        self._dl_converting = False
-        self._dl_done       = True
-
-    def _cb_convert_error(self, msg):
-        self._dl_converting = False
-        self._dl_err = "Konvertierung fehlgeschlagen: " + msg
-
-    # Poll läuft im Hauptthread — darf UI anfassen
-    def _poll(self):
-        if self._dl_err is not None:
-            self._poll_timer.stop()
-            self._dl_converting = False
-            self["status_label"].setText(_b("Fehler: " + self._dl_err))
-            self["hint_label"].setText(_b("OK / EXIT = Schlie\xc3\x9fen"))
-            return
-
-        if self._dl_converting:
-            # Konvertierung läuft — Anzeige stabil halten bis _cb_convert_done feuert
-            return
-
-        if self._dl_done:
-            self._poll_timer.stop()
-            fp = self._dl_filepath or ""
-            if get_auto_convert() and fp.lower().endswith(".mp4"):
-                self._dl_done = False
-                self._dl_converting = True
-                self["status_label"].setText(_b("Konvertiere zu TS ..."))
-                self["hint_label"].setText(_b("OK / EXIT = Schlie\xc3\x9fen"))
-                self["hint_yellow"].setText(_b("Im Hintergrund"))
-                convert_mp4_to_ts(fp, on_done=self._cb_convert_done, on_error=self._cb_convert_error)
-                self._poll_timer.start(500, False)
-            else:
-                fname = os.path.basename(fp)
-                self["status_label"].setText(_b("Fertig: " + fname))
-                self["hint_label"].setText(_b("OK / EXIT = Schlie\xc3\x9fen"))
-                self["hint_yellow"].setText(_b(""))
-            return
-
-        downloaded = self._dl_downloaded
-        total      = self._dl_total
-        muxing     = getattr(self._downloader, "_muxing", False) if self._downloader else False
-        segs_done  = getattr(self._downloader, "_segs_done", 0) if self._downloader else 0
-        total_segs = getattr(self._downloader, "_total_segs", 0) if self._downloader else 0
-        if muxing:
-            self["status_label"].setText(_b("Verbinde Video & Audio ..."))
-        elif total_segs > 0:
-            pct = int(segs_done * 100 / total_segs)
-            self["status_label"].setText(_b("%d%% (%s)" % (pct, format_size(downloaded))))
-        elif total > 0:
-            pct = int(downloaded * 100 / total)
-            self["status_label"].setText(_b("%d%% von %s" % (pct, format_size(total))))
-        elif downloaded > 0:
-            self["status_label"].setText(_b("%s heruntergeladen" % format_size(downloaded)))
-
-    def _to_background(self):
-        global _active_downloader
-        if self._dl_converting:
-            self.close()
-            return
-        if not self._downloader or self._dl_done or self._dl_err is not None:
-            return
-
-        self._downloader.on_done     = _bg_download_done
-        self._downloader.on_error    = lambda msg: _queue_error(msg)
-        self._downloader.on_progress = lambda *a: None
-
-        _active_downloader = self._downloader
-        self._downloader   = None  # verhindert cancel() in doClose
-        self.close()
-
-    def _on_cancel(self):
-        if self._downloader:
-            self._downloader.cancel()
-        self.close()
-
-    def doClose(self):
-        self.__stop_timers()
-        if self._downloader:
-            self._downloader.cancel()
         try:
             Screen.doClose(self)
         except TypeError:
