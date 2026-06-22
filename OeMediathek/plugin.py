@@ -533,7 +533,10 @@ class _CustomListMixin(object):
                 self._list_scroll = self._list_sel
             elif self._list_sel >= self._list_scroll + rows:
                 self._list_scroll = self._list_sel - rows + 1
-            self._list_scroll = max(0, min(self._list_scroll, max(0, total - rows)))
+            # Kein oberes Clamping auf total-rows: die letzte Seite darf eine
+            # echte, nicht zurueckgezogene Teil-Seite sein (leere Zeilen statt
+            # Ueberlappung mit der vorherigen Seite), siehe _list_step().
+            self._list_scroll = max(0, self._list_scroll)
         for i in range(rows):
             abs_idx = self._list_scroll + i
             if abs_idx < total:
@@ -570,7 +573,10 @@ class _CustomListMixin(object):
                 self._list_scroll = self._list_sel
             else:
                 self._list_scroll = self._list_sel - rows + 1
-        self._list_scroll = max(0, min(self._list_scroll, max(0, total - rows)))
+        # Kein oberes Clamping auf total-rows: die letzte Seite darf eine echte,
+        # nicht zurueckgezogene Teil-Seite sein (leere Zeilen unterhalb des
+        # letzten Eintrags statt Ueberlappung mit der vorherigen Seite).
+        self._list_scroll = max(0, self._list_scroll)
         if self._list_scroll != old_scroll:
             self._render_list()
         else:
@@ -3452,7 +3458,10 @@ class OeMediathekScreen(Screen):
                 self._list_scroll = self._list_sel
             elif self._list_sel >= self._list_scroll + _LIST_ROWS:
                 self._list_scroll = self._list_sel - _LIST_ROWS + 1
-            self._list_scroll = max(0, min(self._list_scroll, max(0, total - _LIST_ROWS)))
+            # Kein oberes Clamping auf total-_LIST_ROWS: die letzte Seite darf
+            # eine echte, nicht zurueckgezogene Teil-Seite sein (leere Zeilen
+            # statt Ueberlappung mit der vorherigen Seite), siehe _list_step().
+            self._list_scroll = max(0, self._list_scroll)
         for i in range(_LIST_ROWS):
             abs_idx = self._list_scroll + i
             if abs_idx < total:
@@ -3495,7 +3504,10 @@ class OeMediathekScreen(Screen):
                 self._list_scroll = self._list_sel
             else:
                 self._list_scroll = self._list_sel - _LIST_ROWS + 1
-        self._list_scroll = max(0, min(self._list_scroll, max(0, total - _LIST_ROWS)))
+        # Kein oberes Clamping auf total-_LIST_ROWS: die letzte Seite darf eine
+        # echte, nicht zurueckgezogene Teil-Seite sein (leere Zeilen unterhalb
+        # des letzten Eintrags statt Ueberlappung mit der vorherigen Seite).
+        self._list_scroll = max(0, self._list_scroll)
         if self._list_scroll != old_scroll:
             self._render_list()
         else:
