@@ -73,7 +73,7 @@ from mediathek import (
     load_search_history,
     save_search_history,
 )
-from player import play_stream
+from player import play_stream_async
 from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging
 from download_manager import OeMediathekDownloadManagerScreen
 from Screens.MessageBox import MessageBox as _MessageBox  # für Download-Notification
@@ -2257,7 +2257,7 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
                 return
             name, url = self._streams[idx]
             _log("Livestream: " + name)
-            play_stream(self.session, url, name, is_live=True, autoconfigure_serviceapp=get_serviceapp_autoconfigure())
+            play_stream_async(self.session, url, name, is_live=True, autoconfigure_serviceapp=get_serviceapp_autoconfigure())
 
     def key_cancel(self):
         self.close()
@@ -2519,7 +2519,7 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
                 return
             name, url = self._streams[idx]
             _log("Live-Event: " + name)
-            play_stream(self.session, url, name, is_live=True, autoconfigure_serviceapp=get_serviceapp_autoconfigure())
+            play_stream_async(self.session, url, name, is_live=True, autoconfigure_serviceapp=get_serviceapp_autoconfigure())
 
     def key_cancel(self):
         self.close()
@@ -3708,7 +3708,7 @@ class OeMediathekScreen(Screen):
                         )
                     elif len(options) == 1:
                         _log("Starte direkt: " + str(item["title"]))
-                        play_stream(self.session, options[0][1], item["title"])
+                        play_stream_async(self.session, options[0][1], item["title"])
                     else:
                         self["status_label"].setText("Kein Stream gefunden!")
                         _log("Kein abspielbarer Stream fuer: " + str(item["title"]))
@@ -3718,7 +3718,7 @@ class OeMediathekScreen(Screen):
     def play_selected_quality(self, url, title):
         if url:
             _log("Starte (Auswahl): " + str(title))
-            play_stream(self.session, url, title)
+            play_stream_async(self.session, url, title)
 
     def on_cancel(self):
         if self._ep_fav_sort_mode:

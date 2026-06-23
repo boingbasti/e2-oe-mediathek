@@ -5,6 +5,15 @@
 import hashlib
 import os
 import re
+import threading
+
+try:
+    import traceback
+    def _fmt_exc():
+        return traceback.format_exc()
+except ImportError:
+    def _fmt_exc():
+        return "(traceback nicht verfügbar)"
 
 try:
     from urllib2 import urlopen, Request as _Request
@@ -268,21 +277,23 @@ def _build_single_quality_playlist(master_url):
     return master_url
 
 
-def play_stream(session, stream_url, title="ÖR Mediathek", force_player_id=None, is_live=False, autoconfigure_serviceapp=True):
+def _resolve_stream(stream_url, title="ÖR Mediathek", force_player_id=None, is_live=False, autoconfigure_serviceapp=True):
     """
-    Spielt eine URL im eigenen, angepassten Enigma2-Player ab.
-    Nutzt standardmaessig 4097 (GStreamer). Nur bei ORF-Streams wird,
-    falls verfuegbar, auf 5002 (exteplayer3) gewechselt.
-    Bei is_live=True wird die Master-Playlist auf eine fixe Qualitaet reduziert
-    und, falls autoconfigure_serviceapp=True, serviceapp fuer synchrone Wiedergabe konfiguriert.
-    force_player_id erzwingt einen bestimmten Service-Typ.
+    Netzwerkteil von play_stream_async(): loest bei Bedarf die HLS-Master-Playlist
+    auf eine fixe Qualitaet auf (_build_single_quality_playlist -> blockierender
+    urlopen()-Call) und ermittelt den finalen player_id.
+    MUSS in einem Hintergrundthread laufen, NIE direkt aus einem
+    ActionMap-Tastendruck-Handler oder reactor.callFromThread-Callback - ein
+    haengender DNS-/Netzwerkzugriff wuerde sonst wegen des GIL den kompletten
+    Enigma2-Prozess inkl. WebIF einfrieren (siehe e2-magentatv Commit d1eb29d).
+    Gibt (stream_url_bytes, title_bytes, player_id) zurueck.
     """
     if isinstance(stream_url, bytes):
         stream_url_str = stream_url.decode('utf-8', 'replace')
     else:
         stream_url_str = stream_url
 
-    _log("play_stream: title=" + str(title) + " is_live=" + str(is_live) + " url=" + str(stream_url_str))
+    _log("_resolve_stream: title=" + str(title) + " is_live=" + str(is_live) + " url=" + str(stream_url_str))
 
     if "ard-mcdn.de" in stream_url_str:
         stream_url_str = stream_url_str.replace("https://", "http://", 1)
@@ -327,9 +338,49 @@ def play_stream(session, stream_url, title="ÖR Mediathek", force_player_id=None
     else:
         player_id = 4097
 
-    _log("play_stream: finale url=" + str(stream_url_str) + " player_id=" + str(player_id))
+    _log("_resolve_stream: finale url=" + str(stream_url_str) + " player_id=" + str(player_id))
 
+    return stream_url_bytes, title_bytes, player_id
+
+
+def play_resolved_stream(session, stream_url_bytes, title_bytes, player_id):
+    """
+    GUI-Thread-sicherer Teil: baut nur noch die eServiceReference und oeffnet
+    den Player. Macht KEINE Netzwerkzugriffe - darf direkt aus dem GUI-/
+    Reactor-Thread aufgerufen werden (z.B. per reactor.callFromThread im
+    Anschluss an _resolve_stream() in play_stream_async()).
+    """
     ref = eServiceReference(player_id, 0, stream_url_bytes)
     ref.setName(title_bytes)
-
     session.open(OeStreamPlayer, ref)
+
+
+def play_stream_async(session, stream_url, title="ÖR Mediathek", force_player_id=None, is_live=False, autoconfigure_serviceapp=True):
+    """
+    Einziger Einstiegspunkt fuer ActionMap-Tastendruck-Handler, um einen Stream
+    zu starten. Loest die URL in einem Hintergrundthread auf (kann blockierende
+    Netzwerkzugriffe machen, siehe _resolve_stream()) und oeffnet den Player
+    danach sicher per reactor.callFromThread im GUI-Thread.
+    Nutzt standardmaessig 4097 (GStreamer). Nur bei ORF-Streams wird,
+    falls verfuegbar, auf 5002 (exteplayer3) gewechselt.
+    Bei is_live=True wird die Master-Playlist auf eine fixe Qualitaet reduziert
+    und, falls autoconfigure_serviceapp=True, serviceapp fuer synchrone Wiedergabe konfiguriert.
+    force_player_id erzwingt einen bestimmten Service-Typ.
+    """
+    def worker():
+        try:
+            stream_url_bytes, title_bytes, player_id = _resolve_stream(
+                stream_url, title, force_player_id, is_live, autoconfigure_serviceapp
+            )
+        except Exception:
+            _log("play_stream_async: Fehler bei _resolve_stream: " + _fmt_exc())
+            return
+        try:
+            from twisted.internet import reactor
+            reactor.callFromThread(play_resolved_stream, session, stream_url_bytes, title_bytes, player_id)
+        except Exception:
+            _log("play_stream_async: Fehler bei reactor.callFromThread: " + _fmt_exc())
+
+    t = threading.Thread(target=worker)
+    t.daemon = True
+    t.start()
