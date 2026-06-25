@@ -53,21 +53,74 @@ except ImportError:
 
 
 class OeStreamPlayer(MoviePlayer):
-    def __init__(self, session, service):
+    def __init__(self, session, service, streams=None, stream_index=0, autoconfigure_serviceapp=True):
         MoviePlayer.__init__(self, session, service)
-        # Nimmt den normalen MoviePlayer-Skin (für OSD/Statusleiste)
         self.skinName = ["MoviePlayer", "InfoBar"]
+        self._streams       = streams or []
+        self._stream_index  = stream_index
+        self._autoconfigure = autoconfigure_serviceapp
+        self._switching     = False
+        self._closed        = False
+        self.onClose.append(self.__on_close)
+        if len(self._streams) > 1:
+            from Components.ActionMap import ActionMap
+            self["_oem_nav"] = ActionMap(
+                [b"ChannelSelectBaseActions"],
+                {
+                    b"nextBouquet": lambda: self._switch_channel(1),
+                    b"prevBouquet": lambda: self._switch_channel(-1),
+                },
+                -1,
+            )
+
+    def __on_close(self):
+        self._closed = True
+
+    def _switch_channel(self, direction):
+        if self._switching:
+            return
+        new_idx = self._stream_index + direction
+        if new_idx < 0 or new_idx >= len(self._streams):
+            return
+        name, url = self._streams[new_idx]
+        self._switching = True
+        t = threading.Thread(target=self.__switch_bg, args=(new_idx, url, name))
+        t.daemon = True
+        t.start()
+
+    def __switch_bg(self, new_idx, url, name):
+        try:
+            stream_url_bytes, title_bytes, player_id = _resolve_stream(
+                url, name, is_live=True, autoconfigure_serviceapp=self._autoconfigure
+            )
+        except Exception:
+            _log("OeStreamPlayer._switch_channel: Fehler: " + _fmt_exc())
+            self._switching = False
+            return
+
+        def _apply():
+            self._switching = False
+            if self._closed:
+                return
+            self._stream_index = new_idx
+            ref = eServiceReference(player_id, 0, stream_url_bytes)
+            ref.setName(title_bytes)
+            self.session.nav.playService(ref)
+
+        try:
+            from twisted.internet import reactor
+            reactor.callFromThread(_apply)
+        except Exception:
+            _log("OeStreamPlayer._switch_channel: callFromThread Fehler: " + _fmt_exc())
+            self._switching = False
 
     def leavePlayer(self):
-        # Verhindert die "Wiedergabe beenden?" Abfrage, wenn man EXIT drückt
         self.close()
 
     def doEofInternal(self, playing):
-        # Schließt den Player sofort sauber, wenn der Stream von selbst zu Ende ist
         self.close()
 
     def showResumePoint(self):
-        # Verhindert die Abfrage "An letzter Position fortsetzen?"
         pass
 
 
@@ -343,7 +396,7 @@ def _resolve_stream(stream_url, title="ÖR Mediathek", force_player_id=None, is_
     return stream_url_bytes, title_bytes, player_id
 
 
-def play_resolved_stream(session, stream_url_bytes, title_bytes, player_id):
+def play_resolved_stream(session, stream_url_bytes, title_bytes, player_id, streams=None, stream_index=0, autoconfigure_serviceapp=True):
     """
     GUI-Thread-sicherer Teil: baut nur noch die eServiceReference und oeffnet
     den Player. Macht KEINE Netzwerkzugriffe - darf direkt aus dem GUI-/
@@ -352,20 +405,16 @@ def play_resolved_stream(session, stream_url_bytes, title_bytes, player_id):
     """
     ref = eServiceReference(player_id, 0, stream_url_bytes)
     ref.setName(title_bytes)
-    session.open(OeStreamPlayer, ref)
+    session.open(OeStreamPlayer, ref, streams, stream_index, autoconfigure_serviceapp)
 
 
-def play_stream_async(session, stream_url, title="ÖR Mediathek", force_player_id=None, is_live=False, autoconfigure_serviceapp=True):
+def play_stream_async(session, stream_url, title="ÖR Mediathek", force_player_id=None, is_live=False, autoconfigure_serviceapp=True, streams=None, stream_index=0):
     """
     Einziger Einstiegspunkt fuer ActionMap-Tastendruck-Handler, um einen Stream
     zu starten. Loest die URL in einem Hintergrundthread auf (kann blockierende
     Netzwerkzugriffe machen, siehe _resolve_stream()) und oeffnet den Player
     danach sicher per reactor.callFromThread im GUI-Thread.
-    Nutzt standardmaessig 4097 (GStreamer). Nur bei ORF-Streams wird,
-    falls verfuegbar, auf 5002 (exteplayer3) gewechselt.
-    Bei is_live=True wird die Master-Playlist auf eine fixe Qualitaet reduziert
-    und, falls autoconfigure_serviceapp=True, serviceapp fuer synchrone Wiedergabe konfiguriert.
-    force_player_id erzwingt einen bestimmten Service-Typ.
+    streams/stream_index: optionale flache Senderliste fuer CH+/--Wechsel im Player.
     """
     def worker():
         try:
@@ -377,7 +426,7 @@ def play_stream_async(session, stream_url, title="ÖR Mediathek", force_player_i
             return
         try:
             from twisted.internet import reactor
-            reactor.callFromThread(play_resolved_stream, session, stream_url_bytes, title_bytes, player_id)
+            reactor.callFromThread(play_resolved_stream, session, stream_url_bytes, title_bytes, player_id, streams, stream_index, autoconfigure_serviceapp)
         except Exception:
             _log("play_stream_async: Fehler bei reactor.callFromThread: " + _fmt_exc())
 

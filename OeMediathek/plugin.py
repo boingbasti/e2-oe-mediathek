@@ -2257,7 +2257,14 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
                 return
             name, url = self._streams[idx]
             _log("Livestream: " + name)
-            play_stream_async(self.session, url, name, is_live=True, autoconfigure_serviceapp=get_serviceapp_autoconfigure())
+            flat = [(n, u) for _, grp in LIVE_STREAM_GROUPS for n, u in grp]
+            try:
+                flat_idx = next(i for i, (n, u) in enumerate(flat) if u == url)
+            except StopIteration:
+                flat_idx = 0
+            play_stream_async(self.session, url, name, is_live=True,
+                              autoconfigure_serviceapp=get_serviceapp_autoconfigure(),
+                              streams=flat, stream_index=flat_idx)
 
     def key_cancel(self):
         self.close()
@@ -2519,7 +2526,14 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
                 return
             name, url = self._streams[idx]
             _log("Live-Event: " + name)
-            play_stream_async(self.session, url, name, is_live=True, autoconfigure_serviceapp=get_serviceapp_autoconfigure())
+            flat = [(n, u) for _, grp in LIVE_EVENT_GROUPS for n, u in grp]
+            try:
+                flat_idx = next(i for i, (n, u) in enumerate(flat) if u == url)
+            except StopIteration:
+                flat_idx = 0
+            play_stream_async(self.session, url, name, is_live=True,
+                              autoconfigure_serviceapp=get_serviceapp_autoconfigure(),
+                              streams=flat, stream_index=flat_idx)
 
     def key_cancel(self):
         self.close()
