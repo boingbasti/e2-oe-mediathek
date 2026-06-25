@@ -53,14 +53,17 @@ except ImportError:
 
 
 class OeStreamPlayer(MoviePlayer):
+    ENABLE_RESUME_SUPPORT = False
+
     def __init__(self, session, service, streams=None, stream_index=0, autoconfigure_serviceapp=True):
         MoviePlayer.__init__(self, session, service)
         self.skinName = ["MoviePlayer", "InfoBar"]
-        self._streams       = streams or []
-        self._stream_index  = stream_index
-        self._autoconfigure = autoconfigure_serviceapp
-        self._switching     = False
-        self._closed        = False
+        self._streams         = streams or []
+        self._stream_index    = stream_index
+        self._autoconfigure   = autoconfigure_serviceapp
+        self._switching       = False
+        self._closed          = False
+        self._showing_offline = False
         self.onClose.append(self.__on_close)
         if len(self._streams) > 1:
             from Components.ActionMap import ActionMap
@@ -102,7 +105,8 @@ class OeStreamPlayer(MoviePlayer):
             self._switching = False
             if self._closed:
                 return
-            self._stream_index = new_idx
+            self._stream_index    = new_idx
+            self._showing_offline = False
             ref = eServiceReference(player_id, 0, stream_url_bytes)
             ref.setName(title_bytes)
             self.session.nav.playService(ref)
@@ -118,6 +122,10 @@ class OeStreamPlayer(MoviePlayer):
         self.close()
 
     def doEofInternal(self, playing):
+        if len(self._streams) > 1:
+            self._showing_offline = True
+            self.session.nav.playService(_offline_ref())
+            return
         self.close()
 
     def showResumePoint(self):
@@ -127,6 +135,13 @@ class OeStreamPlayer(MoviePlayer):
 _ORF_USER_AGENT = "OeMediathek/1.0"
 
 _TMP_DIR = "/tmp/OeMediathek"
+
+_OFFLINE_VIDEO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "offline_stream.mp4")
+
+
+def _offline_ref():
+    path = _OFFLINE_VIDEO.encode("utf-8") if isinstance(_OFFLINE_VIDEO, str) else _OFFLINE_VIDEO
+    return eServiceReference(4097, 0, path)
 
 
 def _tmp_playlist_path(master_url):
