@@ -43,9 +43,11 @@ Zusätzlich gibt es zwei neue Kacheln:
 |-------|----------|
 | OK | Gruppe öffnen / Stream abspielen |
 | Rot / EXIT | Zurück |
+| CH+ / CH- | Im laufenden Player zum nächsten / vorherigen Stream wechseln |
 
 - **Live-Streams:** Zeigt alle Sender gruppiert. Gruppen mit mehreren Varianten (z.B. NDR mit vier Länderfenstern, BR mit Nord/Süd/International) öffnen eine zweite Ebene. Die URL des gewählten Streams wird im rechten Panel angezeigt.
 - **Live-Events:** Zeigt Event-Stream-Gruppen. Pro Stream wird der Live-Status per HTTP-Check angezeigt: „Stream aktiv" (echtes Live-Signal), „Tafel / Bereitschaft" (Stream läuft, aber kein aktives Event), „kein Event" (HTTP 403), „nicht erreichbar". Arte Concert sendet dauerhaft.
+- **Stream-Offline-Video:** Wenn ein Kanal offline ist (EOF), zeigt der Player ein Offline-Standbild statt sich zu schließen – CH+/- zum Weiterwechseln bleibt nutzbar.
 
 ---
 
@@ -77,7 +79,7 @@ Zusätzlich gibt es zwei neue Kacheln:
 - **Sortiermodus (Hauptmenü):** Kacheln per OK greifen und ablegen; Reihenfolge wird gespeichert und überlebt Neustarts; EXIT bricht ab ohne zu speichern
 - **Favoriten sortieren:** In der Favoritenliste per Rot in den Sortiermodus wechseln, Einträge per OK greifen und mit Pfeiltasten verschieben, Grün setzt die Reihenfolge zurück, EXIT bricht ab
 - **HD/SD-Auswahl:** Wenn ein Beitrag in HD und SD verfügbar ist, wird vor dem Abspielen gefragt
-- **Download:** Episoden direkt auf die Festplatte laden; läuft im Hintergrund weiter wenn der Screen per Gelb geschlossen wird; HLS/m3u8-Streams werden unterstützt; Dateiname ohne Unterstriche; zusätzlich werden eine Textdatei mit Sendungsinformationen und eine .meta-Datei erstellt (Datum und Uhrzeit im Enigma2 Movie Player)
+- **Download:** Episoden direkt auf die Festplatte laden; startet sofort im Hintergrund ohne Zwischendialog; HLS/m3u8-Streams werden unterstützt; Dateiname ohne Unterstriche; zusätzlich werden eine Textdatei mit Sendungsinformationen und eine .meta-Datei erstellt (Datum und Uhrzeit im Enigma2 Movie Player); laufende und wartende Downloads werden in der Episodenliste mit einem Icon markiert
 - **Download-Warteschlange:** Mehrere Downloads können nacheinander gestartet werden und laufen automatisch der Reihe nach ab
 - **Download-Manager:** Zeigt laufenden Download mit Fortschritt und alle wartenden Downloads; Abbrechen einzeln oder gesamt möglich
 - **Einstellungen:** Speicherort für Downloads, MP4→TS Konvertierung per ffmpeg, Kachel-Reihenfolge zurücksetzen, Navigation Links/Rechts im Hauptmenü (Seitenwechsel oder Zeilenende), ServiceApp für Live-Streams konfigurieren (A/V-Sync-Optimierung, standardmäßig aktiv) und Debug-Logging aktivieren
@@ -111,7 +113,7 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 Die IPK-Datei aus dem [Releases-Bereich](../../releases) herunterladen und auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.8.3_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.8.4_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.
