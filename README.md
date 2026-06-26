@@ -46,7 +46,7 @@ Zusätzlich gibt es zwei neue Kacheln:
 | CH+ / CH- | Im laufenden Player zum nächsten / vorherigen Stream wechseln |
 
 - **Live-Streams:** Zeigt alle Sender gruppiert. Gruppen mit mehreren Varianten (z.B. NDR mit vier Länderfenstern, BR mit Nord/Süd/International) öffnen eine zweite Ebene. Die URL des gewählten Streams wird im rechten Panel angezeigt.
-- **Live-Events:** Zeigt Event-Stream-Gruppen. Pro Stream wird der Live-Status per HTTP-Check angezeigt: „Stream aktiv" (echtes Live-Signal), „Tafel / Bereitschaft" (Stream läuft, aber kein aktives Event), „kein Event" (HTTP 403), „nicht erreichbar". Arte Concert sendet dauerhaft.
+- **Live-Events:** Zeigt Event-Stream-Gruppen. Pro Stream wird der Live-Status per HTTP-Check angezeigt: „Stream aktiv" (echtes Live-Signal), „Tafel / Bereitschaft" (Stream läuft, aber kein aktives Event), „kein Event" (HTTP 403), „nicht erreichbar". Arte Concert sendet dauerhaft. (ARD, ZDF, NDR, WDR, HR, MDR, BR, SWR, RBB, Radio Bremen, ORF, Arte Concert)
 - **Stream-Offline-Video:** Wenn ein Kanal offline ist (EOF), zeigt der Player ein Offline-Standbild statt sich zu schließen – CH+/- zum Weiterwechseln bleibt nutzbar.
 
 ---
