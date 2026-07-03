@@ -63,6 +63,8 @@ class OeStreamPlayer(MoviePlayer):
         self._autoconfigure   = autoconfigure_serviceapp
         self._switching       = False
         self._closed          = False
+        self._target_stream_index = stream_index
+        self._switch_token         = 0
         self._showing_offline = False
         self.onClose.append(self.__on_close)
         if len(self._streams) > 1:
@@ -80,28 +82,38 @@ class OeStreamPlayer(MoviePlayer):
         self._closed = True
 
     def _switch_channel(self, direction):
-        if self._switching:
+        # Calculate next target stream index immediately in main thread
+        target_idx = getattr(self, "_target_stream_index", self._stream_index) + direction
+        if target_idx < 0 or target_idx >= len(self._streams):
             return
-        new_idx = self._stream_index + direction
-        if new_idx < 0 or new_idx >= len(self._streams):
-            return
-        name, url = self._streams[new_idx]
+            
+        self._target_stream_index = target_idx
+        name, url = self._streams[target_idx]
+        
+        # Increment token so only the LATEST zap thread's results are applied
+        self._switch_token = getattr(self, "_switch_token", 0) + 1
+        current_token = self._switch_token
+        
         self._switching = True
-        t = threading.Thread(target=self.__switch_bg, args=(new_idx, url, name))
+        
+        t = threading.Thread(target=self.__switch_bg, args=(target_idx, url, name, current_token))
         t.daemon = True
         t.start()
 
-    def __switch_bg(self, new_idx, url, name):
+    def __switch_bg(self, new_idx, url, name, token=0):
         try:
             stream_url_bytes, title_bytes, player_id = _resolve_stream(
                 url, name, is_live=True, autoconfigure_serviceapp=self._autoconfigure
             )
         except Exception:
             _log("OeStreamPlayer._switch_channel: Fehler: " + _fmt_exc())
-            self._switching = False
+            if getattr(self, "_switch_token", 0) == token:
+                self._switching = False
             return
 
         def _apply():
+            if getattr(self, "_switch_token", 0) != token:
+                return
             self._switching = False
             if self._closed:
                 return
@@ -116,15 +128,24 @@ class OeStreamPlayer(MoviePlayer):
             reactor.callFromThread(_apply)
         except Exception:
             _log("OeStreamPlayer._switch_channel: callFromThread Fehler: " + _fmt_exc())
-            self._switching = False
+            if getattr(self, "_switch_token", 0) == token:
+                self._switching = False
 
     def leavePlayer(self):
         self.close()
 
     def doEofInternal(self, playing):
+        if getattr(self, "_showing_offline", False):
+            _log("doEofInternal: Already showing offline stream, closing player to prevent loop/deadlock")
+            self.close()
+            return
         if len(self._streams) > 1:
             self._showing_offline = True
-            self.session.nav.playService(_offline_ref())
+            try:
+                from twisted.internet import reactor
+                reactor.callLater(0.5, self.session.nav.playService, _offline_ref())
+            except Exception:
+                self.session.nav.playService(_offline_ref())
             return
         self.close()
 
@@ -240,6 +261,7 @@ def _serve_playlist_via_http(content):
                 pass
 
         server = HTTPServer(('127.0.0.1', 0), _Handler)
+        server.timeout = 5.0
         port = server.server_address[1]
 
         t = threading.Thread(target=lambda: (server.handle_request(), server.server_close()))
