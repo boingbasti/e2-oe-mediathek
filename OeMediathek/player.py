@@ -200,8 +200,7 @@ def _configure_serviceapp_for_live():
         changed = False
 
         try:
-            import serviceapp
-            has_new_serviceapp = "hls1" in getattr(serviceapp, "__version__", "")
+            from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_NATIVE_REFERER as has_new_serviceapp
         except ImportError:
             has_new_serviceapp = False
 
@@ -305,8 +304,7 @@ def _build_single_quality_playlist(master_url):
     """
     _log("build_single_quality_playlist: master_url=" + str(master_url))
     try:
-        import serviceapp
-        has_new_serviceapp = "hls1" in getattr(serviceapp, "__version__", "")
+        from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_NATIVE_REFERER as has_new_serviceapp
     except ImportError:
         has_new_serviceapp = False
 
@@ -436,8 +434,7 @@ def _resolve_stream(stream_url, title="ÖR Mediathek", force_player_id=None, is_
     # ORF: UA-Header setzen (nach Playlist-Auflösung, damit er an der finalen URL hängt)
     if is_orf and "#" not in stream_url_str and "|" not in stream_url_str:
         try:
-            import serviceapp
-            has_new_serviceapp = "hls1" in getattr(serviceapp, "__version__", "")
+            from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_NATIVE_REFERER as has_new_serviceapp
         except ImportError:
             has_new_serviceapp = False
 
