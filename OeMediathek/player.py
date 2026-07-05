@@ -284,6 +284,16 @@ def _build_single_quality_playlist(master_url):
     """
     _log("build_single_quality_playlist: master_url=" + str(master_url))
     try:
+        import serviceapp
+        has_new_serviceapp = "hls1" in getattr(serviceapp, "__version__", "")
+    except ImportError:
+        has_new_serviceapp = False
+
+    if has_new_serviceapp:
+        _log("build_single_quality_playlist: new serviceapp detected, playing natively")
+        return master_url
+
+    try:
         req = _Request(master_url)
         req.add_header('User-Agent', _ORF_USER_AGENT)
         resp = urlopen(req, timeout=4)
@@ -403,8 +413,17 @@ def _resolve_stream(stream_url, title="ÖR Mediathek", force_player_id=None, is_
         stream_url_str = _build_single_quality_playlist(stream_url_str)
 
     # ORF: UA-Header setzen (nach Playlist-Auflösung, damit er an der finalen URL hängt)
-    if is_orf and "#" not in stream_url_str:
-        stream_url_str = stream_url_str + "#User-Agent=" + _ORF_USER_AGENT
+    if is_orf and "#" not in stream_url_str and "|" not in stream_url_str:
+        try:
+            import serviceapp
+            has_new_serviceapp = "hls1" in getattr(serviceapp, "__version__", "")
+        except ImportError:
+            has_new_serviceapp = False
+
+        if has_new_serviceapp:
+            stream_url_str = stream_url_str + "|User-Agent=" + _ORF_USER_AGENT
+        else:
+            stream_url_str = stream_url_str + "#User-Agent=" + _ORF_USER_AGENT
 
     if is_live:
         stream_url_str = _build_single_quality_playlist(stream_url_str)
