@@ -199,6 +199,12 @@ def _configure_serviceapp_for_live():
         ext3 = config.plugins.serviceapp.exteplayer3[key]
         changed = False
 
+        try:
+            import serviceapp
+            has_new_serviceapp = "hls1" in getattr(serviceapp, "__version__", "")
+        except ImportError:
+            has_new_serviceapp = False
+
         if not ext3.downmix.value:
             ext3.downmix.value = True; ext3.downmix.save(); changed = True
 
@@ -216,6 +222,10 @@ def _configure_serviceapp_for_live():
             if not ext3.aac_swdecoding.value:
                 ext3.aac_swdecoding.value = True; ext3.aac_swdecoding.save(); changed = True
 
+        if has_new_serviceapp and hasattr(opts, "hls_audio_filter"):
+            if not opts.hls_audio_filter.value:
+                opts.hls_audio_filter.value = True; opts.hls_audio_filter.save(); changed = True
+
         # Bei v181 aac_swdecoding=False erzwingen: altes serviceapp.so wuerde sonst
         # '-a' ohne Wert generieren (Boolean-Flag statt 0|1|2|3) -> exteplayer3 v181 haengt.
         aac_sw = False if _has_new_exteplayer3() else ext3.aac_swdecoding.value
@@ -227,13 +237,24 @@ def _configure_serviceapp_for_live():
             ext3.lpcm_injecion.value,
             ext3.downmix.value
         )
-        setServiceAppSettings(
-            OPTIONS_SERVICEEXTEPLAYER3,
-            opts.hls_explorer.value,
-            opts.autoselect_stream.value,
-            opts.connection_speed_kb.value,
-            opts.autoturnon_subtitles.value
-        )
+
+        if has_new_serviceapp and hasattr(opts, "hls_audio_filter"):
+            setServiceAppSettings(
+                OPTIONS_SERVICEEXTEPLAYER3,
+                opts.hls_explorer.value,
+                opts.autoselect_stream.value,
+                opts.connection_speed_kb.value,
+                opts.autoturnon_subtitles.value,
+                opts.hls_audio_filter.value
+            )
+        else:
+            setServiceAppSettings(
+                OPTIONS_SERVICEEXTEPLAYER3,
+                opts.hls_explorer.value,
+                opts.autoselect_stream.value,
+                opts.connection_speed_kb.value,
+                opts.autoturnon_subtitles.value
+            )
         return changed
     except Exception:
         return False
