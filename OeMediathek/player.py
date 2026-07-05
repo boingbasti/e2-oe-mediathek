@@ -445,6 +445,8 @@ def play_resolved_stream(session, stream_url_bytes, title_bytes, player_id, stre
     session.open(OeStreamPlayer, ref, streams, stream_index, autoconfigure_serviceapp)
 
 
+_active_play_thread_running = False
+
 def play_stream_async(session, stream_url, title="ÖR Mediathek", force_player_id=None, is_live=False, autoconfigure_serviceapp=True, streams=None, stream_index=0):
     """
     Einziger Einstiegspunkt fuer ActionMap-Tastendruck-Handler, um einen Stream
@@ -453,19 +455,32 @@ def play_stream_async(session, stream_url, title="ÖR Mediathek", force_player_i
     danach sicher per reactor.callFromThread im GUI-Thread.
     streams/stream_index: optionale flache Senderliste fuer CH+/--Wechsel im Player.
     """
+    global _active_play_thread_running
+    if _active_play_thread_running:
+        _log("play_stream_async: Already starting a stream, ignoring.")
+        return
+    _active_play_thread_running = True
+
     def worker():
+        global _active_play_thread_running
         try:
             stream_url_bytes, title_bytes, player_id = _resolve_stream(
                 stream_url, title, force_player_id, is_live, autoconfigure_serviceapp
             )
         except Exception:
             _log("play_stream_async: Fehler bei _resolve_stream: " + _fmt_exc())
+            _active_play_thread_running = False
             return
         try:
             from twisted.internet import reactor
-            reactor.callFromThread(play_resolved_stream, session, stream_url_bytes, title_bytes, player_id, streams, stream_index, autoconfigure_serviceapp)
+            def _apply():
+                global _active_play_thread_running
+                _active_play_thread_running = False
+                play_resolved_stream(session, stream_url_bytes, title_bytes, player_id, streams, stream_index, autoconfigure_serviceapp)
+            reactor.callFromThread(_apply)
         except Exception:
             _log("play_stream_async: Fehler bei reactor.callFromThread: " + _fmt_exc())
+            _active_play_thread_running = False
 
     t = threading.Thread(target=worker)
     t.daemon = True
