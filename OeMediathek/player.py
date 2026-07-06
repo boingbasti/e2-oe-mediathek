@@ -204,6 +204,11 @@ def _configure_serviceapp_for_live():
         except ImportError:
             has_new_serviceapp = False
 
+        try:
+            from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_HLS_QUALITY_SELECT as has_quality_select
+        except ImportError:
+            has_quality_select = False
+
         if not ext3.downmix.value:
             ext3.downmix.value = True; ext3.downmix.save(); changed = True
 
@@ -225,17 +230,37 @@ def _configure_serviceapp_for_live():
             if not opts.hls_audio_filter.value:
                 opts.hls_audio_filter.value = True; opts.hls_audio_filter.save(); changed = True
 
+        if has_quality_select and hasattr(ext3, "hls_quality_mode"):
+            if ext3.hls_quality_mode.value != "highest":
+                ext3.hls_quality_mode.value = "highest"; ext3.hls_quality_mode.save(); changed = True
+        if has_quality_select and hasattr(ext3, "hls_audio_default_only"):
+            if not ext3.hls_audio_default_only.value:
+                ext3.hls_audio_default_only.value = True; ext3.hls_audio_default_only.save(); changed = True
+
         # Bei v181 aac_swdecoding=False erzwingen: altes serviceapp.so wuerde sonst
         # '-a' ohne Wert generieren (Boolean-Flag statt 0|1|2|3) -> exteplayer3 v181 haengt.
         aac_sw = False if _has_new_exteplayer3() else ext3.aac_swdecoding.value
-        setExtEplayer3Settings(
-            OPTIONS_SERVICEEXTEPLAYER3,
-            aac_sw,
-            ext3.dts_swdecoding.value,
-            ext3.wma_swdecoding.value,
-            ext3.lpcm_injecion.value,
-            ext3.downmix.value
-        )
+        if has_quality_select:
+            hls_qm = {"auto": 0, "lowest": 1, "highest": 2}.get(ext3.hls_quality_mode.value, 0)
+            setExtEplayer3Settings(
+                OPTIONS_SERVICEEXTEPLAYER3,
+                aac_sw,
+                ext3.dts_swdecoding.value,
+                ext3.wma_swdecoding.value,
+                ext3.lpcm_injecion.value,
+                ext3.downmix.value,
+                hls_qm,
+                ext3.hls_audio_default_only.value
+            )
+        else:
+            setExtEplayer3Settings(
+                OPTIONS_SERVICEEXTEPLAYER3,
+                aac_sw,
+                ext3.dts_swdecoding.value,
+                ext3.wma_swdecoding.value,
+                ext3.lpcm_injecion.value,
+                ext3.downmix.value
+            )
 
         if has_new_serviceapp and hasattr(opts, "hls_audio_filter"):
             setServiceAppSettings(
