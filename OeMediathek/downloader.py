@@ -179,13 +179,13 @@ def write_meta(filepath, title, description=None, duration=None):
                     dur_secs = int(parts[0]) * 60 + int(parts[1])
             except (ValueError, IndexError):
                 pass
+        title_str = _dec(title)
         lines = [
-            u"",
-            display_name,
+            u"1:0:0:0:0:0:0:0:0:0:",
+            title_str if title_str else display_name,
             desc_str,
             str(ts),
-            u"",
-            str(dur_secs) if dur_secs else u"",
+            str(dur_secs) if dur_secs else u"0",
         ]
         with open(meta_path, "w") as f:
             f.write(u"\n".join(lines).encode("utf-8"))
