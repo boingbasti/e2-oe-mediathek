@@ -190,6 +190,7 @@ def write_meta(filepath, title, description=None, duration=None):
             str(pts_len) if pts_len else u"0",
             u"0",
             u"",
+            u"0",
         ]
         with open(meta_path, "wb") as f:
             f.write(u"\n".join(lines).encode("utf-8"))
