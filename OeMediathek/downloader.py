@@ -180,17 +180,18 @@ def write_meta(filepath, title, description=None, duration=None):
             except (ValueError, IndexError):
                 pass
         title_str = _dec(title)
+        pts_len = dur_secs * 90000
         lines = [
             u"1:0:0:0:0:0:0:0:0:0:",
             title_str if title_str else display_name,
             desc_str,
             str(ts),
             u"",
-            str(dur_secs) if dur_secs else u"0",
+            str(pts_len) if pts_len else u"0",
             u"0",
             u"",
         ]
-        with open(meta_path, "w") as f:
+        with open(meta_path, "wb") as f:
             f.write(u"\n".join(lines).encode("utf-8"))
     except Exception:
         pass
