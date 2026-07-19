@@ -141,11 +141,12 @@ class OeStreamPlayer(MoviePlayer):
             return
         if len(self._streams) > 1:
             self._showing_offline = True
+            stream_name = self._streams[self._stream_index][0] if self._streams else ""
             try:
                 from twisted.internet import reactor
-                reactor.callLater(0.5, self.session.nav.playService, _offline_ref())
+                reactor.callLater(0.5, self.session.nav.playService, _offline_ref(stream_name))
             except Exception:
-                self.session.nav.playService(_offline_ref())
+                self.session.nav.playService(_offline_ref(stream_name))
             return
         self.close()
 
@@ -160,9 +161,13 @@ _TMP_DIR = "/tmp/OeMediathek"
 _OFFLINE_VIDEO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "offline_stream.mp4")
 
 
-def _offline_ref():
+def _offline_ref(name=""):
     path = _OFFLINE_VIDEO.encode("utf-8") if isinstance(_OFFLINE_VIDEO, str) else _OFFLINE_VIDEO
-    return eServiceReference(4097, 0, path)
+    ref = eServiceReference(4097, 0, path)
+    if name:
+        title = (name + " (Offline)").encode("utf-8") if isinstance(name, type(u"")) else (name + b" (Offline)")
+        ref.setName(title)
+    return ref
 
 
 def _tmp_playlist_path(master_url):
