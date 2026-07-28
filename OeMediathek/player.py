@@ -114,6 +114,10 @@ class OeStreamPlayer(MoviePlayer):
         def _apply():
             if getattr(self, "_switch_token", 0) != token:
                 return
+            offline_call = getattr(self, "_offline_call", None)
+            if offline_call is not None and offline_call.active():
+                offline_call.cancel()
+            self._offline_call = None
             self._switching = False
             if self._closed:
                 return
@@ -144,8 +148,9 @@ class OeStreamPlayer(MoviePlayer):
             stream_name = self._streams[self._stream_index][0] if self._streams else ""
             try:
                 from twisted.internet import reactor
-                reactor.callLater(0.5, self.session.nav.playService, _offline_ref(stream_name))
+                self._offline_call = reactor.callLater(0.5, self.session.nav.playService, _offline_ref(stream_name))
             except Exception:
+                self._offline_call = None
                 self.session.nav.playService(_offline_ref(stream_name))
             return
         self.close()
