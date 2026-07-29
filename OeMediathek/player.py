@@ -208,6 +208,12 @@ def _configure_serviceapp_for_live():
         opts = config.plugins.serviceapp.options[key]
         ext3 = config.plugins.serviceapp.exteplayer3[key]
         changed = False
+        # debugLoggingEnabled ist der 9. Parameter von setExtEplayer3Settings, ohne
+        # ihn faellt der C-Aufruf auf False zurueck und ueberschreibt damit die
+        # globale, prozessweite Option - unabhaengig vom eigentlichen Setup-Schalter
+        # und auch fuer alle SPAETEREN Streams anderer Plugins, bis das Setup erneut
+        # gespeichert wird.
+        debug_logging = config.plugins.serviceapp.debug_logging.value
 
         try:
             from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_NATIVE_REFERER as has_new_serviceapp
@@ -218,6 +224,11 @@ def _configure_serviceapp_for_live():
             from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_HLS_QUALITY_SELECT as has_quality_select
         except ImportError:
             has_quality_select = False
+
+        try:
+            from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_DEBUG_LOGGING_CONTROL as has_debug_logging_control
+        except ImportError:
+            has_debug_logging_control = False
 
         if not ext3.downmix.value:
             ext3.downmix.value = True; ext3.downmix.save(); changed = True
@@ -250,6 +261,10 @@ def _configure_serviceapp_for_live():
         # Bei v181 aac_swdecoding=False erzwingen: altes serviceapp.so wuerde sonst
         # '-a' ohne Wert generieren (Boolean-Flag statt 0|1|2|3) -> exteplayer3 v181 haengt.
         aac_sw = False if _has_new_exteplayer3() else ext3.aac_swdecoding.value
+        # debugLoggingEnabled nur mitgeben, wenn die installierte serviceapp den
+        # Parameter ueberhaupt kennt - sonst wirft der C-Aufruf bei einer aelteren
+        # Version einen TypeError (zu viele Argumente).
+        extra_kwargs = {"debugLoggingEnabled": debug_logging} if has_debug_logging_control else {}
         if has_quality_select:
             hls_qm = {"auto": 0, "lowest": 1, "highest": 2}.get(ext3.hls_quality_mode.value, 0)
             setExtEplayer3Settings(
@@ -260,7 +275,8 @@ def _configure_serviceapp_for_live():
                 ext3.lpcm_injecion.value,
                 ext3.downmix.value,
                 hls_qm,
-                ext3.hls_audio_default_only.value
+                ext3.hls_audio_default_only.value,
+                **extra_kwargs
             )
         else:
             setExtEplayer3Settings(
@@ -269,7 +285,8 @@ def _configure_serviceapp_for_live():
                 ext3.dts_swdecoding.value,
                 ext3.wma_swdecoding.value,
                 ext3.lpcm_injecion.value,
-                ext3.downmix.value
+                ext3.downmix.value,
+                **extra_kwargs
             )
 
         if has_new_serviceapp and hasattr(opts, "hls_audio_filter"):
@@ -279,7 +296,8 @@ def _configure_serviceapp_for_live():
                 opts.autoselect_stream.value,
                 opts.connection_speed_kb.value,
                 opts.autoturnon_subtitles.value,
-                opts.hls_audio_filter.value
+                opts.hls_audio_filter.value,
+                **extra_kwargs
             )
         else:
             setServiceAppSettings(
@@ -287,7 +305,8 @@ def _configure_serviceapp_for_live():
                 opts.hls_explorer.value,
                 opts.autoselect_stream.value,
                 opts.connection_speed_kb.value,
-                opts.autoturnon_subtitles.value
+                opts.autoturnon_subtitles.value,
+                **extra_kwargs
             )
         return changed
     except Exception:
