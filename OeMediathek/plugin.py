@@ -74,7 +74,7 @@ from mediathek import (
     save_search_history,
 )
 from player import play_stream_async
-from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging
+from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_download_quality, set_download_quality, get_download_quality_label
 from download_manager import OeMediathekDownloadManagerScreen
 from Screens.MessageBox import MessageBox as _MessageBox  # für Download-Notification
 
@@ -643,15 +643,17 @@ def _episode_label(title_bytes, topic_bytes=None, watched=False):
         return str(label)
 
 
-def _episode_stream_url(item):
-    """Liefert die bevorzugte (HD, sonst SD) Stream-URL eines Episoden-Dicts
-    als dekodierten str, oder "" falls keiner vorhanden ist."""
+def _episode_stream_url(item, prefer_720p=False):
+    """Liefert die bevorzugte Stream-URL eines Episoden-Dicts als dekodierten str.
+    prefer_720p=True: 720p (stream_url_sd) bevorzugen, Fallback auf 1080p."""
     url_hd = item.get("stream_url_hd", b"")
     url_sd = item.get("stream_url_sd", b"")
     if isinstance(url_hd, bytes):
         url_hd = url_hd.decode("utf-8", "replace")
     if isinstance(url_sd, bytes):
         url_sd = url_sd.decode("utf-8", "replace")
+    if prefer_720p:
+        return url_sd if url_sd else url_hd
     return url_hd if url_hd else url_sd
 
 
@@ -3642,7 +3644,7 @@ class OeMediathekScreen(Screen):
             if idx is None or idx >= len(self.cur_episodes):
                 return
             item = self.cur_episodes[idx]
-            url = _episode_stream_url(item)
+            url = _episode_stream_url(item, prefer_720p=(get_download_quality() == "720p"))
             if not url:
                 self["status_label"].setText(_b("Kein Stream verfügbar"))
                 return
@@ -4696,6 +4698,7 @@ class OeMediathekSettingsScreen(Screen):
     _ENTRIES = [
         ("Download-Ordner",               0, None),
         ("MP4 -> TS Konvertierung:",       1, get_auto_convert),
+        ("Download-Qualit\xc3\xa4t:",      6, get_download_quality_label),
         ("Seite wechseln mit Links/Rechts:", 3, get_tile_wrap_lr),
         ("ServiceApp f\xc3\xbcr Live-Streams konfigurieren:", 4, get_serviceapp_autoconfigure),
         ("Debug-Logging:",                5, get_debug_logging),
@@ -4778,7 +4781,11 @@ class OeMediathekSettingsScreen(Screen):
     def _refresh(self):
         for i, (_label, _aid, fn) in enumerate(self._ENTRIES):
             if fn is not None:
-                self["stat_%d" % i].setText(_b("[EIN]" if fn() else "[AUS]"))
+                val = fn()
+                if isinstance(val, str):
+                    self["stat_%d" % i].setText(_b(val))
+                else:
+                    self["stat_%d" % i].setText(_b("[EIN]" if val else "[AUS]"))
             else:
                 self["stat_%d" % i].setText(_b(""))
         self._update_highlight()
@@ -4807,6 +4814,8 @@ class OeMediathekSettingsScreen(Screen):
             self._browse()
         elif action_id == 1:
             self._toggle_convert()
+        elif action_id == 6:
+            self._select_download_quality()
         elif action_id == 3:
             self._toggle_tile_wrap_lr()
         elif action_id == 4:
@@ -4842,6 +4851,23 @@ class OeMediathekSettingsScreen(Screen):
     def _toggle_convert(self):
         set_auto_convert(not get_auto_convert())
         self._refresh()
+
+    def _select_download_quality(self):
+        choices = [
+            (_b("H\xc3\xb6chste Qualit\xc3\xa4t (1080p)"), "hd"),
+            (_b("720p"), "720p"),
+        ]
+        self.session.openWithCallback(
+            self._download_quality_chosen,
+            OeMediathekPickerScreen,
+            title="Download-Qualit\xc3\xa4t:",
+            choices=choices,
+        )
+
+    def _download_quality_chosen(self, value):
+        if value is not None:
+            set_download_quality(value)
+            self._refresh()
 
     def _toggle_tile_wrap_lr(self):
         set_tile_wrap_lr(not get_tile_wrap_lr())

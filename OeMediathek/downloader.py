@@ -130,6 +130,17 @@ def set_debug_logging(enabled):
     s["debug_logging"] = bool(enabled)
     save_settings(s)
 
+def get_download_quality():
+    return load_settings().get("download_quality", "hd")
+
+def set_download_quality(quality):
+    s = load_settings()
+    s["download_quality"] = quality
+    save_settings(s)
+
+def get_download_quality_label():
+    return "1080p" if get_download_quality() == "hd" else "720p"
+
 def write_info_txt(filepath, title, description=None, duration=None, topic=None):
     """Schreibt eine .txt Datei mit Sendungsinfos neben die Download-Datei."""
     try:
