@@ -151,7 +151,7 @@ def set_stream_quality(quality):
 
 def get_stream_quality_label():
     v = get_stream_quality()
-    return {"ask": "Immer fragen", "hd": "1080p", "720p": "720p"}.get(v, "Immer fragen")
+    return {"ask": "Auswahl", "hd": "1080p", "720p": "720p"}.get(v, "Auswahl")
 
 def write_info_txt(filepath, title, description=None, duration=None, topic=None):
     """Schreibt eine .txt Datei mit Sendungsinfos neben die Download-Datei."""
