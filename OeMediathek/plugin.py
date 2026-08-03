@@ -3570,7 +3570,7 @@ class OeMediathekScreen(Screen):
                 else:
                     self["list_dot_%d" % i].hide()
                 if self.mode == MODE_EPISODES and abs_idx < len(self.cur_episodes) and \
-                   _is_download_pending(_episode_stream_url(self.cur_episodes[abs_idx])):
+                   _is_download_pending(_episode_stream_url(self.cur_episodes[abs_idx], prefer_720p=(get_download_quality() == "720p"))):
                     self["list_dl_%d" % i].show()
                 else:
                     self["list_dl_%d" % i].hide()
