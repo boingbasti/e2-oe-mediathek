@@ -1087,8 +1087,10 @@ def _queue_error(msg):
 
 def _enqueue_download(title, url, topic, description, duration):
     """Reiht einen Download ein und startet ihn sofort, falls gerade nichts
-    laeuft. Gibt "queued" oder "started" fuer eine kurze Statusmeldung zurueck."""
+    laeuft. Gibt "queued", "started" oder "duplicate" zurueck."""
     global _active_downloader, _download_queue
+    if _is_download_pending(url):
+        return "duplicate"
     entry = {
         "title":       title,
         "url":         url,
@@ -3654,7 +3656,9 @@ class OeMediathekScreen(Screen):
             dl_topic = item.get("group") or self.cur_group_name if self.cur_group_name.startswith(b">> Direkte Treffer") else self.cur_group_name
 
             state = _enqueue_download(item["title"], url, dl_topic, desc, dur)
-            if state == "queued":
+            if state == "duplicate":
+                self._show_toast("Bereits in der Warteschlange")
+            elif state == "queued":
                 self._show_toast("Zur Warteschlange hinzugef\xc3\xbcgt", added=True)
             else:
                 self._show_toast("Download gestartet", added=True)
