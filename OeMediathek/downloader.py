@@ -141,6 +141,18 @@ def set_download_quality(quality):
 def get_download_quality_label():
     return "1080p" if get_download_quality() == "hd" else "720p"
 
+def get_stream_quality():
+    return load_settings().get("stream_quality", "ask")
+
+def set_stream_quality(quality):
+    s = load_settings()
+    s["stream_quality"] = quality
+    save_settings(s)
+
+def get_stream_quality_label():
+    v = get_stream_quality()
+    return {"ask": "Immer fragen", "hd": "1080p", "720p": "720p"}.get(v, "Immer fragen")
+
 def write_info_txt(filepath, title, description=None, duration=None, topic=None):
     """Schreibt eine .txt Datei mit Sendungsinfos neben die Download-Datei."""
     try:
