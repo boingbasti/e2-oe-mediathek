@@ -82,7 +82,7 @@ Zusätzlich gibt es zwei neue Kacheln:
 - **Download:** Episoden direkt auf die Festplatte laden; startet sofort im Hintergrund ohne Zwischendialog; HLS/m3u8-Streams werden unterstützt; Dateiname ohne Unterstriche; zusätzlich werden eine Textdatei mit Sendungsinformationen und eine .meta-Datei erstellt (Datum und Uhrzeit im Enigma2 Movie Player); laufende und wartende Downloads werden in der Episodenliste mit einem Icon markiert
 - **Download-Warteschlange:** Mehrere Downloads können nacheinander gestartet werden und laufen automatisch der Reihe nach ab
 - **Download-Manager:** Zeigt laufenden Download mit Fortschritt und alle wartenden Downloads; Abbrechen einzeln oder gesamt möglich
-- **Einstellungen:** Speicherort für Downloads, MP4→TS Konvertierung per ffmpeg, Kachel-Reihenfolge zurücksetzen, Navigation Links/Rechts im Hauptmenü (Seitenwechsel oder Zeilenende), ServiceApp für Live-Streams konfigurieren (A/V-Sync-Optimierung, standardmäßig aktiv) und Debug-Logging aktivieren
+- **Einstellungen:** Speicherort für Downloads, MP4→TS Konvertierung per ffmpeg, Download-Qualität (1080p / 720p), Abspielqualität (Immer fragen / 1080p / 720p), Kachel-Reihenfolge zurücksetzen, Navigation Links/Rechts im Hauptmenü (Seitenwechsel oder Zeilenende), ServiceApp für Live-Streams konfigurieren (A/V-Sync-Optimierung, standardmäßig aktiv) und Debug-Logging aktivieren
 - **Favoriten:** Sendungsgruppen und einzelne Folgen können als Favoriten gespeichert werden; in der Favoritenansicht kann zwischen Gruppen- und Folgenansicht gewechselt werden
 - **Markierung:** Einzelne Folgen können markiert werden (INFO/EPG-Taste); markierte Folgen werden in der Liste mit einem Bookmark-Icon hervorgehoben
 - **Suchverlauf:** Die letzten 10 Suchbegriffe werden gespeichert und beim nächsten Aufruf der Suche zur Auswahl angeboten
@@ -113,7 +113,7 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 Die IPK-Datei aus dem [Releases-Bereich](../../releases) herunterladen und auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.8.6_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.8.7_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.
