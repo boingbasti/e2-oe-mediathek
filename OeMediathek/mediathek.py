@@ -4,6 +4,7 @@
 
 import json
 import os
+import re as _re
 import threading
 import time
 
@@ -71,17 +72,21 @@ except Exception:
 # MediathekViewWeb-API
 # POST https://mediathekviewweb.de/api/query
 # ------------------------------------------------------------------
-def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=0, sort_by="timestamp", search_fields=None):
+def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=0, sort_by="timestamp", search_fields=None, topic_filter=None):
     """
     Fragt die MediathekViewWeb-API ab.
     search_fields: Liste der Felder fuer die Suche, Standard ["title", "topic"]
     sort_by: "timestamp" | "duration" | "topic" (alle API-seitig)
+    topic_filter: schraenkt Suche auf exaktes topic ein (zusaetzliche Query-Bedingung)
     """
     url = "https://mediathekviewweb.de/api/query"
 
     queries = []
     if channel:
         queries.append({"fields": ["channel"], "query": channel})
+
+    if topic_filter:
+        queries.append({"fields": ["topic"], "query": topic_filter})
 
     if search_term:
         fields = search_fields if search_fields else ["title", "topic"]
@@ -690,3 +695,63 @@ def save_search_history(term):
             json.dump(history, f, ensure_ascii=False)
     except Exception as e:
         _log("Suchverlauf speichern Fehler: " + str(e))
+
+# ---------------------------------------------------------------------------
+# ZDF UHD – Sendungsliste via ZDF GraphQL-API + URL-Auflösung
+# ---------------------------------------------------------------------------
+
+def get_zdf_uhd_shows():
+    """Liefert die aktuelle UHD-Sendungsliste vom ZDF (GraphQL-API)."""
+    token_url = "https://zdf-prod-futura.zdf.de/mediathekV2/token"
+    req = Request(token_url, headers={"User-Agent": "Mozilla/5.0"})
+    resp = urlopen(req, timeout=10, context=_ssl_context) if _ssl_context else urlopen(req, timeout=10)
+    data = json.loads(resp.read().decode("utf-8"))
+    token = data["type"] + " " + data["token"]
+
+    graphql_url = "https://api.zdf.de/graphql"
+    query = ('{ metaCollectionContent(collectionId: "streaming_option-uhd"'
+             ' input: { appId: "ffw-mt-web-32276a07" pagination: { first: 50 }'
+             ' user: { abGroup: "gruppe-b", userSegment: "" } })'
+             ' { smartCollections { title id canonical } } }')
+    body = json.dumps({"query": query})
+    if isinstance(body, str):
+        body = body.encode("utf-8")
+    req = Request(graphql_url, data=body, headers={
+        "User-Agent":             "Mozilla/5.0",
+        "Content-Type":           "application/json",
+        "Api-Auth":               token,
+        "Apollo-Require-Preflight": "True",
+    })
+    resp = urlopen(req, timeout=10, context=_ssl_context) if _ssl_context else urlopen(req, timeout=10)
+    result = json.loads(resp.read().decode("utf-8"))
+    return result.get("data", {}).get("metaCollectionContent", {}).get("smartCollections", [])
+
+
+def uhd_url_candidate(url):
+    """Gibt die potenzielle UHD-URL zurück (nur Regex, kein Netzwerkzugriff)."""
+    if "akamaihd.net" not in url or "/zdf/" not in url:
+        return url
+    return _re.sub(r"_\d+k_p\d+v\d+\.mp4$", "_4692k_p72v16.mp4", url)
+
+
+def resolve_uhd_url(url):
+    """Prüft per HEAD-Request ob die UHD-Version existiert; gibt sie zurück oder die Original-URL."""
+    candidate = uhd_url_candidate(url)
+    if candidate == url:
+        return url
+    try:
+        req = Request(candidate)
+        req.get_method = lambda: "HEAD"
+        resp = urlopen(req, timeout=2, context=_ssl_context) if _ssl_context else urlopen(req, timeout=2)
+        if resp.getcode() == 200:
+            return candidate
+    except Exception:
+        pass
+    return url
+
+
+def get_zdf_uhd_topic_episodes(topic, offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp"):
+    """Episoden einer bestimmten ZDF-UHD-Sendung (topic-gefiltert)."""
+    sf = ["title"] if search_term else None
+    return _mvw_query("ZDF", size, offset, search_term, min_duration, sort_by,
+                      search_fields=sf, topic_filter=topic)

@@ -72,6 +72,10 @@ from mediathek import (
     get_topics,
     load_search_history,
     save_search_history,
+    get_zdf_uhd_shows,
+    get_zdf_uhd_topic_episodes,
+    uhd_url_candidate,
+    resolve_uhd_url,
 )
 from player import play_stream_async
 from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label
@@ -396,6 +400,7 @@ LIVE_STREAM_GROUPS = [
 ]
 
 _LIVESTREAMS = "livestreams"  # Sentinel fuer SOURCES-Weiche
+_UHD_KACHEL  = "uhd_kachel"  # Sentinel fuer ZDF-UHD-Screen
 
 SOURCES = [
     # Seite 1
@@ -430,6 +435,7 @@ SOURCES = [
     # Seite 3
     ("ORF",              get_orf_highlights,          "orf.png"),
     ("SRF",              get_srf_highlights,          "srf.png"),
+    ("ZDF UHD",          _UHD_KACHEL,                 "zdf_uhd.png"),
 ]
 # Unveränderliche Kopie der Original-Reihenfolge für den Werksreset
 _SOURCES_DEFAULT = list(SOURCES)
@@ -1694,6 +1700,8 @@ class OeMediathekMainScreen(Screen):
                 self.session.open(OeMediathekLiveScreen)
             elif loader is _LIVESTREAMS:
                 self.session.open(OeMediathekLivestreamScreen)
+            elif loader is _UHD_KACHEL:
+                self.session.open(OeMediathekZdfUhdScreen)
             else:
                 self.session.open(OeMediathekScreen, name, loader)
         except Exception:
@@ -2632,13 +2640,14 @@ class OeMediathekScreen(Screen):
                 '</screen>'
             )
 
-    def __init__(self, session, source_name, loader):
+    def __init__(self, session, source_name, loader, force_uhd=False):
         self.skin = self._make_skin()
         _log("ContentScreen init: " + source_name)
         Screen.__init__(self, session)
         self.session       = session
         self.source_name   = source_name
         self.loader        = loader
+        self.force_uhd     = force_uhd
 
         self.page            = 0
         self.mode            = MODE_GROUPS
@@ -3571,9 +3580,18 @@ class OeMediathekScreen(Screen):
                     item = item[2:]
                 else:
                     self["list_dot_%d" % i].hide()
-                if self.mode == MODE_EPISODES and abs_idx < len(self.cur_episodes) and \
-                   _is_download_pending(_episode_stream_url(self.cur_episodes[abs_idx], prefer_720p=(get_download_quality() == "720p"))):
-                    self["list_dl_%d" % i].show()
+                if self.mode == MODE_EPISODES and abs_idx < len(self.cur_episodes):
+                    ep = self.cur_episodes[abs_idx]
+                    if self.force_uhd:
+                        base = _episode_stream_url(ep)
+                        cand = uhd_url_candidate(base) if base else base
+                        dl_pending = _is_download_pending(cand) or (cand != base and _is_download_pending(base))
+                    else:
+                        dl_pending = _is_download_pending(_episode_stream_url(ep, prefer_720p=(get_download_quality() == "720p")))
+                    if dl_pending:
+                        self["list_dl_%d" % i].show()
+                    else:
+                        self["list_dl_%d" % i].hide()
                 else:
                     self["list_dl_%d" % i].hide()
                 self["list_label_%d" % i].setText(_b(item))
@@ -3646,6 +3664,38 @@ class OeMediathekScreen(Screen):
             if idx is None or idx >= len(self.cur_episodes):
                 return
             item = self.cur_episodes[idx]
+
+            if self.force_uhd:
+                base = _episode_stream_url(item)
+                if not base:
+                    self["status_label"].setText(_b("Kein Stream verf\xc3\xbcgbar"))
+                    return
+                desc     = item.get("description", b"")
+                dur      = item.get("duration", b"")
+                dl_topic = item.get("group") or self.cur_group_name if self.cur_group_name.startswith(b">> Direkte Treffer") else self.cur_group_name
+                _title   = item["title"]
+                _self    = self
+                def _enqueue_uhd(_u=base, _tl=_title, _dt=dl_topic, _d=desc, _dr=dur):
+                    from twisted.internet import reactor
+                    try:
+                        final = resolve_uhd_url(_u)
+                    except Exception:
+                        final = _u
+                    def _do():
+                        state = _enqueue_download(_tl, final, _dt, _d, _dr)
+                        if state == "duplicate":
+                            _self._show_toast("Bereits in der Warteschlange")
+                        elif state == "queued":
+                            _self._show_toast("Zur Warteschlange hinzugef\xc3\xbcgt", added=True)
+                        else:
+                            _self._show_toast("Download gestartet", added=True)
+                        _self._render_list()
+                    reactor.callFromThread(_do)
+                t = threading.Thread(target=_enqueue_uhd)
+                t.daemon = True
+                t.start()
+                return
+
             url = _episode_stream_url(item, prefer_720p=(get_download_quality() == "720p"))
             if not url:
                 self["status_label"].setText(_b("Kein Stream verfügbar"))
@@ -3708,7 +3758,26 @@ class OeMediathekScreen(Screen):
             else:
                 if idx < len(self.cur_episodes):
                     item = self.cur_episodes[idx]
-                    
+
+                    if self.force_uhd:
+                        base = _episode_stream_url(item)
+                        if not base:
+                            self["status_label"].setText(_b("Kein Stream verf\xc3\xbcgbar"))
+                            return
+                        _title = item["title"]
+                        _sess  = self.session
+                        def _play_uhd(_u=base, _t=_title, _s=_sess):
+                            from twisted.internet import reactor
+                            try:
+                                final = resolve_uhd_url(_u)
+                            except Exception:
+                                final = _u
+                            reactor.callFromThread(play_stream_async, _s, final, _t)
+                        t = threading.Thread(target=_play_uhd)
+                        t.daemon = True
+                        t.start()
+                        return
+
                     url_hd = item.get("stream_url_hd", b"")
                     url_sd = item.get("stream_url_sd", b"")
 
@@ -4691,6 +4760,153 @@ class OeMediathekDirBrowser(_CustomListMixin, Screen):
             Screen.doClose(self)
         except TypeError:
             pass
+
+
+# --------------------------------------------------------------------------
+# ZDF UHD – Sendungsauswahl-Screen
+# --------------------------------------------------------------------------
+
+class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
+
+    _CL_ROWS = _LIST_ROWS
+
+    @staticmethod
+    def _make_skin():
+        if IS_FHD:
+            lx, ly0, lw, rh, rf = 40, 150, 1840, 58, 34
+        else:
+            lx, ly0, lw, rh, rf = 36, 97, 1208, 38, 22
+        list_xml = ""
+        for i in range(_LIST_ROWS):
+            y = ly0 + i * rh
+            list_xml += (
+                '<widget name="list_sel_{i}" position="{x},{y}" size="{w},{rh}" '
+                'backgroundColor="#00253850" zPosition="1" transparent="0"/>'
+                '<widget name="list_label_{i}" position="{lbx},{y}" size="{lbw},{rh}" '
+                'zPosition="2" font="Regular;{rf}" halign="left" valign="center" '
+                'foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" noWrap="1"/>'
+            ).format(i=i, x=lx, y=y, w=lw, lbx=lx + 12, lbw=lw - 12, rh=rh, rf=rf)
+
+        if IS_FHD:
+            return (
+                '<screen name="OeMediathekZdfUhdScreen" position="0,0" size="1920,1080" flags="wfNoBorder">'
+                '<eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6"/>'
+                '<eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="status_label" position="910,30" size="920,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
+                '<eLabel position="30,140" size="1860,760" backgroundColor="#33000000" zPosition="-5"/>'
+                + list_xml +
+                '<eLabel position="30,930" size="1860,120" backgroundColor="#1A000000" zPosition="-5"/>'
+                '<eLabel position="50,950" size="8,80" backgroundColor="#1AEE0000" zPosition="2"/>'
+                '<widget name="hint_red" position="68,930" size="350,120" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_page" position="1698,930" size="172,120" font="Regular;32" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
+                '</screen>'
+            )
+        else:
+            return (
+                '<screen name="OeMediathekZdfUhdScreen" position="0,0" size="1280,720" flags="wfNoBorder">'
+                '<eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6"/>'
+                '<eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5"/>'
+                '<widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="status_label" position="610,20" size="610,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
+                '<eLabel position="30,90" size="1220,505" backgroundColor="#33000000" zPosition="-5"/>'
+                + list_xml +
+                '<eLabel position="30,614" size="1220,80" backgroundColor="#1A000000" zPosition="-5"/>'
+                '<eLabel position="33,629" size="5,50" backgroundColor="#1AEE0000" zPosition="2"/>'
+                '<widget name="hint_red" position="42,614" size="233,80" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_page" position="1132,614" size="118,80" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
+                '</screen>'
+            )
+
+    def __init__(self, session):
+        self.skin = self._make_skin()
+        Screen.__init__(self, session)
+        self._cl_init()
+        self.session = session
+        self._shows  = []
+
+        self["title_label"]  = Label(_b("ZDF UHD"))
+        self["status_label"] = Label(_b("Lade..."))
+        self["hint_red"]     = Label(_b("Zur\xc3\xbcck"))
+        self["hint_page"]    = Label(_b(""))
+
+        self["actions"] = ActionMap(
+            ["OkCancelActions", "ColorActions", "DirectionActions", "ListboxActions"],
+            {
+                "ok":           self.key_ok,
+                "cancel":       self.key_cancel,
+                "red":          self.key_cancel,
+                "up":           self.key_up,
+                "down":         self.key_down,
+                "upRepeated":   self.key_up,
+                "downRepeated": self.key_down,
+                "left":         self.key_page_up,
+                "right":        self.key_page_down,
+                "pageUp":       self.key_page_up,
+                "pageDown":     self.key_page_down,
+            },
+            -1,
+        )
+
+        t = threading.Thread(target=self._fetch)
+        t.daemon = True
+        t.start()
+
+    def _fetch(self):
+        try:
+            shows = get_zdf_uhd_shows()
+            from twisted.internet import reactor
+            reactor.callFromThread(self._on_shows, shows, None)
+        except Exception as e:
+            from twisted.internet import reactor
+            reactor.callFromThread(self._on_shows, [], str(e))
+
+    def _on_shows(self, shows, err):
+        self._shows = shows
+        if err:
+            self["status_label"].setText(_b("Fehler beim Laden"))
+            _log("ZDF UHD Ladefehler: " + str(err))
+        else:
+            n = len(shows)
+            self["status_label"].setText(_b(str(n) + " Sendung" + ("en" if n != 1 else "")))
+            self._set_list([_b(s.get("title", "")) for s in shows])
+            self._update_hint_page()
+
+    def _update_hint_page(self):
+        total = len(self._list_items)
+        if total > _LIST_ROWS:
+            self["hint_page"].setText(_b("%d/%d" % (self._list_sel + 1, total)))
+        else:
+            self["hint_page"].setText(_b(""))
+
+    def key_up(self):
+        self._list_step(-1)
+        self._update_hint_page()
+
+    def key_down(self):
+        self._list_step(1)
+        self._update_hint_page()
+
+    def key_page_up(self):
+        self._list_page(-1)
+        self._update_hint_page()
+
+    def key_page_down(self):
+        self._list_page(1)
+        self._update_hint_page()
+
+    def key_ok(self):
+        idx = self._get_list_index()
+        if idx is None or idx >= len(self._shows):
+            return
+        show  = self._shows[idx]
+        title = show.get("title", "")
+        def _loader(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp", _t=title):
+            return get_zdf_uhd_topic_episodes(_t, offset, size, search_term, min_duration, sort_by)
+        self.session.open(OeMediathekScreen, _b(title), _loader, force_uhd=True)
+
+    def key_cancel(self):
+        self.close()
 
 
 # --------------------------------------------------------------------------
