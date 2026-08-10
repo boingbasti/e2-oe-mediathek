@@ -17,3 +17,4 @@ CLAUDE.md
 build_ipk.py
 *.ipk
 stash/
+zdf_uhd_liste_generator.py

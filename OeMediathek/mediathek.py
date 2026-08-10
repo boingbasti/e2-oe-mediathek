@@ -2,6 +2,7 @@
 # mediathek.py
 # Holt Sendungslisten über MediathekViewWeb-API (aggregiert alle ÖR-Sender)
 
+import io
 import json
 import os
 import re as _re
@@ -755,3 +756,63 @@ def get_zdf_uhd_topic_episodes(topic, offset=0, size=100, search_term=None, min_
     sf = ["title"] if search_term else None
     return _mvw_query("ZDF", size, offset, search_term, min_duration, sort_by,
                       search_fields=sf, topic_filter=topic)
+
+
+# ---------------------------------------------------------------------------
+# ZDF UHD – statische, verifizierte Episodenliste
+# ---------------------------------------------------------------------------
+
+_UHD_STATIC_DATA = None
+_UHD_STATIC_PATH = os.path.join(os.path.dirname(__file__), "zdf_uhd_static.json")
+
+
+def _load_uhd_static():
+    global _UHD_STATIC_DATA
+    if _UHD_STATIC_DATA is None:
+        try:
+            with io.open(_UHD_STATIC_PATH, encoding="utf-8") as f:
+                _UHD_STATIC_DATA = json.load(f)
+        except Exception:
+            _UHD_STATIC_DATA = []
+    return _UHD_STATIC_DATA
+
+
+def get_zdf_uhd_static_topics():
+    """Gibt die eindeutigen Serientitel aus der statischen UHD-Liste zurück (geordnet nach erstem Auftreten)."""
+    seen = []
+    for entry in _load_uhd_static():
+        t = entry.get("topic", "")
+        if t and t not in seen:
+            seen.append(t)
+    return seen
+
+
+def get_zdf_uhd_static_episodes(topic, search_term=None):
+    """Gibt Episoden für ein Topic aus der statischen Liste im mediathek.py-internen Format zurück."""
+    results = []
+    for entry in _load_uhd_static():
+        if entry.get("topic", "") != topic:
+            continue
+        title = entry.get("title", "")
+        if search_term:
+            st = search_term if isinstance(search_term, str) else search_term.decode("utf-8", "replace")
+            if st.lower() not in title.lower():
+                continue
+        uhd_url = entry.get("uhd_url", "")
+        ts = entry.get("timestamp", 0)
+        try:
+            ts = int(ts)
+        except Exception:
+            ts = 0
+        results.append({
+            "title":         _s(title),
+            "group":         _s(topic),
+            "channel":       _s("ZDF"),
+            "stream_url_hd": _s(uhd_url),
+            "stream_url_sd": _s(""),
+            "description":   _s("UHD-Stream (4K/HEVC)"),
+            "duration":      _s("Unbekannt"),
+            "timestamp":     ts,
+        })
+    results.sort(key=lambda x: x["timestamp"], reverse=True)
+    return results, len(results), len(results)

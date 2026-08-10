@@ -74,6 +74,8 @@ from mediathek import (
     save_search_history,
     get_zdf_uhd_shows,
     get_zdf_uhd_topic_episodes,
+    get_zdf_uhd_static_topics,
+    get_zdf_uhd_static_episodes,
     uhd_url_candidate,
     resolve_uhd_url,
 )
@@ -4855,11 +4857,20 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
     def _fetch(self):
         try:
             shows = get_zdf_uhd_shows()
-            from twisted.internet import reactor
-            reactor.callFromThread(self._on_shows, shows, None)
         except Exception as e:
             from twisted.internet import reactor
             reactor.callFromThread(self._on_shows, [], str(e))
+            return
+        # Statische Topics ergänzen (nur die, die nicht schon in GraphQL-Liste sind)
+        try:
+            dyn_titles = set(s.get("title", "") for s in shows)
+            for topic in get_zdf_uhd_static_topics():
+                if topic not in dyn_titles:
+                    shows.append({"title": topic, "static": True})
+        except Exception:
+            pass
+        from twisted.internet import reactor
+        reactor.callFromThread(self._on_shows, shows, None)
 
     def _on_shows(self, shows, err):
         self._shows = shows
@@ -4901,8 +4912,12 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
             return
         show  = self._shows[idx]
         title = show.get("title", "")
-        def _loader(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp", _t=title):
-            return get_zdf_uhd_topic_episodes(_t, offset, size, search_term, min_duration, sort_by)
+        if show.get("static"):
+            def _loader(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp", _t=title):
+                return get_zdf_uhd_static_episodes(_t, search_term)
+        else:
+            def _loader(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp", _t=title):
+                return get_zdf_uhd_topic_episodes(_t, offset, size, search_term, min_duration, sort_by)
         self.session.open(OeMediathekScreen, _b(title), _loader, force_uhd=True)
 
     def key_cancel(self):
