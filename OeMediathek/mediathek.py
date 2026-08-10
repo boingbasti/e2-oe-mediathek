@@ -752,10 +752,15 @@ def resolve_uhd_url(url):
 
 
 def get_zdf_uhd_topic_episodes(topic, offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp"):
-    """Episoden einer bestimmten ZDF-UHD-Sendung (topic-gefiltert)."""
+    """Episoden einer bestimmten ZDF-UHD-Sendung (topic-gefiltert).
+    Fallback auf Titelsuche für Einzelfilme (topic='Filme' in mediathekviewweb)."""
     sf = ["title"] if search_term else None
-    return _mvw_query("ZDF", size, offset, search_term, min_duration, sort_by,
-                      search_fields=sf, topic_filter=topic)
+    items, total, raw = _mvw_query("ZDF", size, offset, search_term, min_duration, sort_by,
+                                   search_fields=sf, topic_filter=topic)
+    if not items and not search_term:
+        items, total, raw = _mvw_query("ZDF", size, offset, topic, min_duration, sort_by,
+                                       search_fields=["title"])
+    return items, total, raw
 
 
 # ---------------------------------------------------------------------------

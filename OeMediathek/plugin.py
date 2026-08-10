@@ -3038,6 +3038,8 @@ class OeMediathekScreen(Screen):
             return 0
         if self.alpha_letter:
             return 0
+        if self.force_uhd:
+            return 0
         if self.source_name in ("Meine Favoriten", "Alle Mediatheken"):
             return 0
         if self.source_name in self._NO_SN_SOURCES:
@@ -3117,6 +3119,10 @@ class OeMediathekScreen(Screen):
         self._first_desc_timer = eTimer()
         self._first_desc_timer.callback.append(self._force_first_desc)
         self._first_desc_timer.start(300, True)
+
+        # UHD: eine Gruppe → Zwischenschritt überspringen, direkt zur Episodenliste
+        if self.force_uhd and len(self.groups_filtered) == 1:
+            self._start_episode_fetch(0)
 
     def _prefetch_sv_sn(self, mode):
         """Laedt bis zu 1000 Eintraege bevor SV/SN-Datepicker geoeffnet wird."""
@@ -3841,6 +3847,9 @@ class OeMediathekScreen(Screen):
                 return
             if self._sv_mode or self._sn_mode:
                 self._sv_reset()
+                return
+            if self.force_uhd and len(self.groups_filtered) == 1:
+                self.close()
                 return
             self["title_label"].setText(self.source_name)
             self._show_groups(restore_pos=True)
