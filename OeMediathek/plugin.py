@@ -3047,6 +3047,11 @@ class OeMediathekScreen(Screen):
         return 2  # SV + SN
 
     def _show_groups(self, restore_pos=False):
+        # UHD-Direktmodus: Gruppenansicht komplett überspringen
+        if self.force_uhd and self.groups_filtered:
+            self._start_episode_fetch(0)
+            return
+
         self.mode = MODE_GROUPS
         self._loaded = True
         self.last_index = -1
@@ -3119,10 +3124,6 @@ class OeMediathekScreen(Screen):
         self._first_desc_timer = eTimer()
         self._first_desc_timer.callback.append(self._force_first_desc)
         self._first_desc_timer.start(300, True)
-
-        # UHD: eine Gruppe → Zwischenschritt überspringen, direkt zur Episodenliste
-        if self.force_uhd and len(self.groups_filtered) == 1:
-            self._start_episode_fetch(0)
 
     def _prefetch_sv_sn(self, mode):
         """Laedt bis zu 1000 Eintraege bevor SV/SN-Datepicker geoeffnet wird."""
@@ -3848,7 +3849,7 @@ class OeMediathekScreen(Screen):
             if self._sv_mode or self._sn_mode:
                 self._sv_reset()
                 return
-            if self.force_uhd and len(self.groups_filtered) == 1:
+            if self.force_uhd:
                 self.close()
                 return
             self["title_label"].setText(self.source_name)
