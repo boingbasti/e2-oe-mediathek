@@ -76,6 +76,7 @@ from mediathek import (
     get_zdf_uhd_topic_episodes,
     get_zdf_uhd_static_topics,
     get_zdf_uhd_static_episodes,
+    get_zdf_uhd_no_hdr_topics,
     uhd_url_candidate,
     uhd_url_candidates,
     resolve_uhd_url,
@@ -4872,8 +4873,11 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
             from twisted.internet import reactor
             reactor.callFromThread(self._on_shows, [], str(e))
             return
-        # Statische Topics ergänzen (nur die, die nicht schon in GraphQL-Liste sind)
         try:
+            # GraphQL-Einträge ohne verifizierten HDR-Stream herausfiltern
+            no_hdr = set(get_zdf_uhd_no_hdr_topics())
+            shows = [s for s in shows if s.get("title", "") not in no_hdr]
+            # Statische Topics ergänzen (nur die, die nicht schon in GraphQL-Liste sind)
             dyn_titles = set(s.get("title", "") for s in shows)
             for topic in get_zdf_uhd_static_topics():
                 if topic not in dyn_titles:

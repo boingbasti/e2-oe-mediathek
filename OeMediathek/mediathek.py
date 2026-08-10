@@ -790,26 +790,36 @@ def _load_uhd_static():
     if _UHD_STATIC_DATA is None:
         try:
             with io.open(_UHD_STATIC_PATH, encoding="utf-8") as f:
-                _UHD_STATIC_DATA = json.load(f)
+                raw = json.load(f)
+            # Neues Format: {"episodes": [...], "no_hdr_topics": [...]}
+            if isinstance(raw, dict):
+                _UHD_STATIC_DATA = raw
+            else:
+                _UHD_STATIC_DATA = {"episodes": raw, "no_hdr_topics": []}
         except Exception:
-            _UHD_STATIC_DATA = []
+            _UHD_STATIC_DATA = {"episodes": [], "no_hdr_topics": []}
     return _UHD_STATIC_DATA
 
 
 def get_zdf_uhd_static_topics():
     """Gibt die eindeutigen Serientitel aus der statischen UHD-Liste zurück (geordnet nach erstem Auftreten)."""
     seen = []
-    for entry in _load_uhd_static():
+    for entry in _load_uhd_static()["episodes"]:
         t = entry.get("topic", "")
         if t and t not in seen:
             seen.append(t)
     return seen
 
 
+def get_zdf_uhd_no_hdr_topics():
+    """Gibt Topics zurück, die geprüft wurden und kein HDR-Stream haben — zum Filtern der GraphQL-Liste."""
+    return _load_uhd_static().get("no_hdr_topics", [])
+
+
 def get_zdf_uhd_static_episodes(topic, search_term=None):
     """Gibt Episoden für ein Topic aus der statischen Liste im mediathek.py-internen Format zurück."""
     results = []
-    for entry in _load_uhd_static():
+    for entry in _load_uhd_static()["episodes"]:
         if entry.get("topic", "") != topic:
             continue
         title = entry.get("title", "")

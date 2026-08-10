@@ -1,1227 +1,1237 @@
-[
-  {
-    "topic": "München Beats",
-    "title": "Folge 4 (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/muenchen-beats-100/folge-4-236",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260827_2105_sendung_mub/1/260827_2105_sendung_mub_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1787857500
-  },
-  {
-    "topic": "München Beats",
-    "title": "Folge 3 (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/muenchen-beats-100/folge-3-234",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260827_2015_sendung_mub/1/260827_2015_sendung_mub_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1787854500
-  },
-  {
-    "topic": "München Beats",
-    "title": "Folge 2 (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/muenchen-beats-100/folge-2-246",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260826_2100_sendung_mub/1/260826_2100_sendung_mub_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1787770800
-  },
-  {
-    "topic": "München Beats",
-    "title": "Folge 1 (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/muenchen-beats-100/folge-1-292",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260826_2015_sendung_mub/1/260826_2015_sendung_mub_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1787768100
-  },
-  {
-    "topic": "Back Up - Auf Streife mit der Ex",
-    "title": "Das Gesetz der Lieferkette (S01/E02) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-das-gesetz-der-lieferkette-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260802_2305_sendung_bcu/1/260802_2305_sendung_bcu_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1785477600
-  },
-  {
-    "topic": "Back Up - Auf Streife mit der Ex",
-    "title": "Die Liste (S01/E05) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-die-liste-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260816_2215_sendung_bcu/3/260816_2215_sendung_bcu_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1785477600
-  },
-  {
-    "topic": "Back Up - Auf Streife mit der Ex",
-    "title": "Das Rätsel der verschwundenen Pylonen (S01/E03) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-das-raetsel-der-verschwundenen-pylonen-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260809_2215_sendung_bcu/1/260809_2215_sendung_bcu_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1785477600
-  },
-  {
-    "topic": "Back Up - Auf Streife mit der Ex",
-    "title": "Das Rätsel der verschwundenen Pylonen (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-das-raetsel-der-verschwundenen-pylonen-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260809_2215_sendung_bcu/1/260809_2215_sendung_bcu_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1785477600
-  },
-  {
-    "topic": "Back Up - Auf Streife mit der Ex",
-    "title": "Die Liste (S01/E05)",
-    "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-die-liste-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260816_2215_sendung_bcu/3/260816_2215_sendung_bcu_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1785477600
-  },
-  {
-    "topic": "Back Up - Auf Streife mit der Ex",
-    "title": "Ein Hai in Geldnot (S01/E01) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-ein-hai-in-geldnot-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260802_2215_sendung_bcu/1/260802_2215_sendung_bcu_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1785477600
-  },
-  {
-    "topic": "Back Up - Auf Streife mit der Ex",
-    "title": "Das Gesetz der Lieferkette (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-das-gesetz-der-lieferkette-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260802_2305_sendung_bcu/1/260802_2305_sendung_bcu_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1785477600
-  },
-  {
-    "topic": "Back Up - Auf Streife mit der Ex",
-    "title": "Ein Hai in Geldnot (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-ein-hai-in-geldnot-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260802_2215_sendung_bcu/1/260802_2215_sendung_bcu_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1785477600
-  },
-  {
-    "topic": "Back Up - Auf Streife mit der Ex",
-    "title": "Fünf Frauen, eine Party und jede Menge Ärger (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-fuenf-frauen-eine-party-und-jede-menge-aerger-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260809_2305_sendung_bcu/1/260809_2305_sendung_bcu_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1785477600
-  },
-  {
-    "topic": "Back Up - Auf Streife mit der Ex",
-    "title": "Big Trouble In Little Waitote (S01/E06)",
-    "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-big-trouble-in-little-waitote-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260816_2305_sendung_bcu/3/260816_2305_sendung_bcu_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1785477600
-  },
-  {
-    "topic": "Back Up - Auf Streife mit der Ex",
-    "title": "Big Trouble In Little Waitote (S01/E06) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-big-trouble-in-little-waitote-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260816_2305_sendung_bcu/3/260816_2305_sendung_bcu_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1785477600
-  },
-  {
-    "topic": "Back Up - Auf Streife mit der Ex",
-    "title": "Fünf Frauen, eine Party und jede Menge Ärger (S01/E04) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-fuenf-frauen-eine-party-und-jede-menge-aerger-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260809_2305_sendung_bcu/1/260809_2305_sendung_bcu_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1785477600
-  },
-  {
-    "topic": "Kabul - Flucht aus der Hölle",
-    "title": "Verhandlungssache (S01/E03) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/verhandlungssache-104",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260728_2315_sendung_kbl/1/260728_2315_sendung_kbl_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1784527200
-  },
-  {
-    "topic": "Kabul - Flucht aus der Hölle",
-    "title": "Ein riskanter Plan (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ein-riskanter-plan-110",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260727_2305_sendung_kbl/1/260727_2305_sendung_kbl_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1784527200
-  },
-  {
-    "topic": "Kabul - Flucht aus der Hölle",
-    "title": "Ungewöhnliche Weggefährten (S01/E04) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ungewoehnliche-weggefaehrten-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_0005_sendung_kbl/1/260729_0005_sendung_kbl_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1784527200
-  },
-  {
-    "topic": "Kabul - Flucht aus der Hölle",
-    "title": "Alarmstufe Rot (S01/E05) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/alarmstufe-rot-104",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_2245_sendung_kbl/1/260729_2245_sendung_kbl_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1784527200
-  },
-  {
-    "topic": "Kabul - Flucht aus der Hölle",
-    "title": "Alarmstufe Rot (S01/E05)",
-    "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/alarmstufe-rot-104",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_2245_sendung_kbl/1/260729_2245_sendung_kbl_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1784527200
-  },
-  {
-    "topic": "Kabul - Flucht aus der Hölle",
-    "title": "Ungewisse Zukunft (S01/E06)",
-    "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ungewisse-zukunft-106",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_2335_sendung_kbl/1/260729_2335_sendung_kbl_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1784527200
-  },
-  {
-    "topic": "Kabul - Flucht aus der Hölle",
-    "title": "Überstürzter Rückzug (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ueberstuerzter-rueckzug-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260727_2215_sendung_kbl/1/260727_2215_sendung_kbl_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1784527200
-  },
-  {
-    "topic": "Kabul - Flucht aus der Hölle",
-    "title": "Ungewöhnliche Weggefährten (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ungewoehnliche-weggefaehrten-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_0005_sendung_kbl/1/260729_0005_sendung_kbl_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1784527200
-  },
-  {
-    "topic": "Kabul - Flucht aus der Hölle",
-    "title": "Ungewisse Zukunft (S01/E06) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ungewisse-zukunft-106",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_2335_sendung_kbl/1/260729_2335_sendung_kbl_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1784527200
-  },
-  {
-    "topic": "Kabul - Flucht aus der Hölle",
-    "title": "Überstürzter Rückzug (S01/E01) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ueberstuerzter-rueckzug-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260727_2215_sendung_kbl/1/260727_2215_sendung_kbl_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1784527200
-  },
-  {
-    "topic": "Kabul - Flucht aus der Hölle",
-    "title": "Verhandlungssache (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/verhandlungssache-104",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260728_2315_sendung_kbl/1/260728_2315_sendung_kbl_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1784527200
-  },
-  {
-    "topic": "Kabul - Flucht aus der Hölle",
-    "title": "Ein riskanter Plan (S01/E02) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ein-riskanter-plan-110",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260727_2305_sendung_kbl/1/260727_2305_sendung_kbl_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1784527200
-  },
-  {
-    "topic": "Frankfurt Bahnhofsviertel",
-    "title": "Jagd auf skrupellose Freier (S01/E05)",
-    "web_url": "https://www.zdf.de/video/reportagen/frankfurt-bahnhofsviertel-110/jagd-auf-skrupellose-freier-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0900_sendung_fbv/1/260612_0900_sendung_fbv_2892k_p71v16.mp4",
-    "timestamp": 1781240400
-  },
-  {
-    "topic": "Frankfurt Bahnhofsviertel",
-    "title": "Strippen für den Lebenstraum (S01/E04)",
-    "web_url": "https://www.zdf.de/video/reportagen/frankfurt-bahnhofsviertel-110/strippen-fuer-den-lebenstraum-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0859_sendung_fbv/1/260612_0859_sendung_fbv_2892k_p71v16.mp4",
-    "timestamp": 1781240340
-  },
-  {
-    "topic": "Frankfurt Bahnhofsviertel",
-    "title": "Das harte Leben auf der Straße (S01/E03)",
-    "web_url": "https://www.zdf.de/video/reportagen/frankfurt-bahnhofsviertel-110/das-harte-leben-auf-der-strasse-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0858_sendung_fbv/1/260612_0858_sendung_fbv_2892k_p71v16.mp4",
-    "timestamp": 1781240280
-  },
-  {
-    "topic": "Frankfurt Bahnhofsviertel",
-    "title": "Rettung mit dem Nachtbus (S01/E02)",
-    "web_url": "https://www.zdf.de/video/reportagen/frankfurt-bahnhofsviertel-110/rettung-mit-dem-nachtbus-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0857_sendung_fbv/1/260612_0857_sendung_fbv_2892k_p71v16.mp4",
-    "timestamp": 1781240220
-  },
-  {
-    "topic": "Frankfurt Bahnhofsviertel",
-    "title": "Der Kampf gegen Drogen (S01/E01)",
-    "web_url": "https://www.zdf.de/video/reportagen/frankfurt-bahnhofsviertel-110/der-kampf-gegen-drogen-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0856_sendung_fbv/1/260612_0856_sendung_fbv_2892k_p71v16.mp4",
-    "timestamp": 1781240160
-  },
-  {
-    "topic": "PUSH",
-    "title": "Eine Frage der Perspektive (S02/E06)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/eine-frage-der-perspektive-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260603_2245_sendung_pus/1/260603_2245_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1779429600
-  },
-  {
-    "topic": "PUSH",
-    "title": "Schicht (S02/E05)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/schicht-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260603_2215_sendung_pus/1/260603_2215_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1779429600
-  },
-  {
-    "topic": "PUSH",
-    "title": "Urvertrauen (S02/E02)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/urvertrauen-106",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260527_2215_sendung_pus/1/260527_2215_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1779429600
-  },
-  {
-    "topic": "PUSH",
-    "title": "Entscheidungen (S02/E04)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/entscheidungen-122",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260603_2145_sendung_pus/1/260603_2145_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1779429600
-  },
-  {
-    "topic": "PUSH",
-    "title": "Akzeptanz (S02/E03)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/akzeptanz-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260527_2250_sendung_pus/1/260527_2250_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1779429600
-  },
-  {
-    "topic": "PUSH",
-    "title": "Ein Mal ist kein Mal (S02/E09)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/ein-mal-ist-kein-mal-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2245_sendung_pus/1/260610_2245_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1779429600
-  },
-  {
-    "topic": "PUSH",
-    "title": "Trust the process (S02/E07)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/trust-the-process-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2145_sendung_pus/1/260610_2145_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1779429600
-  },
-  {
-    "topic": "PUSH",
-    "title": "Beziehungsweise (S02/E01)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/beziehungsweise-112",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260527_2145_sendung_pus/1/260527_2145_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1779429600
-  },
-  {
-    "topic": "PUSH",
-    "title": "Und dann kamst du (S02/E10)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/und-dann-kamst-du-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2315_sendung_pus/1/260610_2315_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1779429600
-  },
-  {
-    "topic": "PUSH",
-    "title": "Geheimnisse (S02/E08)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/geheimnisse-124",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2215_sendung_pus/1/260610_2215_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1779429600
-  },
-  {
-    "topic": "My Ex",
-    "title": "Paul (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/my-ex-100/paul-108",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260506_2145_sendung_myx/1/260506_2145_sendung_myx_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1777269600
-  },
-  {
-    "topic": "My Ex",
-    "title": "Die Liebenden (S01/E06)",
-    "web_url": "https://www.zdf.de/video/serien/my-ex-100/die-liebenden-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260520_2230_sendung_myx/1/260520_2230_sendung_myx_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1777269600
-  },
-  {
-    "topic": "My Ex",
-    "title": "Nico (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/my-ex-100/nico-110",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260506_2230_sendung_myx/1/260506_2230_sendung_myx_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1777269600
-  },
-  {
-    "topic": "My Ex",
-    "title": "Maruan (S01/E05)",
-    "web_url": "https://www.zdf.de/video/serien/my-ex-100/maruan-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260520_2145_sendung_myx/1/260520_2145_sendung_myx_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1777269600
-  },
-  {
-    "topic": "My Ex",
-    "title": "Rafael und Leonhard (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/my-ex-100/rafael-und-leonhard-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260513_2140_sendung_myx/1/260513_2140_sendung_myx_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1777269600
-  },
-  {
-    "topic": "My Ex",
-    "title": "Tony und Eric (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/my-ex-100/tony-und-eric-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260513_2225_sendung_myx/1/260513_2225_sendung_myx_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1777269600
-  },
-  {
-    "topic": "Die Bergretter",
-    "title": "Die Zeit, die bleibt - Special (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/die-zeit-die-bleibt-special-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/11/221117_2015_sendung_dbw/1/221117_2015_sendung_dbw_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1767118500
-  },
-  {
-    "topic": "Die Bergretter",
-    "title": "Im Stich gelassen (S17/E07)",
-    "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/im-stich-gelassen-106",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1006_sendung_dbw/1/251024_1006_sendung_dbw_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1761285960
-  },
-  {
-    "topic": "Die Bergretter",
-    "title": "Marterl (S17/E06)",
-    "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/marterl-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1005_sendung_dbw/1/251024_1005_sendung_dbw_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1761285900
-  },
-  {
-    "topic": "Die Bergretter",
-    "title": "Gespenster (S17/E05)",
-    "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/gespenster-114",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1004_sendung_dbw/1/251024_1004_sendung_dbw_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1761285840
-  },
-  {
-    "topic": "Die Bergretter",
-    "title": "Lippenbekenntnisse (S17/E04)",
-    "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/lippenbekenntnisse-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1003_sendung_dbw/1/251024_1003_sendung_dbw_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1761285780
-  },
-  {
-    "topic": "Die Bergretter",
-    "title": "Ohne Ausweg (S17/E03)",
-    "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/ohne-ausweg-104",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1002_sendung_dbw/1/251024_1002_sendung_dbw_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1761285720
-  },
-  {
-    "topic": "Die Bergretter",
-    "title": "Vertrauen (S17/E02)",
-    "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/vertrauen-140",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1001_sendung_dbw/1/251024_1001_sendung_dbw_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1761285660
-  },
-  {
-    "topic": "Die Bergretter",
-    "title": "Stille Wasser - Neue Folgen (S17/E01)",
-    "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/stille-wasser-120",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1000_sendung_dbw/1/251024_1000_sendung_dbw_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1761285600
-  },
-  {
-    "topic": "Weiss und Morales",
-    "title": "Zeremonie der Schatten (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-zeremonie-der-schatten-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/11/251102_2215_sendung_wum/1/251102_2215_sendung_wum_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1760594400
-  },
-  {
-    "topic": "Weiss und Morales",
-    "title": "Eine Frage des Vertrauens (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-eine-frage-des-vertrauens-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/10/251026_2215_sendung_wum/5/251026_2215_sendung_wum_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1760594400
-  },
-  {
-    "topic": "Weiss und Morales",
-    "title": "Ein Plan für die Zukunft (S01/E01)(spa)",
-    "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-ein-plan-fuer-die-zukunft-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/10/251019_2215_sendung_wum/5/251019_2215_sendung_wum_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1760594400
-  },
-  {
-    "topic": "Weiss und Morales",
-    "title": "Unter der Oberfläche (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-unter-der-oberflaeche-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/11/251109_2215_sendung_wum/1/251109_2215_sendung_wum_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1760594400
-  },
-  {
-    "topic": "Weiss und Morales",
-    "title": "Zeremonie der Schatten (S01/E03)(spa)",
-    "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-zeremonie-der-schatten-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/11/251102_2215_sendung_wum/1/251102_2215_sendung_wum_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1760594400
-  },
-  {
-    "topic": "Weiss und Morales",
-    "title": "Unter der Oberfläche (S01/E04)(spa)",
-    "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-unter-der-oberflaeche-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/11/251109_2215_sendung_wum/1/251109_2215_sendung_wum_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1760594400
-  },
-  {
-    "topic": "Weiss und Morales",
-    "title": "Ein Plan für die Zukunft (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-ein-plan-fuer-die-zukunft-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/10/251019_2215_sendung_wum/5/251019_2215_sendung_wum_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1760594400
-  },
-  {
-    "topic": "Weiss und Morales",
-    "title": "Eine Frage des Vertrauens (S01/E02)(spa)",
-    "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-eine-frage-des-vertrauens-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/10/251026_2215_sendung_wum/5/251026_2215_sendung_wum_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1760594400
-  },
-  {
-    "topic": "Was wir fürchten",
-    "title": "Gefangen - Was wir fürchten (S01/E05)",
-    "web_url": "https://www.zdf.de/video/serien/was-wir-fuerchten-100/gefangen-122",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/11/231101_0115_s1_f5_wwf/6/231101_0115_s1_f5_wwf_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1759098300
-  },
-  {
-    "topic": "Was wir fürchten",
-    "title": "Familienbande - Was wir fürchten (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/was-wir-fuerchten-100/familienbande-210",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/11/231101_0030_s1_f4_wwf/6/231101_0030_s1_f4_wwf_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1759095600
-  },
-  {
-    "topic": "Die Bergretter",
-    "title": "Grüner Mond (S14/E06)",
-    "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/gruener-mond-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/04/230413_2015_sendung_dbw/1/230413_2015_sendung_dbw_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1758816900
-  },
-  {
-    "topic": "Was wir fürchten",
-    "title": "Der rote Teufel - Was wir fürchten (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/was-wir-fuerchten-100/der-rote-teufel-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/10/231031_2305_s1_f2_wwf/6/231031_2305_s1_f2_wwf_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1758493500
-  },
-  {
-    "topic": "Was wir fürchten",
-    "title": "Jahrestag - Was wir fürchten (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/was-wir-fuerchten-100/jahrestag-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/10/231031_2220_s1_f1_wwf/6/231031_2220_s1_f1_wwf_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1758491100
-  },
-  {
-    "topic": "Die Bergretter",
-    "title": "Giftiges Erbe (S14/E05)",
-    "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/giftiges-erbe-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/04/230406_2015_sendung_dbw/1/230406_2015_sendung_dbw_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1758212100
-  },
-  {
-    "topic": "Die Bergretter",
-    "title": "Schamlos (S14/E04)",
-    "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/schamlos-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/03/230330_2015_sendung_dbw/1/230330_2015_sendung_dbw_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1757607300
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Burrito, der Erlöser - Staffel 1: Duell im Outback (S01/E06)",
-    "web_url": "https://www.zdf.de/video/serien/the-tourist-110/burrito-der-erloeser-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/09/220905_2355_sendung_dia/1/220905_2355_sendung_dia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1757457600
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Burrito, der Erlöser - Staffel 1: Duell im Outback (S01/E06) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/the-tourist-110/burrito-der-erloeser-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/09/220905_2355_sendung_dia/1/220905_2355_sendung_dia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1757457600
-  },
-  {
-    "topic": "Die Bergretter",
-    "title": "Auf der Jagd (S14/E03)",
-    "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/auf-der-jagd-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/03/230323_2015_sendung_dbw/1/230323_2015_sendung_dbw_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1757002500
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Nulllinie (S01/E23)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/nulllinie-106",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250529_1000_sendung_crw/1/250529_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1748498400
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Für immer und ewig (S01/E24)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/fuer-immer-und-ewig-104",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250529_1001_sendung_crw/1/250529_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1748498400
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Eskalation (S01/E21)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/eskalation-106",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250522_1000_sendung_crw/4/250522_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1747893600
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Demaskiert (S01/E22)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/demaskiert-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250522_1001_sendung_crw/1/250522_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1747893600
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Entführt (S01/E20)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/entfuehrt-134",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250515_1001_sendung_crw/1/250515_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1747288800
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Zwei Seiten (S01/E19)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/zwei-seiten-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250515_1000_sendung_crw/1/250515_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1747288800
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Game Changer (S01/E18)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/game-changer-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250508_1001_sendung_crw/1/250508_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1746684000
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Wahrheit (S01/E17)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/wahrheit-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250508_1000_sendung_crw/1/250508_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1746684000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Die Bombe (S01/E07)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/die-bombe-106",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250526_2215_sendung_phf/6/250526_2215_sendung_phf_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Der Anschlag (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/der-anschlag-106",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250505_2215_sendung_phf/4/250505_2215_sendung_phf_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Der Scharfschütze (S01/E02) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/der-scharfschuetze-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250505_2255_sendung_phf/4/250505_2255_sendung_phf_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Der Lockvogel (S01/E03) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/der-lockvogel-110",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250512_2215_sendung_phf/4/250512_2215_sendung_phf_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Die Drohung (S01/E05)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/paris-has-fallen-104",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250519_2215_sendung_phf/6/250519_2215_sendung_phf_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Der Scharfschütze (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/der-scharfschuetze-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250505_2255_sendung_phf/4/250505_2255_sendung_phf_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Der Lockvogel (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/der-lockvogel-110",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250512_2215_sendung_phf/4/250512_2215_sendung_phf_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Die Drohung (S01/E05) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/paris-has-fallen-104",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250519_2215_sendung_phf/6/250519_2215_sendung_phf_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Der Anschlag (S01/E01) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/der-anschlag-106",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250505_2215_sendung_phf/4/250505_2215_sendung_phf_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Die Bombe (S01/E07) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/die-bombe-106",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250526_2215_sendung_phf/6/250526_2215_sendung_phf_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Blindflug (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/blindflug-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250512_2300_sendung_phf/4/250512_2300_sendung_phf_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Blindflug (S01/E04) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/blindflug-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250512_2300_sendung_phf/4/250512_2300_sendung_phf_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Die Geisel (S01/E08) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/die-geisel-104",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250526_2255_sendung_phf/4/250526_2255_sendung_phf_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Der Maulwurf (S01/E06) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/paris-has-fallen-106",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250519_2300_sendung_phf/5/250519_2300_sendung_phf_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Die Geisel (S01/E08)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/die-geisel-104",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250526_2255_sendung_phf/4/250526_2255_sendung_phf_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Paris Has Fallen",
-    "title": "Der Maulwurf (S01/E06)",
-    "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/paris-has-fallen-106",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250519_2300_sendung_phf/5/250519_2300_sendung_phf_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1746252000
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Schande (S01/E16)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/schande-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250501_1001_sendung_crw/1/250501_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1746079200
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Der Sohn (S01/E15)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/der-sohn-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250501_1000_sendung_crw/1/250501_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1746079200
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Vertrauen (S01/E13)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/vertrauen-134",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250424_1000_sendung_crw/1/250424_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1745474400
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Opfer (S01/E14)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/opfer-108",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250424_1001_sendung_crw/1/250424_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1745474400
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Begehren (S01/E11)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/begehren-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250417_1000_sendung_crw/1/250417_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1744869600
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Verrat (S01/E12)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/verrat-120",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250417_1001_sendung_crw/1/250417_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1744869600
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Die Fabrik (S01/E08)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/die-fabrik-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1007_sendung_crw/5/250410_1007_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1744264800
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Eifersucht (S01/E06)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/eifersucht-114",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1005_sendung_crw/6/250410_1005_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1744264800
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Mütter (S01/E05)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/muetter-120",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1004_sendung_crw/5/250410_1004_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1744264800
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Party (S01/E10)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/party-120",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1009_sendung_crw/5/250410_1009_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1744264800
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Entscheidungen (S01/E09)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/entscheidungen-120",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1008_sendung_crw/5/250410_1008_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1744264800
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Blut auf Gold (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/blut-auf-gold-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1000_sendung_crw/6/250410_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1744264800
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Der Job (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/der-job-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1001_sendung_crw/6/250410_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1744264800
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Zwischen den Stühlen (S01/E07)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/zwischen-den-stuehlen-120",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1006_sendung_crw/5/250410_1006_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1744264800
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Tag Eins (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/tag-eins-108",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1002_sendung_crw/6/250410_1002_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1744264800
-  },
-  {
-    "topic": "Crystal Wall",
-    "title": "Väter (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/vaeter-104",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1003_sendung_crw/6/250410_1003_sendung_crw_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1744264800
-  },
-  {
-    "topic": "FC Hollywood",
-    "title": "Die Jagd - Popstar Scholl und die Medien (S01/E02)",
-    "web_url": "https://www.zdf.de/video/dokus/fc-hollywood-102/fc-hollywood-folge-2-die-jagd-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250108_fchollywood_folge2_hol/1/250108_fchollywood_folge2_hol_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1736460000
-  },
-  {
-    "topic": "FC Hollywood",
-    "title": "Das Endspiel - Die 120 Sekunden von Barcelona (S01/E05)",
-    "web_url": "https://www.zdf.de/video/dokus/fc-hollywood-102/fc-hollywood-folge-5-das-endspiel-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250102_fchollywood_folge5_hol/1/250102_fchollywood_folge5_hol_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1736460000
-  },
-  {
-    "topic": "FC Hollywood",
-    "title": "Die Wutrede - Trapattonis legendäre Pressekonferenz (S01/E04)",
-    "web_url": "https://www.zdf.de/video/dokus/fc-hollywood-102/fc-hollywood-folge-4-die-wutrede-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/12/241213_fchollywood_folge4_hol/5/241213_fchollywood_folge4_hol_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1736460000
-  },
-  {
-    "topic": "FC Hollywood",
-    "title": "Das Duell - Matthäus versus Klinsmann (S01/E01)",
-    "web_url": "https://www.zdf.de/video/dokus/fc-hollywood-102/fc-hollywood-folge-1-das-duell-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/12/241213_fchollywood_folge1_hol/5/241213_fchollywood_folge1_hol_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1736460000
-  },
-  {
-    "topic": "FC Hollywood",
-    "title": "Der Verrat - Lothar Matthäus und sein Tagebuch (S01/E03)",
-    "web_url": "https://www.zdf.de/video/dokus/fc-hollywood-102/fc-hollywood-folge-3-der-verrat-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/12/241213_fchollywood_folge3_hol/1/241213_fchollywood_folge3_hol_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1736460000
-  },
-  {
-    "topic": "Concordia - Tödliche Utopie",
-    "title": "Der Mord (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/concordia-100/der-mord-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2215_sendung_cia/1/241020_2215_sendung_cia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1726293600
-  },
-  {
-    "topic": "Concordia - Tödliche Utopie",
-    "title": "Der Mord (S01/E01) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/concordia-100/der-mord-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2215_sendung_cia/1/241020_2215_sendung_cia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1726293600
-  },
-  {
-    "topic": "Concordia - Tödliche Utopie",
-    "title": "Geheimnisse (S01/E04) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/concordia-100/geheimnisse-126",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2215_sendung_cia/1/241021_2215_sendung_cia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1726293600
-  },
-  {
-    "topic": "Concordia - Tödliche Utopie",
-    "title": "Auf der Jagd (S01/E05) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/concordia-100/auf-der-jagd-108",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2300_sendung_cia/1/241021_2300_sendung_cia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1726293600
-  },
-  {
-    "topic": "Concordia - Tödliche Utopie",
-    "title": "Der Verdacht (S01/E02) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/concordia-100/der-verdacht-116",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2300_sendung_cia/1/241020_2300_sendung_cia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1726293600
-  },
-  {
-    "topic": "Concordia - Tödliche Utopie",
-    "title": "Die Faceless (S01/E03) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/concordia-100/die-faceless-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2340_sendung_cia/1/241020_2340_sendung_cia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1726293600
-  },
-  {
-    "topic": "Concordia - Tödliche Utopie",
-    "title": "Kein Weg zurück (S01/E06) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/concordia-100/kein-weg-zurueck-132",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2340_sendung_cia/1/241021_2340_sendung_cia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1726293600
-  },
-  {
-    "topic": "Concordia - Tödliche Utopie",
-    "title": "Kein Weg zurück (S01/E06)",
-    "web_url": "https://www.zdf.de/video/serien/concordia-100/kein-weg-zurueck-132",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2340_sendung_cia/1/241021_2340_sendung_cia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1726293600
-  },
-  {
-    "topic": "Concordia - Tödliche Utopie",
-    "title": "Auf der Jagd (S01/E05)",
-    "web_url": "https://www.zdf.de/video/serien/concordia-100/auf-der-jagd-108",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2300_sendung_cia/1/241021_2300_sendung_cia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1726293600
-  },
-  {
-    "topic": "Concordia - Tödliche Utopie",
-    "title": "Geheimnisse (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/concordia-100/geheimnisse-126",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2215_sendung_cia/1/241021_2215_sendung_cia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1726293600
-  },
-  {
-    "topic": "Concordia - Tödliche Utopie",
-    "title": "Die Faceless (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/concordia-100/die-faceless-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2340_sendung_cia/1/241020_2340_sendung_cia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1726293600
-  },
-  {
-    "topic": "Concordia - Tödliche Utopie",
-    "title": "Der Verdacht (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/concordia-100/der-verdacht-116",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2300_sendung_cia/1/241020_2300_sendung_cia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1726293600
-  },
-  {
-    "topic": "PUSH",
-    "title": "Stille (S01/E05)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/stille-110",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240324_2015_sendung_pus/2/240324_2015_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1709280000
-  },
-  {
-    "topic": "PUSH",
-    "title": "I judge, you judge, we judge (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/i-judge-you-judge-we-judge-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240317_2100_sendung_pus/3/240317_2100_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1709280000
-  },
-  {
-    "topic": "PUSH",
-    "title": "This is where the magic happens (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/this-is-where-the-magic-happens-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240317_2015_sendung_pus/1/240317_2015_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1709280000
-  },
-  {
-    "topic": "PUSH",
-    "title": "Männer (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/maenner-104",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240310_2055_sendung_pus/1/240310_2055_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1709280000
-  },
-  {
-    "topic": "PUSH",
-    "title": "Jedem Anfang (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/jedem-anfang-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240310_2015_sendung_pus/2/240310_2015_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1709280000
-  },
-  {
-    "topic": "PUSH",
-    "title": "Weitermachen. Irgendwie (S01/E06)",
-    "web_url": "https://www.zdf.de/video/serien/push-102/weitermachen-irgendwie-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240324_2100_sendung_pus/1/240324_2100_sendung_pus_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1709280000
-  },
-  {
-    "topic": "Was wir fürchten",
-    "title": "Erlösung - Was wir fürchten (S01/E06)",
-    "web_url": "https://www.zdf.de/video/serien/was-wir-fuerchten-100/erloesung-132",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/11/231101_0205_s1_f6_wwf/6/231101_0205_s1_f6_wwf_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1697781600
-  },
-  {
-    "topic": "Was wir fürchten",
-    "title": "Narren - Was wir fürchten (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/was-wir-fuerchten-100/narren-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/10/231031_2345_s1_f3_wwf/6/231031_2345_s1_f3_wwf_a1a2_2892k_p71v16.mp4",
-    "timestamp": 1697781600
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 8 (S01/E08)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-8-190",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230308_1008_sendung_swm/2/230308_1008_sendung_swm_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1678262400
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 8 (S01/E08) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-8-190",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230308_1008_sendung_swm/2/230308_1008_sendung_swm_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1678262400
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 7 (S01/E07)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-7-200",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230308_1007_sendung_swm/1/230308_1007_sendung_swm_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1678262400
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 7 (S01/E07) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-7-200",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230308_1007_sendung_swm/1/230308_1007_sendung_swm_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1678262400
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 4 (S01/E04) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-4-226",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230301_1004_sendung_swm/1/230301_1004_sendung_swm_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1677657600
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 4 (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-4-226",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230301_1004_sendung_swm/1/230301_1004_sendung_swm_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1677657600
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 6 (S01/E06) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-6-216",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230301_1006_sendung_swm/1/230301_1006_sendung_swm_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1677657600
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 5 (S01/E05) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-5-230",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230301_1005_sendung_swm/1/230301_1005_sendung_swm_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1677657600
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 5 (S01/E05)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-5-230",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230301_1005_sendung_swm/1/230301_1005_sendung_swm_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1677657600
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 6 (S01/E06)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-6-216",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230301_1006_sendung_swm/1/230301_1006_sendung_swm_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1677657600
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 1 (S01/E01) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-1-274",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/02/230222_1001_sendung_swm/7/230222_1001_sendung_swm_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1677052800
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 1 (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-1-274",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/02/230222_1001_sendung_swm/7/230222_1001_sendung_swm_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1677052800
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 2 (S01/E02) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-2-230",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/02/230222_1002_sendung_swm/7/230222_1002_sendung_swm_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1677052800
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 2 (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-2-230",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/02/230222_1002_sendung_swm/7/230222_1002_sendung_swm_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1677052800
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 3 (S01/E03) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-3-226",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/02/230222_1003_sendung_swm/6/230222_1003_sendung_swm_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1677052800
-  },
-  {
-    "topic": "Der Schwarm",
-    "title": "Folge 3 (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-3-226",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/02/230222_1003_sendung_swm/6/230222_1003_sendung_swm_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1677052800
-  },
-  {
-    "topic": "Gestern waren wir noch Kinder",
-    "title": "Episode 4 (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-4-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1003_sendung_gwk/1/221230_1003_sendung_gwk_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1672387200
-  },
-  {
-    "topic": "Gestern waren wir noch Kinder",
-    "title": "Episode 2 (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-2-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1001_sendung_gwk/1/221230_1001_sendung_gwk_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1672387200
-  },
-  {
-    "topic": "Gestern waren wir noch Kinder",
-    "title": "Episode 1 (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-1-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1000_sendung_gwk/6/221230_1000_sendung_gwk_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1672387200
-  },
-  {
-    "topic": "Gestern waren wir noch Kinder",
-    "title": "Episode 7 (S01/E07)",
-    "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-7-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1006_sendung_gwk/2/221230_1006_sendung_gwk_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1672387200
-  },
-  {
-    "topic": "Gestern waren wir noch Kinder",
-    "title": "Episode 6 (S01/E06)",
-    "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-6-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1005_sendung_gwk/2/221230_1005_sendung_gwk_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1672387200
-  },
-  {
-    "topic": "Gestern waren wir noch Kinder",
-    "title": "Episode 5 (S01/E05)",
-    "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-5-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1004_sendung_gwk/1/221230_1004_sendung_gwk_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1672387200
-  },
-  {
-    "topic": "Gestern waren wir noch Kinder",
-    "title": "Episode 3 (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-3-102",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1002_sendung_gwk/1/221230_1002_sendung_gwk_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1672387200
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Im Tau von Lethes Flut - Staffel 1: Duell im Outback (S01/E01) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/the-tourist-110/im-tau-von-lethes-flut-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220822_2215_sendung_dia/2/220822_2215_sendung_dia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1660248060
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Im Tau von Lethes Flut - Staffel 1: Duell im Outback (S01/E01)",
-    "web_url": "https://www.zdf.de/video/serien/the-tourist-110/im-tau-von-lethes-flut-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220822_2215_sendung_dia/2/220822_2215_sendung_dia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1660248060
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Waiting for the Sun - Staffel 1: Duell im Outback (S01/E02)",
-    "web_url": "https://www.zdf.de/video/serien/the-tourist-110/waiting-for-the-sun-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220822_2310_sendung_dia/1/220822_2310_sendung_dia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1660248060
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Waiting for the Sun - Staffel 1: Duell im Outback (S01/E02) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/the-tourist-110/waiting-for-the-sun-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220822_2310_sendung_dia/1/220822_2310_sendung_dia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1660248060
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Lasciate ogni speranza - Staffel 1: Duell im Outback (S01/E03) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/the-tourist-110/lasciate-ogni-speranza-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220829_2300_sendung_dia/1/220829_2300_sendung_dia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1660248060
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Lasciate ogni speranza - Staffel 1: Duell im Outback (S01/E03)",
-    "web_url": "https://www.zdf.de/video/serien/the-tourist-110/lasciate-ogni-speranza-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220829_2300_sendung_dia/1/220829_2300_sendung_dia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1660248060
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Hüte dich vor dem Zorn des sanftmütigen Mannes - Staffel 1: Duell im Outback (S01/E04)",
-    "web_url": "https://www.zdf.de/video/serien/the-tourist-110/huete-dich-vor-dem-zorn-des-sanftmuetigen-mannes-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220829_2355_sendung_dia/1/220829_2355_sendung_dia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1660248060
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Hüte dich vor dem Zorn des sanftmütigen Mannes - Staffel 1: Duell im Outback (S01/E04) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/the-tourist-110/huete-dich-vor-dem-zorn-des-sanftmuetigen-mannes-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220829_2355_sendung_dia/1/220829_2355_sendung_dia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1660248060
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Precious Memories - Staffel 1: Duell im Outback (S01/E05) (Englisch)",
-    "web_url": "https://www.zdf.de/video/serien/the-tourist-110/precious-memories-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/09/220905_2300_sendung_dia/1/220905_2300_sendung_dia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1660248060
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Precious Memories - Staffel 1: Duell im Outback (S01/E05)",
-    "web_url": "https://www.zdf.de/video/serien/the-tourist-110/precious-memories-100",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/09/220905_2300_sendung_dia/1/220905_2300_sendung_dia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1660248060
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Trailer: The Tourist - Staffel 1: Duell im Outback (Englisch)",
-    "web_url": "https://www.zdf.de/serien/the-tourist/vorschau-trailer-the-tourist-duell-im-outback-100.html",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/22/07/220704_trailer_lang_dia/2/220704_trailer_lang_dia_a3a4_4692k_p72v16.mp4",
-    "timestamp": 1657526400
-  },
-  {
-    "topic": "The Tourist",
-    "title": "Trailer: The Tourist - Staffel 1: Duell im Outback",
-    "web_url": "https://www.zdf.de/serien/the-tourist/vorschau-trailer-the-tourist-duell-im-outback-100.html",
-    "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/22/07/220704_trailer_lang_dia/2/220704_trailer_lang_dia_a1a2_4692k_p72v16.mp4",
-    "timestamp": 1657526400
-  }
-]
+{
+  "episodes": [
+    {
+      "topic": "München Beats",
+      "title": "Folge 4 (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/muenchen-beats-100/folge-4-236",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260827_2105_sendung_mub/1/260827_2105_sendung_mub_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1787857500
+    },
+    {
+      "topic": "München Beats",
+      "title": "Folge 3 (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/muenchen-beats-100/folge-3-234",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260827_2015_sendung_mub/1/260827_2015_sendung_mub_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1787854500
+    },
+    {
+      "topic": "München Beats",
+      "title": "Folge 2 (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/muenchen-beats-100/folge-2-246",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260826_2100_sendung_mub/1/260826_2100_sendung_mub_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1787770800
+    },
+    {
+      "topic": "München Beats",
+      "title": "Folge 1 (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/muenchen-beats-100/folge-1-292",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260826_2015_sendung_mub/1/260826_2015_sendung_mub_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1787768100
+    },
+    {
+      "topic": "Back Up - Auf Streife mit der Ex",
+      "title": "Das Gesetz der Lieferkette (S01/E02) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-das-gesetz-der-lieferkette-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260802_2305_sendung_bcu/1/260802_2305_sendung_bcu_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1785477600
+    },
+    {
+      "topic": "Back Up - Auf Streife mit der Ex",
+      "title": "Die Liste (S01/E05) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-die-liste-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260816_2215_sendung_bcu/3/260816_2215_sendung_bcu_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1785477600
+    },
+    {
+      "topic": "Back Up - Auf Streife mit der Ex",
+      "title": "Das Rätsel der verschwundenen Pylonen (S01/E03) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-das-raetsel-der-verschwundenen-pylonen-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260809_2215_sendung_bcu/1/260809_2215_sendung_bcu_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1785477600
+    },
+    {
+      "topic": "Back Up - Auf Streife mit der Ex",
+      "title": "Das Rätsel der verschwundenen Pylonen (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-das-raetsel-der-verschwundenen-pylonen-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260809_2215_sendung_bcu/1/260809_2215_sendung_bcu_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1785477600
+    },
+    {
+      "topic": "Back Up - Auf Streife mit der Ex",
+      "title": "Die Liste (S01/E05)",
+      "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-die-liste-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260816_2215_sendung_bcu/3/260816_2215_sendung_bcu_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1785477600
+    },
+    {
+      "topic": "Back Up - Auf Streife mit der Ex",
+      "title": "Ein Hai in Geldnot (S01/E01) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-ein-hai-in-geldnot-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260802_2215_sendung_bcu/1/260802_2215_sendung_bcu_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1785477600
+    },
+    {
+      "topic": "Back Up - Auf Streife mit der Ex",
+      "title": "Das Gesetz der Lieferkette (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-das-gesetz-der-lieferkette-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260802_2305_sendung_bcu/1/260802_2305_sendung_bcu_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1785477600
+    },
+    {
+      "topic": "Back Up - Auf Streife mit der Ex",
+      "title": "Ein Hai in Geldnot (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-ein-hai-in-geldnot-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260802_2215_sendung_bcu/1/260802_2215_sendung_bcu_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1785477600
+    },
+    {
+      "topic": "Back Up - Auf Streife mit der Ex",
+      "title": "Fünf Frauen, eine Party und jede Menge Ärger (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-fuenf-frauen-eine-party-und-jede-menge-aerger-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260809_2305_sendung_bcu/1/260809_2305_sendung_bcu_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1785477600
+    },
+    {
+      "topic": "Back Up - Auf Streife mit der Ex",
+      "title": "Big Trouble In Little Waitote (S01/E06)",
+      "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-big-trouble-in-little-waitote-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260816_2305_sendung_bcu/3/260816_2305_sendung_bcu_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1785477600
+    },
+    {
+      "topic": "Back Up - Auf Streife mit der Ex",
+      "title": "Big Trouble In Little Waitote (S01/E06) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-big-trouble-in-little-waitote-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260816_2305_sendung_bcu/3/260816_2305_sendung_bcu_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1785477600
+    },
+    {
+      "topic": "Back Up - Auf Streife mit der Ex",
+      "title": "Fünf Frauen, eine Party und jede Menge Ärger (S01/E04) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/back-up-auf-streife-mit-der-ex-102/back-up---auf-streife-mit-der-ex-fuenf-frauen-eine-party-und-jede-menge-aerger-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/08/260809_2305_sendung_bcu/1/260809_2305_sendung_bcu_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1785477600
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Verhandlungssache (S01/E03) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/verhandlungssache-104",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260728_2315_sendung_kbl/1/260728_2315_sendung_kbl_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1784527200
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Ein riskanter Plan (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ein-riskanter-plan-110",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260727_2305_sendung_kbl/1/260727_2305_sendung_kbl_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1784527200
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Ungewöhnliche Weggefährten (S01/E04) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ungewoehnliche-weggefaehrten-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_0005_sendung_kbl/1/260729_0005_sendung_kbl_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1784527200
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Alarmstufe Rot (S01/E05) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/alarmstufe-rot-104",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_2245_sendung_kbl/1/260729_2245_sendung_kbl_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1784527200
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Alarmstufe Rot (S01/E05)",
+      "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/alarmstufe-rot-104",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_2245_sendung_kbl/1/260729_2245_sendung_kbl_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1784527200
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Ungewisse Zukunft (S01/E06)",
+      "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ungewisse-zukunft-106",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_2335_sendung_kbl/1/260729_2335_sendung_kbl_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1784527200
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Überstürzter Rückzug (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ueberstuerzter-rueckzug-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260727_2215_sendung_kbl/1/260727_2215_sendung_kbl_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1784527200
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Ungewöhnliche Weggefährten (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ungewoehnliche-weggefaehrten-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_0005_sendung_kbl/1/260729_0005_sendung_kbl_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1784527200
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Ungewisse Zukunft (S01/E06) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ungewisse-zukunft-106",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_2335_sendung_kbl/1/260729_2335_sendung_kbl_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1784527200
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Überstürzter Rückzug (S01/E01) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ueberstuerzter-rueckzug-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260727_2215_sendung_kbl/1/260727_2215_sendung_kbl_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1784527200
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Verhandlungssache (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/verhandlungssache-104",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260728_2315_sendung_kbl/1/260728_2315_sendung_kbl_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1784527200
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Ein riskanter Plan (S01/E02) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/kabul-flucht-aus-der-hoelle-100/ein-riskanter-plan-110",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260727_2305_sendung_kbl/1/260727_2305_sendung_kbl_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1784527200
+    },
+    {
+      "topic": "Frankfurt Bahnhofsviertel",
+      "title": "Jagd auf skrupellose Freier (S01/E05)",
+      "web_url": "https://www.zdf.de/video/reportagen/frankfurt-bahnhofsviertel-110/jagd-auf-skrupellose-freier-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0900_sendung_fbv/1/260612_0900_sendung_fbv_2892k_p71v16.mp4",
+      "timestamp": 1781240400
+    },
+    {
+      "topic": "Frankfurt Bahnhofsviertel",
+      "title": "Strippen für den Lebenstraum (S01/E04)",
+      "web_url": "https://www.zdf.de/video/reportagen/frankfurt-bahnhofsviertel-110/strippen-fuer-den-lebenstraum-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0859_sendung_fbv/1/260612_0859_sendung_fbv_2892k_p71v16.mp4",
+      "timestamp": 1781240340
+    },
+    {
+      "topic": "Frankfurt Bahnhofsviertel",
+      "title": "Das harte Leben auf der Straße (S01/E03)",
+      "web_url": "https://www.zdf.de/video/reportagen/frankfurt-bahnhofsviertel-110/das-harte-leben-auf-der-strasse-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0858_sendung_fbv/1/260612_0858_sendung_fbv_2892k_p71v16.mp4",
+      "timestamp": 1781240280
+    },
+    {
+      "topic": "Frankfurt Bahnhofsviertel",
+      "title": "Rettung mit dem Nachtbus (S01/E02)",
+      "web_url": "https://www.zdf.de/video/reportagen/frankfurt-bahnhofsviertel-110/rettung-mit-dem-nachtbus-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0857_sendung_fbv/1/260612_0857_sendung_fbv_2892k_p71v16.mp4",
+      "timestamp": 1781240220
+    },
+    {
+      "topic": "Frankfurt Bahnhofsviertel",
+      "title": "Der Kampf gegen Drogen (S01/E01)",
+      "web_url": "https://www.zdf.de/video/reportagen/frankfurt-bahnhofsviertel-110/der-kampf-gegen-drogen-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0856_sendung_fbv/1/260612_0856_sendung_fbv_2892k_p71v16.mp4",
+      "timestamp": 1781240160
+    },
+    {
+      "topic": "PUSH",
+      "title": "Eine Frage der Perspektive (S02/E06)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/eine-frage-der-perspektive-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260603_2245_sendung_pus/1/260603_2245_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1779429600
+    },
+    {
+      "topic": "PUSH",
+      "title": "Schicht (S02/E05)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/schicht-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260603_2215_sendung_pus/1/260603_2215_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1779429600
+    },
+    {
+      "topic": "PUSH",
+      "title": "Urvertrauen (S02/E02)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/urvertrauen-106",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260527_2215_sendung_pus/1/260527_2215_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1779429600
+    },
+    {
+      "topic": "PUSH",
+      "title": "Entscheidungen (S02/E04)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/entscheidungen-122",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260603_2145_sendung_pus/1/260603_2145_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1779429600
+    },
+    {
+      "topic": "PUSH",
+      "title": "Akzeptanz (S02/E03)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/akzeptanz-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260527_2250_sendung_pus/1/260527_2250_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1779429600
+    },
+    {
+      "topic": "PUSH",
+      "title": "Ein Mal ist kein Mal (S02/E09)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/ein-mal-ist-kein-mal-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2245_sendung_pus/1/260610_2245_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1779429600
+    },
+    {
+      "topic": "PUSH",
+      "title": "Trust the process (S02/E07)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/trust-the-process-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2145_sendung_pus/1/260610_2145_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1779429600
+    },
+    {
+      "topic": "PUSH",
+      "title": "Beziehungsweise (S02/E01)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/beziehungsweise-112",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260527_2145_sendung_pus/1/260527_2145_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1779429600
+    },
+    {
+      "topic": "PUSH",
+      "title": "Und dann kamst du (S02/E10)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/und-dann-kamst-du-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2315_sendung_pus/1/260610_2315_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1779429600
+    },
+    {
+      "topic": "PUSH",
+      "title": "Geheimnisse (S02/E08)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/geheimnisse-124",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2215_sendung_pus/1/260610_2215_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1779429600
+    },
+    {
+      "topic": "My Ex",
+      "title": "Paul (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/my-ex-100/paul-108",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260506_2145_sendung_myx/1/260506_2145_sendung_myx_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1777269600
+    },
+    {
+      "topic": "My Ex",
+      "title": "Die Liebenden (S01/E06)",
+      "web_url": "https://www.zdf.de/video/serien/my-ex-100/die-liebenden-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260520_2230_sendung_myx/1/260520_2230_sendung_myx_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1777269600
+    },
+    {
+      "topic": "My Ex",
+      "title": "Nico (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/my-ex-100/nico-110",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260506_2230_sendung_myx/1/260506_2230_sendung_myx_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1777269600
+    },
+    {
+      "topic": "My Ex",
+      "title": "Maruan (S01/E05)",
+      "web_url": "https://www.zdf.de/video/serien/my-ex-100/maruan-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260520_2145_sendung_myx/1/260520_2145_sendung_myx_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1777269600
+    },
+    {
+      "topic": "My Ex",
+      "title": "Rafael und Leonhard (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/my-ex-100/rafael-und-leonhard-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260513_2140_sendung_myx/1/260513_2140_sendung_myx_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1777269600
+    },
+    {
+      "topic": "My Ex",
+      "title": "Tony und Eric (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/my-ex-100/tony-und-eric-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260513_2225_sendung_myx/1/260513_2225_sendung_myx_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1777269600
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Die Zeit, die bleibt - Special (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/die-zeit-die-bleibt-special-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/11/221117_2015_sendung_dbw/1/221117_2015_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1767118500
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Im Stich gelassen (S17/E07)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/im-stich-gelassen-106",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1006_sendung_dbw/1/251024_1006_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1761285960
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Marterl (S17/E06)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/marterl-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1005_sendung_dbw/1/251024_1005_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1761285900
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Gespenster (S17/E05)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/gespenster-114",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1004_sendung_dbw/1/251024_1004_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1761285840
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Lippenbekenntnisse (S17/E04)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/lippenbekenntnisse-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1003_sendung_dbw/1/251024_1003_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1761285780
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Ohne Ausweg (S17/E03)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/ohne-ausweg-104",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1002_sendung_dbw/1/251024_1002_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1761285720
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Vertrauen (S17/E02)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/vertrauen-140",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1001_sendung_dbw/1/251024_1001_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1761285660
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Stille Wasser - Neue Folgen (S17/E01)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/stille-wasser-120",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/10/251024_1000_sendung_dbw/1/251024_1000_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1761285600
+    },
+    {
+      "topic": "Weiss und Morales",
+      "title": "Zeremonie der Schatten (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-zeremonie-der-schatten-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/11/251102_2215_sendung_wum/1/251102_2215_sendung_wum_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1760594400
+    },
+    {
+      "topic": "Weiss und Morales",
+      "title": "Eine Frage des Vertrauens (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-eine-frage-des-vertrauens-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/10/251026_2215_sendung_wum/5/251026_2215_sendung_wum_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1760594400
+    },
+    {
+      "topic": "Weiss und Morales",
+      "title": "Ein Plan für die Zukunft (S01/E01)(spa)",
+      "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-ein-plan-fuer-die-zukunft-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/10/251019_2215_sendung_wum/5/251019_2215_sendung_wum_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1760594400
+    },
+    {
+      "topic": "Weiss und Morales",
+      "title": "Unter der Oberfläche (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-unter-der-oberflaeche-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/11/251109_2215_sendung_wum/1/251109_2215_sendung_wum_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1760594400
+    },
+    {
+      "topic": "Weiss und Morales",
+      "title": "Zeremonie der Schatten (S01/E03)(spa)",
+      "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-zeremonie-der-schatten-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/11/251102_2215_sendung_wum/1/251102_2215_sendung_wum_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1760594400
+    },
+    {
+      "topic": "Weiss und Morales",
+      "title": "Unter der Oberfläche (S01/E04)(spa)",
+      "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-unter-der-oberflaeche-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/11/251109_2215_sendung_wum/1/251109_2215_sendung_wum_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1760594400
+    },
+    {
+      "topic": "Weiss und Morales",
+      "title": "Ein Plan für die Zukunft (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-ein-plan-fuer-die-zukunft-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/10/251019_2215_sendung_wum/5/251019_2215_sendung_wum_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1760594400
+    },
+    {
+      "topic": "Weiss und Morales",
+      "title": "Eine Frage des Vertrauens (S01/E02)(spa)",
+      "web_url": "https://www.zdf.de/video/serien/weiss-und-morales-100/weiss--morales-eine-frage-des-vertrauens-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/10/251026_2215_sendung_wum/5/251026_2215_sendung_wum_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1760594400
+    },
+    {
+      "topic": "Was wir fürchten",
+      "title": "Gefangen - Was wir fürchten (S01/E05)",
+      "web_url": "https://www.zdf.de/video/serien/was-wir-fuerchten-100/gefangen-122",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/11/231101_0115_s1_f5_wwf/6/231101_0115_s1_f5_wwf_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1759098300
+    },
+    {
+      "topic": "Was wir fürchten",
+      "title": "Familienbande - Was wir fürchten (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/was-wir-fuerchten-100/familienbande-210",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/11/231101_0030_s1_f4_wwf/6/231101_0030_s1_f4_wwf_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1759095600
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Grüner Mond (S14/E06)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/gruener-mond-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/04/230413_2015_sendung_dbw/1/230413_2015_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1758816900
+    },
+    {
+      "topic": "Was wir fürchten",
+      "title": "Der rote Teufel - Was wir fürchten (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/was-wir-fuerchten-100/der-rote-teufel-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/10/231031_2305_s1_f2_wwf/6/231031_2305_s1_f2_wwf_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1758493500
+    },
+    {
+      "topic": "Was wir fürchten",
+      "title": "Jahrestag - Was wir fürchten (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/was-wir-fuerchten-100/jahrestag-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/10/231031_2220_s1_f1_wwf/6/231031_2220_s1_f1_wwf_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1758491100
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Giftiges Erbe (S14/E05)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/giftiges-erbe-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/04/230406_2015_sendung_dbw/1/230406_2015_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1758212100
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Schamlos (S14/E04)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/schamlos-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/03/230330_2015_sendung_dbw/1/230330_2015_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1757607300
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Burrito, der Erlöser - Staffel 1: Duell im Outback (S01/E06)",
+      "web_url": "https://www.zdf.de/video/serien/the-tourist-110/burrito-der-erloeser-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/09/220905_2355_sendung_dia/1/220905_2355_sendung_dia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1757457600
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Burrito, der Erlöser - Staffel 1: Duell im Outback (S01/E06) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/the-tourist-110/burrito-der-erloeser-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/09/220905_2355_sendung_dia/1/220905_2355_sendung_dia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1757457600
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Auf der Jagd (S14/E03)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/auf-der-jagd-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/03/230323_2015_sendung_dbw/1/230323_2015_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1757002500
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Nulllinie (S01/E23)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/nulllinie-106",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250529_1000_sendung_crw/1/250529_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1748498400
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Für immer und ewig (S01/E24)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/fuer-immer-und-ewig-104",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250529_1001_sendung_crw/1/250529_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1748498400
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Eskalation (S01/E21)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/eskalation-106",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250522_1000_sendung_crw/4/250522_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1747893600
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Demaskiert (S01/E22)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/demaskiert-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250522_1001_sendung_crw/1/250522_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1747893600
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Entführt (S01/E20)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/entfuehrt-134",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250515_1001_sendung_crw/1/250515_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1747288800
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Zwei Seiten (S01/E19)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/zwei-seiten-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250515_1000_sendung_crw/1/250515_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1747288800
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Game Changer (S01/E18)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/game-changer-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250508_1001_sendung_crw/1/250508_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1746684000
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Wahrheit (S01/E17)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/wahrheit-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250508_1000_sendung_crw/1/250508_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1746684000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Die Bombe (S01/E07)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/die-bombe-106",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250526_2215_sendung_phf/6/250526_2215_sendung_phf_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Der Anschlag (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/der-anschlag-106",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250505_2215_sendung_phf/4/250505_2215_sendung_phf_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Der Scharfschütze (S01/E02) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/der-scharfschuetze-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250505_2255_sendung_phf/4/250505_2255_sendung_phf_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Der Lockvogel (S01/E03) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/der-lockvogel-110",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250512_2215_sendung_phf/4/250512_2215_sendung_phf_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Die Drohung (S01/E05)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/paris-has-fallen-104",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250519_2215_sendung_phf/6/250519_2215_sendung_phf_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Der Scharfschütze (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/der-scharfschuetze-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250505_2255_sendung_phf/4/250505_2255_sendung_phf_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Der Lockvogel (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/der-lockvogel-110",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250512_2215_sendung_phf/4/250512_2215_sendung_phf_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Die Drohung (S01/E05) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/paris-has-fallen-104",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250519_2215_sendung_phf/6/250519_2215_sendung_phf_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Der Anschlag (S01/E01) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/der-anschlag-106",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250505_2215_sendung_phf/4/250505_2215_sendung_phf_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Die Bombe (S01/E07) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/die-bombe-106",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250526_2215_sendung_phf/6/250526_2215_sendung_phf_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Blindflug (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/blindflug-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250512_2300_sendung_phf/4/250512_2300_sendung_phf_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Blindflug (S01/E04) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/blindflug-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250512_2300_sendung_phf/4/250512_2300_sendung_phf_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Die Geisel (S01/E08) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/die-geisel-104",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250526_2255_sendung_phf/4/250526_2255_sendung_phf_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Der Maulwurf (S01/E06) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/paris-has-fallen-106",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250519_2300_sendung_phf/5/250519_2300_sendung_phf_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Die Geisel (S01/E08)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/die-geisel-104",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250526_2255_sendung_phf/4/250526_2255_sendung_phf_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Paris Has Fallen",
+      "title": "Der Maulwurf (S01/E06)",
+      "web_url": "https://www.zdf.de/video/serien/paris-has-fallen-102/paris-has-fallen-106",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/05/250519_2300_sendung_phf/5/250519_2300_sendung_phf_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1746252000
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Schande (S01/E16)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/schande-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250501_1001_sendung_crw/1/250501_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1746079200
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Der Sohn (S01/E15)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/der-sohn-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/05/250501_1000_sendung_crw/1/250501_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1746079200
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Vertrauen (S01/E13)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/vertrauen-134",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250424_1000_sendung_crw/1/250424_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1745474400
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Opfer (S01/E14)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/opfer-108",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250424_1001_sendung_crw/1/250424_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1745474400
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Begehren (S01/E11)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/begehren-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250417_1000_sendung_crw/1/250417_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1744869600
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Verrat (S01/E12)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/verrat-120",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250417_1001_sendung_crw/1/250417_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1744869600
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Die Fabrik (S01/E08)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/die-fabrik-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1007_sendung_crw/5/250410_1007_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1744264800
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Eifersucht (S01/E06)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/eifersucht-114",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1005_sendung_crw/6/250410_1005_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1744264800
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Mütter (S01/E05)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/muetter-120",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1004_sendung_crw/5/250410_1004_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1744264800
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Party (S01/E10)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/party-120",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1009_sendung_crw/5/250410_1009_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1744264800
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Entscheidungen (S01/E09)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/entscheidungen-120",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1008_sendung_crw/5/250410_1008_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1744264800
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Blut auf Gold (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/blut-auf-gold-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1000_sendung_crw/6/250410_1000_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1744264800
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Der Job (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/der-job-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1001_sendung_crw/6/250410_1001_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1744264800
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Zwischen den Stühlen (S01/E07)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/zwischen-den-stuehlen-120",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1006_sendung_crw/5/250410_1006_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1744264800
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Tag Eins (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/tag-eins-108",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1002_sendung_crw/6/250410_1002_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1744264800
+    },
+    {
+      "topic": "Crystal Wall",
+      "title": "Väter (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/crystal-wall-100/vaeter-104",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/04/250410_1003_sendung_crw/6/250410_1003_sendung_crw_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1744264800
+    },
+    {
+      "topic": "FC Hollywood",
+      "title": "Die Jagd - Popstar Scholl und die Medien (S01/E02)",
+      "web_url": "https://www.zdf.de/video/dokus/fc-hollywood-102/fc-hollywood-folge-2-die-jagd-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250108_fchollywood_folge2_hol/1/250108_fchollywood_folge2_hol_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1736460000
+    },
+    {
+      "topic": "FC Hollywood",
+      "title": "Das Endspiel - Die 120 Sekunden von Barcelona (S01/E05)",
+      "web_url": "https://www.zdf.de/video/dokus/fc-hollywood-102/fc-hollywood-folge-5-das-endspiel-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250102_fchollywood_folge5_hol/1/250102_fchollywood_folge5_hol_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1736460000
+    },
+    {
+      "topic": "FC Hollywood",
+      "title": "Die Wutrede - Trapattonis legendäre Pressekonferenz (S01/E04)",
+      "web_url": "https://www.zdf.de/video/dokus/fc-hollywood-102/fc-hollywood-folge-4-die-wutrede-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/12/241213_fchollywood_folge4_hol/5/241213_fchollywood_folge4_hol_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1736460000
+    },
+    {
+      "topic": "FC Hollywood",
+      "title": "Das Duell - Matthäus versus Klinsmann (S01/E01)",
+      "web_url": "https://www.zdf.de/video/dokus/fc-hollywood-102/fc-hollywood-folge-1-das-duell-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/12/241213_fchollywood_folge1_hol/5/241213_fchollywood_folge1_hol_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1736460000
+    },
+    {
+      "topic": "FC Hollywood",
+      "title": "Der Verrat - Lothar Matthäus und sein Tagebuch (S01/E03)",
+      "web_url": "https://www.zdf.de/video/dokus/fc-hollywood-102/fc-hollywood-folge-3-der-verrat-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/12/241213_fchollywood_folge3_hol/1/241213_fchollywood_folge3_hol_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1736460000
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Der Mord (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/concordia-100/der-mord-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2215_sendung_cia/1/241020_2215_sendung_cia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1726293600
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Der Mord (S01/E01) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/concordia-100/der-mord-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2215_sendung_cia/1/241020_2215_sendung_cia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1726293600
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Geheimnisse (S01/E04) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/concordia-100/geheimnisse-126",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2215_sendung_cia/1/241021_2215_sendung_cia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1726293600
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Auf der Jagd (S01/E05) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/concordia-100/auf-der-jagd-108",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2300_sendung_cia/1/241021_2300_sendung_cia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1726293600
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Der Verdacht (S01/E02) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/concordia-100/der-verdacht-116",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2300_sendung_cia/1/241020_2300_sendung_cia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1726293600
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Die Faceless (S01/E03) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/concordia-100/die-faceless-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2340_sendung_cia/1/241020_2340_sendung_cia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1726293600
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Kein Weg zurück (S01/E06) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/concordia-100/kein-weg-zurueck-132",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2340_sendung_cia/1/241021_2340_sendung_cia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1726293600
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Kein Weg zurück (S01/E06)",
+      "web_url": "https://www.zdf.de/video/serien/concordia-100/kein-weg-zurueck-132",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2340_sendung_cia/1/241021_2340_sendung_cia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1726293600
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Auf der Jagd (S01/E05)",
+      "web_url": "https://www.zdf.de/video/serien/concordia-100/auf-der-jagd-108",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2300_sendung_cia/1/241021_2300_sendung_cia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1726293600
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Geheimnisse (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/concordia-100/geheimnisse-126",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2215_sendung_cia/1/241021_2215_sendung_cia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1726293600
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Die Faceless (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/concordia-100/die-faceless-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2340_sendung_cia/1/241020_2340_sendung_cia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1726293600
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Der Verdacht (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/concordia-100/der-verdacht-116",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2300_sendung_cia/1/241020_2300_sendung_cia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1726293600
+    },
+    {
+      "topic": "PUSH",
+      "title": "Stille (S01/E05)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/stille-110",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240324_2015_sendung_pus/2/240324_2015_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1709280000
+    },
+    {
+      "topic": "PUSH",
+      "title": "I judge, you judge, we judge (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/i-judge-you-judge-we-judge-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240317_2100_sendung_pus/3/240317_2100_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1709280000
+    },
+    {
+      "topic": "PUSH",
+      "title": "This is where the magic happens (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/this-is-where-the-magic-happens-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240317_2015_sendung_pus/1/240317_2015_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1709280000
+    },
+    {
+      "topic": "PUSH",
+      "title": "Männer (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/maenner-104",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240310_2055_sendung_pus/1/240310_2055_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1709280000
+    },
+    {
+      "topic": "PUSH",
+      "title": "Jedem Anfang (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/jedem-anfang-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240310_2015_sendung_pus/2/240310_2015_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1709280000
+    },
+    {
+      "topic": "PUSH",
+      "title": "Weitermachen. Irgendwie (S01/E06)",
+      "web_url": "https://www.zdf.de/video/serien/push-102/weitermachen-irgendwie-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240324_2100_sendung_pus/1/240324_2100_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1709280000
+    },
+    {
+      "topic": "Was wir fürchten",
+      "title": "Erlösung - Was wir fürchten (S01/E06)",
+      "web_url": "https://www.zdf.de/video/serien/was-wir-fuerchten-100/erloesung-132",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/11/231101_0205_s1_f6_wwf/6/231101_0205_s1_f6_wwf_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1697781600
+    },
+    {
+      "topic": "Was wir fürchten",
+      "title": "Narren - Was wir fürchten (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/was-wir-fuerchten-100/narren-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/10/231031_2345_s1_f3_wwf/6/231031_2345_s1_f3_wwf_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1697781600
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 8 (S01/E08)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-8-190",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230308_1008_sendung_swm/2/230308_1008_sendung_swm_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1678262400
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 8 (S01/E08) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-8-190",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230308_1008_sendung_swm/2/230308_1008_sendung_swm_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1678262400
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 7 (S01/E07)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-7-200",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230308_1007_sendung_swm/1/230308_1007_sendung_swm_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1678262400
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 7 (S01/E07) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-7-200",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230308_1007_sendung_swm/1/230308_1007_sendung_swm_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1678262400
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 4 (S01/E04) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-4-226",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230301_1004_sendung_swm/1/230301_1004_sendung_swm_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1677657600
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 4 (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-4-226",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230301_1004_sendung_swm/1/230301_1004_sendung_swm_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1677657600
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 6 (S01/E06) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-6-216",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230301_1006_sendung_swm/1/230301_1006_sendung_swm_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1677657600
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 5 (S01/E05) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-5-230",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230301_1005_sendung_swm/1/230301_1005_sendung_swm_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1677657600
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 5 (S01/E05)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-5-230",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230301_1005_sendung_swm/1/230301_1005_sendung_swm_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1677657600
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 6 (S01/E06)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-6-216",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/03/230301_1006_sendung_swm/1/230301_1006_sendung_swm_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1677657600
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 1 (S01/E01) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-1-274",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/02/230222_1001_sendung_swm/7/230222_1001_sendung_swm_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1677052800
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 1 (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-1-274",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/02/230222_1001_sendung_swm/7/230222_1001_sendung_swm_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1677052800
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 2 (S01/E02) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-2-230",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/02/230222_1002_sendung_swm/7/230222_1002_sendung_swm_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1677052800
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 2 (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-2-230",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/02/230222_1002_sendung_swm/7/230222_1002_sendung_swm_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1677052800
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 3 (S01/E03) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-3-226",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/02/230222_1003_sendung_swm/6/230222_1003_sendung_swm_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1677052800
+    },
+    {
+      "topic": "Der Schwarm",
+      "title": "Folge 3 (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/der-schwarm-100/folge-3-226",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/23/02/230222_1003_sendung_swm/6/230222_1003_sendung_swm_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1677052800
+    },
+    {
+      "topic": "Gestern waren wir noch Kinder",
+      "title": "Episode 4 (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-4-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1003_sendung_gwk/1/221230_1003_sendung_gwk_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1672387200
+    },
+    {
+      "topic": "Gestern waren wir noch Kinder",
+      "title": "Episode 2 (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-2-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1001_sendung_gwk/1/221230_1001_sendung_gwk_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1672387200
+    },
+    {
+      "topic": "Gestern waren wir noch Kinder",
+      "title": "Episode 1 (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-1-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1000_sendung_gwk/6/221230_1000_sendung_gwk_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1672387200
+    },
+    {
+      "topic": "Gestern waren wir noch Kinder",
+      "title": "Episode 7 (S01/E07)",
+      "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-7-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1006_sendung_gwk/2/221230_1006_sendung_gwk_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1672387200
+    },
+    {
+      "topic": "Gestern waren wir noch Kinder",
+      "title": "Episode 6 (S01/E06)",
+      "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-6-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1005_sendung_gwk/2/221230_1005_sendung_gwk_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1672387200
+    },
+    {
+      "topic": "Gestern waren wir noch Kinder",
+      "title": "Episode 5 (S01/E05)",
+      "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-5-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1004_sendung_gwk/1/221230_1004_sendung_gwk_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1672387200
+    },
+    {
+      "topic": "Gestern waren wir noch Kinder",
+      "title": "Episode 3 (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/gestern-waren-wir-noch-kinder-102/episode-3-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/22/12/221230_1002_sendung_gwk/1/221230_1002_sendung_gwk_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1672387200
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Im Tau von Lethes Flut - Staffel 1: Duell im Outback (S01/E01) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/the-tourist-110/im-tau-von-lethes-flut-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220822_2215_sendung_dia/2/220822_2215_sendung_dia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1660248060
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Im Tau von Lethes Flut - Staffel 1: Duell im Outback (S01/E01)",
+      "web_url": "https://www.zdf.de/video/serien/the-tourist-110/im-tau-von-lethes-flut-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220822_2215_sendung_dia/2/220822_2215_sendung_dia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1660248060
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Waiting for the Sun - Staffel 1: Duell im Outback (S01/E02)",
+      "web_url": "https://www.zdf.de/video/serien/the-tourist-110/waiting-for-the-sun-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220822_2310_sendung_dia/1/220822_2310_sendung_dia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1660248060
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Waiting for the Sun - Staffel 1: Duell im Outback (S01/E02) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/the-tourist-110/waiting-for-the-sun-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220822_2310_sendung_dia/1/220822_2310_sendung_dia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1660248060
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Lasciate ogni speranza - Staffel 1: Duell im Outback (S01/E03) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/the-tourist-110/lasciate-ogni-speranza-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220829_2300_sendung_dia/1/220829_2300_sendung_dia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1660248060
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Lasciate ogni speranza - Staffel 1: Duell im Outback (S01/E03)",
+      "web_url": "https://www.zdf.de/video/serien/the-tourist-110/lasciate-ogni-speranza-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220829_2300_sendung_dia/1/220829_2300_sendung_dia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1660248060
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Hüte dich vor dem Zorn des sanftmütigen Mannes - Staffel 1: Duell im Outback (S01/E04)",
+      "web_url": "https://www.zdf.de/video/serien/the-tourist-110/huete-dich-vor-dem-zorn-des-sanftmuetigen-mannes-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220829_2355_sendung_dia/1/220829_2355_sendung_dia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1660248060
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Hüte dich vor dem Zorn des sanftmütigen Mannes - Staffel 1: Duell im Outback (S01/E04) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/the-tourist-110/huete-dich-vor-dem-zorn-des-sanftmuetigen-mannes-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220829_2355_sendung_dia/1/220829_2355_sendung_dia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1660248060
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Precious Memories - Staffel 1: Duell im Outback (S01/E05) (Englisch)",
+      "web_url": "https://www.zdf.de/video/serien/the-tourist-110/precious-memories-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/09/220905_2300_sendung_dia/1/220905_2300_sendung_dia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1660248060
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Precious Memories - Staffel 1: Duell im Outback (S01/E05)",
+      "web_url": "https://www.zdf.de/video/serien/the-tourist-110/precious-memories-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/09/220905_2300_sendung_dia/1/220905_2300_sendung_dia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1660248060
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Trailer: The Tourist - Staffel 1: Duell im Outback (Englisch)",
+      "web_url": "https://www.zdf.de/serien/the-tourist/vorschau-trailer-the-tourist-duell-im-outback-100.html",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/22/07/220704_trailer_lang_dia/2/220704_trailer_lang_dia_a3a4_4692k_p72v16.mp4",
+      "timestamp": 1657526400
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Trailer: The Tourist - Staffel 1: Duell im Outback",
+      "web_url": "https://www.zdf.de/serien/the-tourist/vorschau-trailer-the-tourist-duell-im-outback-100.html",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/22/07/220704_trailer_lang_dia/2/220704_trailer_lang_dia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1657526400
+    }
+  ],
+  "no_hdr_topics": [
+    "Anthropozän",
+    "Der Bergdoktor",
+    "Merz gegen Merz",
+    "Schatzinseln im Pazifik",
+    "Terra X",
+    "Zwei am Zug"
+  ]
+}
