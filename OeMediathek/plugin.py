@@ -77,6 +77,7 @@ from mediathek import (
     get_zdf_uhd_static_topics,
     get_zdf_uhd_static_episodes,
     uhd_url_candidate,
+    uhd_url_candidates,
     resolve_uhd_url,
 )
 from player import play_stream_async
@@ -3593,8 +3594,8 @@ class OeMediathekScreen(Screen):
                     ep = self.cur_episodes[abs_idx]
                     if self.force_uhd:
                         base = _episode_stream_url(ep)
-                        cand = uhd_url_candidate(base) if base else base
-                        dl_pending = _is_download_pending(cand) or (cand != base and _is_download_pending(base))
+                        cands = uhd_url_candidates(base) if base else [base]
+                        dl_pending = any(_is_download_pending(c) for c in cands) or _is_download_pending(base)
                     else:
                         dl_pending = _is_download_pending(_episode_stream_url(ep, prefer_720p=(get_download_quality() == "720p")))
                     if dl_pending:

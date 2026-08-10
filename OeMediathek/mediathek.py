@@ -728,26 +728,40 @@ def get_zdf_uhd_shows():
     return result.get("data", {}).get("metaCollectionContent", {}).get("smartCollections", [])
 
 
+# ZDF HDR-Suffixe: 4K UHD (2160p) zuerst, dann Full-HD HDR (1080p)
+_ZDF_HDR_SUFFIXES = ["_4692k_p72v16.mp4", "_2892k_p71v16.mp4"]
+
+
 def uhd_url_candidate(url):
-    """Gibt die potenzielle UHD-URL zurück (nur Regex, kein Netzwerkzugriff)."""
+    """Gibt den 4K-Kandidaten zurück (nur Regex, kein Netzwerkzugriff). Für Icon-Checks."""
     if "akamaihd.net" not in url or "/zdf/" not in url:
         return url
     return _re.sub(r"_\d+k_p\d+v\d+\.mp4$", "_4692k_p72v16.mp4", url)
 
 
+def uhd_url_candidates(url):
+    """Gibt alle HDR-Kandidaten zurück (4K + 1080p HDR), ohne Netzwerkzugriff."""
+    if "akamaihd.net" not in url or "/zdf/" not in url:
+        return [url]
+    return [_re.sub(r"_\d+k_p\d+v\d+\.mp4$", s, url) for s in _ZDF_HDR_SUFFIXES]
+
+
 def resolve_uhd_url(url):
-    """Prüft per HEAD-Request ob die UHD-Version existiert; gibt sie zurück oder die Original-URL."""
-    candidate = uhd_url_candidate(url)
-    if candidate == url:
+    """Prüft per HEAD-Request: 4K UHD zuerst, dann 1080p HDR; Fallback auf Original."""
+    if "akamaihd.net" not in url or "/zdf/" not in url:
         return url
-    try:
-        req = Request(candidate)
-        req.get_method = lambda: "HEAD"
-        resp = urlopen(req, timeout=2, context=_ssl_context) if _ssl_context else urlopen(req, timeout=2)
-        if resp.getcode() == 200:
-            return candidate
-    except Exception:
-        pass
+    for suffix in _ZDF_HDR_SUFFIXES:
+        candidate = _re.sub(r"_\d+k_p\d+v\d+\.mp4$", suffix, url)
+        if candidate == url:
+            continue
+        try:
+            req = Request(candidate)
+            req.get_method = lambda: "HEAD"
+            resp = urlopen(req, timeout=2, context=_ssl_context) if _ssl_context else urlopen(req, timeout=2)
+            if resp.getcode() == 200:
+                return candidate
+        except Exception:
+            pass
     return url
 
 
