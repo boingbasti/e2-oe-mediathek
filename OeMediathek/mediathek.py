@@ -877,7 +877,7 @@ def get_zdf_uhd_static_episodes(topic, search_term=None):
             "channel":       _s("ZDF"),
             "stream_url_hd": _s(uhd_url),
             "stream_url_sd": _s(""),
-            "description":   _s("UHD-Stream (4K/HEVC)"),
+            "description":   _s("4K UHD" if "_p72v" in uhd_url else "1080p HDR" if "_p71v" in uhd_url else ""),
             "duration":      _s("Unbekannt"),
             "timestamp":     ts,
             "url_website":   _s(entry.get("web_url") or ""),
