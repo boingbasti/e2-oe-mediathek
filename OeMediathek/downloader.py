@@ -202,11 +202,10 @@ def write_meta(filepath, title, description=None, duration=None):
                     dur_secs = int(parts[0]) * 60 + int(parts[1])
             except (ValueError, IndexError):
                 pass
-        title_str = _dec(title)
         pts_len = dur_secs * 90000
         lines = [
             u"1:0:0:0:0:0:0:0:0:0:",
-            title_str if title_str else display_name,
+            display_name,
             desc_str,
             str(ts),
             u"",
