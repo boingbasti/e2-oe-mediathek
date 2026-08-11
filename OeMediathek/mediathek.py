@@ -871,16 +871,48 @@ def get_zdf_uhd_static_episodes(topic, search_term=None):
             ts = int(ts)
         except Exception:
             ts = 0
+        quality = "4K UHD" if "_p72v" in uhd_url else "1080p HDR" if "_p71v" in uhd_url else ""
         results.append({
             "title":         _s(title),
             "group":         _s(topic),
             "channel":       _s("ZDF"),
             "stream_url_hd": _s(uhd_url),
             "stream_url_sd": _s(""),
-            "description":   _s("4K UHD" if "_p72v" in uhd_url else "1080p HDR" if "_p71v" in uhd_url else ""),
-            "duration":      _s("Unbekannt"),
+            "description":   _s(quality),
+            "duration":      _s(""),
             "timestamp":     ts,
             "url_website":   _s(entry.get("web_url") or ""),
         })
     results.sort(key=lambda x: x["timestamp"], reverse=True)
+
+    # Beschreibung und Laufzeit aus MediathekViewWeb nachladen
+    if results:
+        try:
+            mvw_items, _, _ = _mvw_query(channel="ZDF", size=100, topic_filter=topic)
+            mvw_titles = []
+            for item in mvw_items:
+                t = item.get("title", b"")
+                if isinstance(t, bytes):
+                    t = t.decode("utf-8", "replace")
+                mvw_titles.append((t.lower(), item))
+            for ep in results:
+                ep_title = ep["title"]
+                if isinstance(ep_title, bytes):
+                    ep_title = ep_title.decode("utf-8", "replace")
+                ep_lower = ep_title.lower()
+                mvw = None
+                for mvw_lower, item in mvw_titles:
+                    if mvw_lower == ep_lower or mvw_lower.startswith(ep_lower + " "):
+                        mvw = item
+                        break
+                if mvw:
+                    desc = mvw.get("description", b"")
+                    if desc:
+                        ep["description"] = desc
+                    dur = mvw.get("duration", b"")
+                    if dur:
+                        ep["duration"] = dur
+        except Exception:
+            pass
+
     return results, len(results), len(results)

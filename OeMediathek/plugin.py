@@ -3052,6 +3052,7 @@ class OeMediathekScreen(Screen):
     def _show_groups(self, restore_pos=False):
         # UHD-Direktmodus: Gruppenansicht komplett überspringen
         if self.force_uhd and self.groups_filtered:
+            self._loaded = True
             self._start_episode_fetch(0)
             return
 
@@ -4945,7 +4946,7 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
         else:
             def _loader(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp", _t=title):
                 return get_zdf_uhd_topic_episodes(_t, offset, size, search_term, min_duration, sort_by)
-        self.session.open(OeMediathekScreen, _b(title), _loader, force_uhd=True)
+        self.session.open(OeMediathekScreen, b"ZDF UHD", _loader, force_uhd=True)
 
     def key_cancel(self):
         self.close()
