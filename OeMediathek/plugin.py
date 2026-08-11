@@ -3416,6 +3416,13 @@ class OeMediathekScreen(Screen):
 
     def _fetch_episodes_thread(self, gname, local_items):
         try:
+            # UHD-Modus: pre-verifizierte Episoden direkt verwenden, kein MVW-Refetch
+            if self.force_uhd and local_items:
+                self._fetch_episodes_result = list(local_items)
+                self._fetch_error = None
+                self._fetching = False
+                return
+
             try:
                 raw_str = gname.decode("utf-8", "replace")
             except Exception:
