@@ -230,6 +230,7 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
             "description":   _s(desc),
             "duration":      _s(duration_str),
             "timestamp":     ts,
+            "url_website":   _s(entry.get("url_website") or ""),
         })
 
     _log("MVW %d Sendungen verarbeitet" % len(items))
@@ -765,6 +766,43 @@ def resolve_uhd_url(url):
     return url
 
 
+def _find_uhd_streams_in(obj):
+    """Sucht rekursiv nach MP4-Streams mit _p72v (4K UHD) oder _p71v (1080p HDR)."""
+    result = []
+    if isinstance(obj, dict):
+        if obj.get("mimeType") == "video/mp4" and isinstance(obj.get("url"), str):
+            result.append(obj["url"])
+        for v in obj.values():
+            result.extend(_find_uhd_streams_in(v))
+    elif isinstance(obj, list):
+        for item in obj:
+            result.extend(_find_uhd_streams_in(item))
+    return result
+
+
+def resolve_uhd_url_via_document_api(url_website):
+    """ZDF Document API → exakte _p72v (4K) / _p71v (1080p HDR) URL. Gibt None bei Fehler."""
+    if not url_website:
+        return None
+    ws = url_website if isinstance(url_website, str) else url_website.decode("utf-8", "replace")
+    canonical = ws.rstrip("/").split("/")[-1]
+    if not canonical:
+        return None
+    api_url = "https://zdf-prod-futura.zdf.de/mediathekV2/document/" + canonical
+    try:
+        req = Request(api_url)
+        resp = urlopen(req, timeout=5, context=_ssl_context) if _ssl_context else urlopen(req, timeout=5)
+        data = json.loads(resp.read().decode("utf-8"))
+        streams = _find_uhd_streams_in(data)
+        uhd = [u for u in streams if "_p72v" in u or "_p71v" in u]
+        if not uhd:
+            return None
+        main = [u for u in uhd if "_a1a2_" in u]
+        return main[0] if main else uhd[0]
+    except Exception:
+        return None
+
+
 def get_zdf_uhd_topic_episodes(topic, offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp"):
     """Episoden einer bestimmten ZDF-UHD-Sendung (topic-gefiltert).
     Fallback auf Titelsuche für Einzelfilme (topic='Filme' in mediathekviewweb)."""
@@ -842,6 +880,7 @@ def get_zdf_uhd_static_episodes(topic, search_term=None):
             "description":   _s("UHD-Stream (4K/HEVC)"),
             "duration":      _s("Unbekannt"),
             "timestamp":     ts,
+            "url_website":   _s(entry.get("web_url") or ""),
         })
     results.sort(key=lambda x: x["timestamp"], reverse=True)
     return results, len(results), len(results)

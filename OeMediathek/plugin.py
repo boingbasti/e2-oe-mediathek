@@ -80,6 +80,7 @@ from mediathek import (
     uhd_url_candidate,
     uhd_url_candidates,
     resolve_uhd_url,
+    resolve_uhd_url_via_document_api,
 )
 from player import play_stream_async
 from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label
@@ -3686,10 +3687,11 @@ class OeMediathekScreen(Screen):
                 dl_topic = item.get("group") or self.cur_group_name if self.cur_group_name.startswith(b">> Direkte Treffer") else self.cur_group_name
                 _title   = item["title"]
                 _self    = self
-                def _enqueue_uhd(_u=base, _tl=_title, _dt=dl_topic, _d=desc, _dr=dur):
+                _web = item.get("url_website", b"")
+                def _enqueue_uhd(_u=base, _tl=_title, _dt=dl_topic, _d=desc, _dr=dur, _w=_web):
                     from twisted.internet import reactor
                     try:
-                        final = resolve_uhd_url(_u)
+                        final = (resolve_uhd_url_via_document_api(_w) if _w else None) or resolve_uhd_url(_u)
                     except Exception:
                         final = _u
                     def _do():
@@ -3777,10 +3779,11 @@ class OeMediathekScreen(Screen):
                             return
                         _title = item["title"]
                         _sess  = self.session
-                        def _play_uhd(_u=base, _t=_title, _s=_sess):
+                        _web   = item.get("url_website", b"")
+                        def _play_uhd(_u=base, _t=_title, _s=_sess, _w=_web):
                             from twisted.internet import reactor
                             try:
-                                final = resolve_uhd_url(_u)
+                                final = (resolve_uhd_url_via_document_api(_w) if _w else None) or resolve_uhd_url(_u)
                             except Exception:
                                 final = _u
                             reactor.callFromThread(play_stream_async, _s, final, _t)
@@ -4927,7 +4930,9 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
             return
         show  = self._shows[idx]
         title = show.get("title", "")
-        if show.get("static"):
+        # Statische Liste bevorzugen (verifizierte UHD-Folgen); MVW nur wenn keine statischen Einträge
+        _, _, static_count = get_zdf_uhd_static_episodes(title)
+        if static_count > 0 or show.get("static"):
             def _loader(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp", _t=title):
                 return get_zdf_uhd_static_episodes(_t, search_term)
         else:
