@@ -158,11 +158,13 @@ class OeMediathekDownloadManagerScreen(Screen):
             pass
 
     def _cancel_current(self):
+        has_queued = bool(self._get_queue())
         try:
             self._cancel_current_fn()
         except Exception:
             pass
-        self.close()
+        if not has_queued:
+            self.close()
 
     def _cancel_all(self):
         try:
