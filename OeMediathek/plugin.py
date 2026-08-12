@@ -83,7 +83,7 @@ from mediathek import (
     resolve_uhd_url_via_document_api,
 )
 from player import play_stream_async
-from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label
+from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_force_exteplayer, set_force_exteplayer, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label
 from download_manager import OeMediathekDownloadManagerScreen
 from Screens.MessageBox import MessageBox as _MessageBox  # für Download-Notification
 
@@ -4968,6 +4968,7 @@ class OeMediathekSettingsScreen(Screen):
         ("Seite wechseln mit Links/Rechts:", 3, get_tile_wrap_lr),
         ("ServiceApp f\xc3\xbcr Live-Streams konfigurieren:", 4, get_serviceapp_autoconfigure),
         ("Debug-Logging:",                5, get_debug_logging),
+        ("exteplayer3 f\xc3\xbcr VOD-Streams:", 8, get_force_exteplayer),
         ("Reihenfolge zur\xc3\xbccksetzen", 2, None),
     ]
 
@@ -5090,6 +5091,8 @@ class OeMediathekSettingsScreen(Screen):
             self._toggle_serviceapp_autoconfigure()
         elif action_id == 5:
             self._toggle_debug_logging()
+        elif action_id == 8:
+            self._toggle_force_exteplayer()
         elif action_id == 2:
             self._reset_order()
 
@@ -5165,6 +5168,10 @@ class OeMediathekSettingsScreen(Screen):
 
     def _toggle_debug_logging(self):
         set_debug_logging(not get_debug_logging())
+        self._refresh()
+
+    def _toggle_force_exteplayer(self):
+        set_force_exteplayer(not get_force_exteplayer())
         self._refresh()
 
     def _reset_order(self):

@@ -27,7 +27,7 @@ except ImportError:
 
 from enigma import eServiceReference
 
-from downloader import get_debug_logging
+from downloader import get_debug_logging, get_force_exteplayer
 
 _LOG_FILE = "/tmp/OeMediathek/oemediathek.log"
 
@@ -512,8 +512,10 @@ def _resolve_stream(stream_url, title="ÖR Mediathek", force_player_id=None, is_
 
     if force_player_id is not None:
         player_id = force_player_id
+    elif not is_live and not is_orf and get_force_exteplayer() and _has_serviceapp():
+        player_id = 5002
     elif (is_live or is_orf) and _has_serviceapp():
-        if (is_live or is_orf) and autoconfigure_serviceapp:
+        if autoconfigure_serviceapp:
             _configure_serviceapp_for_live()
         player_id = 5002
     else:

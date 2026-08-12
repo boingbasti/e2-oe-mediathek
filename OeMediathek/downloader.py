@@ -130,6 +130,14 @@ def set_debug_logging(enabled):
     s["debug_logging"] = bool(enabled)
     save_settings(s)
 
+def get_force_exteplayer():
+    return load_settings().get("force_exteplayer", False)
+
+def set_force_exteplayer(enabled):
+    s = load_settings()
+    s["force_exteplayer"] = bool(enabled)
+    save_settings(s)
+
 def get_download_quality():
     return load_settings().get("download_quality", "hd")
 
