@@ -889,6 +889,9 @@ def get_zdf_uhd_static_episodes(topic, search_term=None):
     if results:
         try:
             mvw_items, _, _ = _mvw_query(channel="ZDF", size=100, topic_filter=topic)
+            if not mvw_items:
+                mvw_items, _, _ = _mvw_query("ZDF", 100, 0, topic, 0, "timestamp",
+                                             search_fields=["title"])
             mvw_titles = []
             for item in mvw_items:
                 t = item.get("title", b"")
