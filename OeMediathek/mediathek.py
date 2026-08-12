@@ -892,6 +892,16 @@ def get_zdf_uhd_static_episodes(topic, search_term=None):
             if not mvw_items:
                 mvw_items, _, _ = _mvw_query("ZDF", 100, 0, topic, 0, "timestamp",
                                              search_fields=["title"])
+            if not mvw_items:
+                # Langer Topic-Name wie "Schatzinseln im Pazifik – Leben mit dem Ozean"
+                # → nur Präfix bis zum ersten " – " / " - " verwenden
+                for sep in (u" – ", u" - "):
+                    if sep in topic:
+                        short = topic.split(sep)[0].strip()
+                        mvw_items, _, _ = _mvw_query("ZDF", 100, 0, short, 0, "timestamp",
+                                                     search_fields=["title"])
+                        if mvw_items:
+                            break
             mvw_titles = []
             for item in mvw_items:
                 t = item.get("title", b"")
@@ -908,7 +918,13 @@ def get_zdf_uhd_static_episodes(topic, search_term=None):
                     if mvw_lower == ep_lower or mvw_lower.startswith(ep_lower + " "):
                         mvw = item
                         break
-                if mvw:
+                # Kein Folgen-Match: ersten MVW-Eintrag als Topic-Beschreibung verwenden
+                # Laufzeit dabei NICHT übernehmen (kann Teaser-Länge sein)
+                if mvw is None and mvw_titles:
+                    desc = mvw_titles[0][1].get("description", b"")
+                    if desc:
+                        ep["description"] = desc
+                elif mvw:
                     desc = mvw.get("description", b"")
                     if desc:
                         ep["description"] = desc
