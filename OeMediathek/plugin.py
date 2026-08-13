@@ -3455,6 +3455,15 @@ class OeMediathekScreen(Screen):
                 except Exception:
                     ch = None
 
+            # ZDF UHD Favoriten: lokale UHD-Items direkt verwenden, kein MVW-Refetch
+            if local_items and ch == "ZDF UHD":
+                self._fetch_episodes_result = list(local_items)
+                self._fetch_error = None
+                self._fetching = False
+                return
+            if ch == "ZDF UHD":
+                ch = "ZDF"
+
             # Adaptiver Fetch: solange nachladen bis PAGE_SIZE Treffer gesammelt
             # oder keine weiteren Daten mehr kommen. Jeder Schritt laedt PAGE_SIZE
             # Eintraege, da AD/GS-Filter viele rauswirft.

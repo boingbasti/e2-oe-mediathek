@@ -865,8 +865,21 @@ def get_zdf_uhd_no_hdr_topics():
 def get_zdf_uhd_static_episodes(topic, search_term=None):
     """Gibt Episoden für ein Topic aus der statischen Liste im mediathek.py-internen Format zurück."""
     results = []
-    for entry in _load_uhd_static()["episodes"]:
-        if entry.get("topic", "") != topic:
+    all_episodes = _load_uhd_static()["episodes"]
+
+    # Exact match; falls kein Treffer: Prefix-Fallback (GraphQL-Titel kürzer als statischer Topic-Name)
+    matched_topic = topic
+    exact_entries = [e for e in all_episodes if e.get("topic", "") == topic]
+    if not exact_entries:
+        t_lower = topic.lower()
+        for st in get_zdf_uhd_static_topics():
+            if st.lower().startswith(t_lower + " ") or st.lower().startswith(t_lower + u" –") or st.lower().startswith(t_lower + u" -"):
+                matched_topic = st
+                exact_entries = [e for e in all_episodes if e.get("topic", "") == matched_topic]
+                break
+
+    for entry in exact_entries:
+        if entry.get("topic", "") != matched_topic:
             continue
         title = entry.get("title", "")
         if search_term:
@@ -883,7 +896,7 @@ def get_zdf_uhd_static_episodes(topic, search_term=None):
         results.append({
             "title":         _s(title),
             "group":         _s(topic),
-            "channel":       _s("ZDF"),
+            "channel":       _s("ZDF UHD"),
             "stream_url_hd": _s(uhd_url),
             "stream_url_sd": _s(""),
             "description":   _s(quality),
