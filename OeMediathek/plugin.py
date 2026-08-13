@@ -416,6 +416,7 @@ SOURCES = [
     ("Live-Events",      None,                   "live_events.png"),
     ("ARD Mediathek",    get_ard_highlights,     "ard.png"),
     ("ZDF Mediathek",    get_zdf_highlights,     "zdf.png"),
+    ("ZDF UHD",          _UHD_KACHEL,            "zdf_uhd.png"),
     ("Arte",             get_arte_highlights,    "arte.png"),
     ("3sat",             get_3sat_highlights,    "3sat.png"),
     ("NDR Mediathek",    get_ndr_highlights,     "ndr.png"),
@@ -441,7 +442,6 @@ SOURCES = [
     # Seite 3
     ("ORF",              get_orf_highlights,          "orf.png"),
     ("SRF",              get_srf_highlights,          "srf.png"),
-    ("ZDF UHD",          _UHD_KACHEL,                 "zdf_uhd.png"),
 ]
 # Unveränderliche Kopie der Original-Reihenfolge für den Werksreset
 _SOURCES_DEFAULT = list(SOURCES)
