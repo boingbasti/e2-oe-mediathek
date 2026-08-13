@@ -915,7 +915,7 @@ def get_zdf_uhd_static_episodes(topic, search_term=None):
                 ep_lower = ep_title.strip().lower()
                 mvw = None
                 for mvw_lower, item in mvw_titles:
-                    if mvw_lower == ep_lower or mvw_lower.startswith(ep_lower + " "):
+                    if mvw_lower == ep_lower or mvw_lower.startswith(ep_lower + " ") or ep_lower.startswith(mvw_lower + " "):
                         mvw = item
                         break
                 # Kein Folgen-Match: ersten MVW-Eintrag als Topic-Beschreibung verwenden
