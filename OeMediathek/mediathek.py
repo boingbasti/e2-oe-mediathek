@@ -912,7 +912,7 @@ def get_zdf_uhd_static_episodes(topic, search_term=None):
                 ep_title = ep["title"]
                 if isinstance(ep_title, bytes):
                     ep_title = ep_title.decode("utf-8", "replace")
-                ep_lower = ep_title.lower()
+                ep_lower = ep_title.strip().lower()
                 mvw = None
                 for mvw_lower, item in mvw_titles:
                     if mvw_lower == ep_lower or mvw_lower.startswith(ep_lower + " "):
