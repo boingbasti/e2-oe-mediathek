@@ -1,6 +1,13 @@
 {
   "episodes": [
     {
+      "topic": "Plötzlich Schwester",
+      "title": "Plötzlich Schwester (Spielfilm)",
+      "web_url": "https://www.zdf.de/video/filme/ploetzlich-schwester-movie-100/ploetzlich-schwester-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260806_2015_sendung_fis/1/260806_2015_sendung_fis_a1a2_2892k_p71v16.mp4",
+      "timestamp": 1786095351
+    },
+    {
       "topic": "Die Bergretter",
       "title": "Die Zeit, die bleibt - Special (S01/E01)",
       "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/die-zeit-die-bleibt-special-100",
@@ -899,6 +906,7 @@
   ],
   "no_hdr_topics": [
     "Paris Has Fallen",
-    "Was wir fürchten"
+    "Was wir fürchten",
+    "Plötzlich Schwester"
   ]
 }
