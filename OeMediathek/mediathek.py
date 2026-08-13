@@ -770,8 +770,9 @@ def _find_uhd_streams_in(obj):
     """Sucht rekursiv nach MP4-Streams mit _p72v (4K UHD) oder _p71v (1080p HDR)."""
     result = []
     if isinstance(obj, dict):
-        if obj.get("mimeType") == "video/mp4" and isinstance(obj.get("url"), str):
-            result.append(obj["url"])
+        url_val = obj.get("url")
+        if obj.get("mimeType") == "video/mp4" and url_val and isinstance(url_val, (bytes, str, type(u""))):
+            result.append(url_val)
         for v in obj.values():
             result.extend(_find_uhd_streams_in(v))
     elif isinstance(obj, list):
@@ -821,6 +822,7 @@ def get_zdf_uhd_topic_episodes(topic, offset=0, size=100, search_term=None, min_
 
 _UHD_STATIC_DATA = None
 _UHD_STATIC_PATH = os.path.join(os.path.dirname(__file__), "zdf_uhd_static.json")
+_UHD_EXTRA_THEMEN = ["Die Bergretter"]
 
 
 def _load_uhd_static():
@@ -935,3 +937,153 @@ def get_zdf_uhd_static_episodes(topic, search_term=None):
             pass
 
     return results, len(results), len(results)
+
+
+def refresh_uhd_static():
+    """Aktualisiert zdf_uhd_static.json per ZDF GraphQL + Document API + HEAD-Check.
+    Gibt (anzahl_episoden, fehler_string_oder_None) zurück."""
+    import io as _io2
+    import threading as _thr
+    try:
+        # Token
+        token_url = "https://zdf-prod-futura.zdf.de/mediathekV2/token"
+        req = Request(token_url, headers={"User-Agent": "Mozilla/5.0"})
+        resp = urlopen(req, timeout=10, context=_ssl_context) if _ssl_context else urlopen(req, timeout=10)
+        tok_data = json.loads(resp.read().decode("utf-8"))
+        token = tok_data["type"] + " " + tok_data["token"]
+
+        # GraphQL: UHD-Kollektion mit Canonicals
+        graphql_url = "https://api.zdf.de/graphql"
+        gql = ('{ metaCollectionContent(collectionId: "streaming_option-uhd"'
+               ' input: { appId: "ffw-mt-web-32276a07" pagination: { first: 50 }'
+               ' user: { abGroup: "gruppe-b", userSegment: "" } })'
+               ' { smartCollections { title __typename'
+               ' ... on ISeriesSmartCollection { episodes { nodes { title canonical } } }'
+               ' ... on MovieSmartCollection { video { title canonical } } } } }')
+        body = json.dumps({"query": gql})
+        if isinstance(body, str):
+            body = body.encode("utf-8")
+        req = Request(graphql_url, data=body, headers={
+            "User-Agent": "Mozilla/5.0",
+            "Content-Type": "application/json",
+            "Api-Auth": token,
+            "Apollo-Require-Preflight": "True",
+        })
+        resp = urlopen(req, timeout=10, context=_ssl_context) if _ssl_context else urlopen(req, timeout=10)
+        cols = json.loads(resp.read().decode("utf-8")).get("data", {}).get("metaCollectionContent", {}).get("smartCollections", [])
+
+        episodes = []
+        graphql_topics = set()
+        for sc in cols:
+            topic = sc.get("title", "")
+            graphql_topics.add(topic)
+            if sc.get("__typename") == "MovieSmartCollection":
+                v = sc.get("video") or {}
+                if v.get("canonical"):
+                    episodes.append({"topic": topic, "title": v.get("title") or topic, "canonical": v["canonical"]})
+            else:
+                for node in sc.get("episodes", {}).get("nodes", []):
+                    if node.get("canonical") and "audiodeskription" not in node.get("title", "").lower():
+                        episodes.append({"topic": topic, "title": node.get("title", ""), "canonical": node["canonical"]})
+
+        # Document API parallel per Threads
+        verified = [None] * len(episodes)
+        def _resolve(args):
+            i, ep = args
+            url = resolve_uhd_url_via_document_api(ep["canonical"])
+            if url:
+                verified[i] = {"topic": ep["topic"], "title": ep["title"],
+                               "web_url": "", "uhd_url": url, "timestamp": 0}
+        threads = []
+        for i, ep in enumerate(episodes):
+            t = _thr.Thread(target=_resolve, args=((i, ep),))
+            t.daemon = True
+            threads.append(t)
+        for batch_start in range(0, len(threads), 20):
+            batch = threads[batch_start:batch_start + 20]
+            for t in batch:
+                t.start()
+            for t in batch:
+                t.join()
+        verified = [v for v in verified if v]
+
+        # Phase 2: EXTRA_THEMEN per MVW + HEAD-Check
+        _HDR_SUFFIXES = ["_4692k_p72v16.mp4", "_2892k_p71v16.mp4"]
+        extra = [t for t in _UHD_EXTRA_THEMEN if t not in graphql_topics]
+        for topic in extra:
+            mvw_items, _, _ = _mvw_query(channel="ZDF", topic_filter=topic, size=100)
+            extra_candidates = []
+            seen_urls = set()
+            for item in mvw_items:
+                url_hd = item.get("stream_url_hd", b"")
+                if isinstance(url_hd, bytes):
+                    url_hd = url_hd.decode("utf-8", "replace")
+                if not url_hd or "akamaihd.net" not in url_hd or url_hd in seen_urls:
+                    continue
+                seen_urls.add(url_hd)
+                title_b = item.get("title", b"")
+                title_s = title_b.decode("utf-8", "replace") if isinstance(title_b, bytes) else title_b
+                if "audiodeskription" in title_s.lower():
+                    continue
+                extra_candidates.append((topic, title_s, url_hd, item.get("timestamp", 0)))
+
+            def _head_check(args):
+                topic2, title2, url2, ts2 = args
+                for suffix in _HDR_SUFFIXES:
+                    candidate = _re.sub(r"_\d+k_p\d+v\d+\.mp4$", suffix, url2)
+                    if candidate == url2:
+                        continue
+                    try:
+                        req2 = Request(candidate)
+                        req2.get_method = lambda: "HEAD"
+                        r2 = urlopen(req2, timeout=2, context=_ssl_context) if _ssl_context else urlopen(req2, timeout=2)
+                        if r2.getcode() == 200:
+                            return {"topic": topic2, "title": title2, "web_url": "", "uhd_url": candidate, "timestamp": ts2}
+                    except Exception:
+                        pass
+                return None
+
+            hc_results = [None] * len(extra_candidates)
+            def _hc_worker(args):
+                idx2, cand = args
+                hc_results[idx2] = _head_check(cand)
+            hc_threads = []
+            for i, cand in enumerate(extra_candidates):
+                t = _thr.Thread(target=_hc_worker, args=((i, cand),))
+                t.daemon = True
+                hc_threads.append(t)
+            for batch_start in range(0, len(hc_threads), 15):
+                batch = hc_threads[batch_start:batch_start + 15]
+                for t in batch:
+                    t.start()
+                for t in batch:
+                    t.join()
+            verified.extend(v for v in hc_results if v)
+
+        # no_hdr_topics + speichern
+        topics_found = set(item["topic"] for item in verified)
+        no_hdr_topics = sorted(graphql_topics - topics_found)
+        verified.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+
+        # Python 2: alle Strings zu unicode normalisieren, sonst schlägt json.dump fehl
+        def _to_u(obj):
+            if isinstance(obj, bytes):
+                return obj.decode("utf-8", "replace")
+            elif isinstance(obj, dict):
+                return {_to_u(k): _to_u(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [_to_u(i) for i in obj]
+            return obj
+
+        output = _to_u({"episodes": verified, "no_hdr_topics": no_hdr_topics})
+        json_bytes = json.dumps(output, indent=2, ensure_ascii=False)
+        if not isinstance(json_bytes, bytes):
+            json_bytes = json_bytes.encode("utf-8")
+        with open(_UHD_STATIC_PATH, "wb") as f:
+            f.write(json_bytes)
+
+        global _UHD_STATIC_DATA
+        _UHD_STATIC_DATA = None
+        return len(verified), None
+    except Exception as e:
+        return 0, str(e)

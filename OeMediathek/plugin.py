@@ -77,6 +77,7 @@ from mediathek import (
     get_zdf_uhd_static_topics,
     get_zdf_uhd_static_episodes,
     get_zdf_uhd_no_hdr_topics,
+    refresh_uhd_static,
     uhd_url_candidate,
     uhd_url_candidates,
     resolve_uhd_url,
@@ -4823,7 +4824,9 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
                 + list_xml +
                 '<eLabel position="30,930" size="1860,120" backgroundColor="#1A000000" zPosition="-5"/>'
                 '<eLabel position="50,950" size="8,80" backgroundColor="#1AEE0000" zPosition="2"/>'
-                '<widget name="hint_red" position="68,930" size="350,120" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_red" position="68,930" size="330,120" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="417,950" size="8,80" backgroundColor="#1A00AA00" zPosition="2"/>'
+                '<widget name="hint_green" position="435,930" size="260,120" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
                 '<widget name="hint_page" position="1698,930" size="172,120" font="Regular;32" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
                 '</screen>'
             )
@@ -4838,7 +4841,9 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
                 + list_xml +
                 '<eLabel position="30,614" size="1220,80" backgroundColor="#1A000000" zPosition="-5"/>'
                 '<eLabel position="33,629" size="5,50" backgroundColor="#1AEE0000" zPosition="2"/>'
-                '<widget name="hint_red" position="42,614" size="233,80" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_red" position="42,614" size="220,80" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="270,629" size="5,50" backgroundColor="#1A00AA00" zPosition="2"/>'
+                '<widget name="hint_green" position="279,614" size="175,80" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
                 '<widget name="hint_page" position="1132,614" size="118,80" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
                 '</screen>'
             )
@@ -4850,9 +4855,14 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
         self.session = session
         self._shows  = []
 
+        self._updating   = False
+        self._sort_az    = False
+        self._shows_orig = []
+
         self["title_label"]  = Label(_b("ZDF UHD"))
         self["status_label"] = Label(_b("Lade..."))
-        self["hint_red"]     = Label(_b("Zur\xc3\xbcck"))
+        self["hint_red"]     = Label(_b("Aktualisieren"))
+        self["hint_green"]   = Label(_b("A-Z"))
         self["hint_page"]    = Label(_b(""))
 
         self["actions"] = ActionMap(
@@ -4860,7 +4870,8 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
             {
                 "ok":           self.key_ok,
                 "cancel":       self.key_cancel,
-                "red":          self.key_cancel,
+                "red":          self.key_refresh,
+                "green":        self.key_sort_az,
                 "up":           self.key_up,
                 "down":         self.key_down,
                 "upRepeated":   self.key_up,
@@ -4899,7 +4910,10 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
         reactor.callFromThread(self._on_shows, shows, None)
 
     def _on_shows(self, shows, err):
-        self._shows = shows
+        self._shows      = shows
+        self._shows_orig = list(shows)
+        self._sort_az    = False
+        self["hint_green"].setText(_b("A-Z"))
         if err:
             self["status_label"].setText(_b("Fehler beim Laden"))
             _log("ZDF UHD Ladefehler: " + str(err))
@@ -4947,6 +4961,50 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
             def _loader(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp", _t=title):
                 return get_zdf_uhd_topic_episodes(_t, offset, size, search_term, min_duration, sort_by)
         self.session.open(OeMediathekScreen, b"ZDF UHD", _loader, force_uhd=True)
+
+    def key_refresh(self):
+        if self._updating:
+            return
+        self._updating = True
+        self["actions"].setEnabled(False)
+        self["hint_red"].setText(_b("Aktualisiere..."))
+        self["status_label"].setText(_b("Aktualisiere UHD-Liste..."))
+        t = threading.Thread(target=self._do_refresh)
+        t.daemon = True
+        t.start()
+
+    def _do_refresh(self):
+        count, err = refresh_uhd_static()
+        from twisted.internet import reactor
+        reactor.callFromThread(self._on_refresh_done, count, err)
+
+    def _on_refresh_done(self, count, err):
+        self._updating = False
+        try:
+            self["actions"].setEnabled(True)
+            self["hint_red"].setText(_b("Aktualisieren"))
+            if err:
+                self["status_label"].setText(_b("Fehler: " + str(err)[:40]))
+            else:
+                self["status_label"].setText(_b("%d Eintr\xc3\xa4ge aktualisiert" % count))
+                t = threading.Thread(target=self._fetch)
+                t.daemon = True
+                t.start()
+        except Exception:
+            pass
+
+    def key_sort_az(self):
+        if not self._shows_orig:
+            return
+        self._sort_az = not self._sort_az
+        if self._sort_az:
+            self._shows = sorted(self._shows_orig, key=lambda s: s.get("title", "").lower())
+            self["hint_green"].setText(_b("Zur\xc3\xbcck"))
+        else:
+            self._shows = list(self._shows_orig)
+            self["hint_green"].setText(_b("A-Z"))
+        self._set_list([_b(s.get("title", "")) for s in self._shows])
+        self._update_hint_page()
 
     def key_cancel(self):
         self.close()
