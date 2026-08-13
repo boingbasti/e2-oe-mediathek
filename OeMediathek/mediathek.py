@@ -594,6 +594,12 @@ def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by=
             if prefix in _KNOWN_CHANNELS:
                 pure_topic = group.split(": ", 1)[1]
 
+        # ZDF UHD Topics: Statische Liste verwenden statt MVW
+        if channel == "ZDF UHD":
+            items, _, _ = get_zdf_uhd_static_episodes(pure_topic)
+            results[idx] = items
+            return
+
         matched = []
         with _sem:
             try:

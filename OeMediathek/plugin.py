@@ -2713,6 +2713,7 @@ class OeMediathekScreen(Screen):
         self._list_sel    = 0
         self._list_scroll = 0
         self._dot_pix = None
+        self._fav_pix = None
         self._dl_pix  = None
         for i in range(_LIST_ROWS):
             self["list_sel_%d"   % i] = Label(_b(""))
@@ -2798,6 +2799,13 @@ class OeMediathekScreen(Screen):
                             pass
             except Exception as e:
                 _log("mark.png load failed: " + str(e))
+        if self._fav_pix is None and _Pixmap and _LoadPixmap:
+            try:
+                import os as _os
+                _path = _os.path.join(_os.path.dirname(__file__), "bookmark.png")
+                self._fav_pix = _LoadPixmap(_path)
+            except Exception as e:
+                _log("bookmark.png load failed: " + str(e))
         if self._dl_pix is None and _Pixmap and _LoadPixmap:
             try:
                 import os as _os
@@ -3597,8 +3605,32 @@ class OeMediathekScreen(Screen):
                     except Exception:
                         item = str(item)
                 if item.startswith("* "):
+                    if self._dot_pix:
+                        try:
+                            self["list_dot_%d" % i].instance.setPixmap(self._dot_pix)
+                        except Exception:
+                            pass
                     self["list_dot_%d" % i].show()
                     item = item[2:]
+                elif self.mode == MODE_GROUPS and is_favorite(_b(item)):
+                    if self._fav_pix:
+                        try:
+                            self["list_dot_%d" % i].instance.setPixmap(self._fav_pix)
+                        except Exception:
+                            pass
+                    self["list_dot_%d" % i].show()
+                elif self.mode == MODE_EPISODES and abs_idx < len(self.cur_episodes):
+                    ep  = self.cur_episodes[abs_idx]
+                    url = ep.get("stream_url_hd", b"") or ep.get("stream_url_sd", b"")
+                    if url and is_episode_favorite(url):
+                        if self._fav_pix:
+                            try:
+                                self["list_dot_%d" % i].instance.setPixmap(self._fav_pix)
+                            except Exception:
+                                pass
+                        self["list_dot_%d" % i].show()
+                    else:
+                        self["list_dot_%d" % i].hide()
                 else:
                     self["list_dot_%d" % i].hide()
                 if self.mode == MODE_EPISODES and abs_idx < len(self.cur_episodes):
@@ -4111,6 +4143,7 @@ class OeMediathekScreen(Screen):
                 self._show_toast("Favorit hinzugefügt!", added=True)
             self._update_red_hint()
             self._update_blue_hint()
+            self._render_list()
         except Exception:
             _log("toggle_favorite: " + _fmt_exc())
 
@@ -4441,6 +4474,7 @@ class OeMediathekScreen(Screen):
                 add_episode_favorite(item)
                 self._show_toast(_b("Favorit hinzugef\xc3\xbcgt!"), added=True)
             self._update_blue_hint()
+            self._render_list()
         except Exception:
             _log("toggle_episode_favorite: " + _fmt_exc())
 
@@ -4800,18 +4834,26 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
     def _make_skin():
         if IS_FHD:
             lx, ly0, lw, rh, rf = 40, 150, 1840, 58, 34
+            label_off = 80
+            dw, dh, dx_off, dy_off = 28, 24, 12, 17
         else:
             lx, ly0, lw, rh, rf = 36, 97, 1208, 38, 22
+            label_off = 54
+            dw, dh, dx_off, dy_off = 18, 16, 8, 11
         list_xml = ""
         for i in range(_LIST_ROWS):
             y = ly0 + i * rh
             list_xml += (
                 '<widget name="list_sel_{i}" position="{x},{y}" size="{w},{rh}" '
                 'backgroundColor="#00253850" zPosition="1" transparent="0"/>'
+                '<widget name="list_dot_{i}" position="{dx},{dy}" size="{dw},{dh}" '
+                'alphatest="blend" scale="1" zPosition="3" transparent="1"/>'
                 '<widget name="list_label_{i}" position="{lbx},{y}" size="{lbw},{rh}" '
                 'zPosition="2" font="Regular;{rf}" halign="left" valign="center" '
                 'foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" noWrap="1"/>'
-            ).format(i=i, x=lx, y=y, w=lw, lbx=lx + 12, lbw=lw - 12, rh=rh, rf=rf)
+            ).format(i=i, x=lx, y=y, w=lw,
+                     dx=lx + dx_off, dy=y + dy_off, dw=dw, dh=dh,
+                     lbx=lx + label_off, lbw=lw - label_off, rh=rh, rf=rf)
 
         if IS_FHD:
             return (
@@ -4820,14 +4862,16 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
                 '<eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<widget name="status_label" position="910,30" size="920,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
-                '<eLabel position="30,140" size="1860,760" backgroundColor="#33000000" zPosition="-5"/>'
+                '<eLabel position="30,140" size="1860,790" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
-                '<eLabel position="30,930" size="1860,120" backgroundColor="#1A000000" zPosition="-5"/>'
-                '<eLabel position="50,950" size="8,80" backgroundColor="#1AEE0000" zPosition="2"/>'
-                '<widget name="hint_red" position="68,930" size="330,120" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
-                '<eLabel position="417,950" size="8,80" backgroundColor="#1A00AA00" zPosition="2"/>'
-                '<widget name="hint_green" position="435,930" size="260,120" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
-                '<widget name="hint_page" position="1698,930" size="172,120" font="Regular;32" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5"/>'
+                '<eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2"/>'
+                '<widget name="hint_red" position="68,960" size="330,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="417,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2"/>'
+                '<widget name="hint_green" position="435,960" size="260,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="810,980" size="8,60" backgroundColor="#1A0000AA" zPosition="2"/>'
+                '<widget name="hint_blue" position="828,960" size="230,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_page" position="1698,960" size="172,100" font="Regular;32" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
                 '</screen>'
             )
         else:
@@ -4837,14 +4881,16 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
                 '<eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<widget name="status_label" position="610,20" size="610,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
-                '<eLabel position="30,90" size="1220,505" backgroundColor="#33000000" zPosition="-5"/>'
+                '<eLabel position="30,90" size="1220,525" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
-                '<eLabel position="30,614" size="1220,80" backgroundColor="#1A000000" zPosition="-5"/>'
-                '<eLabel position="33,629" size="5,50" backgroundColor="#1AEE0000" zPosition="2"/>'
-                '<widget name="hint_red" position="42,614" size="220,80" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
-                '<eLabel position="270,629" size="5,50" backgroundColor="#1A00AA00" zPosition="2"/>'
-                '<widget name="hint_green" position="279,614" size="175,80" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
-                '<widget name="hint_page" position="1132,614" size="118,80" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5"/>'
+                '<eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2"/>'
+                '<widget name="hint_red" position="42,634" size="220,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="270,649" size="5,30" backgroundColor="#1A00AA00" zPosition="2"/>'
+                '<widget name="hint_green" position="279,634" size="175,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<eLabel position="462,649" size="5,30" backgroundColor="#1A0000AA" zPosition="2"/>'
+                '<widget name="hint_blue" position="471,634" size="155,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_page" position="1132,634" size="118,60" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
                 '</screen>'
             )
 
@@ -4858,12 +4904,23 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
         self._updating   = False
         self._sort_az    = False
         self._shows_orig = []
+        self._dot_pix    = None
+
+        for i in range(_LIST_ROWS):
+            try:
+                self["list_dot_%d" % i] = _Pixmap() if _Pixmap else Label(_b(""))
+            except Exception:
+                self["list_dot_%d" % i] = Label(_b(""))
+            self["list_dot_%d" % i].hide()
 
         self["title_label"]  = Label(_b("ZDF UHD"))
         self["status_label"] = Label(_b("Lade..."))
         self["hint_red"]     = Label(_b("Aktualisieren"))
         self["hint_green"]   = Label(_b("A-Z"))
+        self["hint_blue"]    = Label(_b("Favorit"))
         self["hint_page"]    = Label(_b(""))
+
+        self.onShow.append(self.__on_show)
 
         self["actions"] = ActionMap(
             ["OkCancelActions", "ColorActions", "DirectionActions", "ListboxActions"],
@@ -4872,6 +4929,7 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
                 "cancel":       self.key_cancel,
                 "red":          self.key_refresh,
                 "green":        self.key_sort_az,
+                "blue":         self.key_blue,
                 "up":           self.key_up,
                 "down":         self.key_down,
                 "upRepeated":   self.key_up,
@@ -4922,6 +4980,7 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
             self["status_label"].setText(_b(str(n) + " Sendung" + ("en" if n != 1 else "")))
             self._set_list([_b(s.get("title", "")) for s in shows])
             self._update_hint_page()
+        self._update_dots()
 
     def _update_hint_page(self):
         total = len(self._list_items)
@@ -4929,22 +4988,74 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
             self["hint_page"].setText(_b("%d/%d" % (self._list_sel + 1, total)))
         else:
             self["hint_page"].setText(_b(""))
+        self._update_hint_blue()
+
+    def _update_hint_blue(self):
+        idx = self._get_list_index()
+        if idx is None or not self._shows or idx >= len(self._shows):
+            self["hint_blue"].setText(_b("Favorit"))
+            return
+        title = self._shows[idx].get("title", "")
+        if is_favorite(_b(title)):
+            self["hint_blue"].setText(_b("Favorit l\xc3\xb6schen"))
+        else:
+            self["hint_blue"].setText(_b("Favorit"))
+
+    def __on_show(self):
+        if self._dot_pix is None and _Pixmap and _LoadPixmap:
+            try:
+                import os as _os
+                _path = _os.path.join(_os.path.dirname(__file__), "bookmark.png")
+                self._dot_pix = _LoadPixmap(_path)
+                if self._dot_pix:
+                    for i in range(_LIST_ROWS):
+                        try:
+                            self["list_dot_%d" % i].instance.setPixmap(self._dot_pix)
+                        except Exception:
+                            pass
+            except Exception as e:
+                _log("ZDF UHD bookmark.png load failed: " + str(e))
+        self._update_dots()
+
+    def _update_dots(self):
+        scroll = self._list_scroll
+        total  = len(self._list_items)
+        for i in range(_LIST_ROWS):
+            abs_idx = scroll + i
+            if abs_idx >= total or not self._shows or abs_idx >= len(self._shows):
+                self["list_dot_%d" % i].hide()
+                continue
+            title = self._shows[abs_idx].get("title", "")
+            if is_favorite(_b(title)):
+                if self._dot_pix:
+                    try:
+                        self["list_dot_%d" % i].instance.setPixmap(self._dot_pix)
+                    except Exception:
+                        pass
+                self["list_dot_%d" % i].show()
+            else:
+                self["list_dot_%d" % i].hide()
+        self._update_hint_blue()
 
     def key_up(self):
         self._list_step(-1)
         self._update_hint_page()
+        self._update_dots()
 
     def key_down(self):
         self._list_step(1)
         self._update_hint_page()
+        self._update_dots()
 
     def key_page_up(self):
         self._list_page(-1)
         self._update_hint_page()
+        self._update_dots()
 
     def key_page_down(self):
         self._list_page(1)
         self._update_hint_page()
+        self._update_dots()
 
     def key_ok(self):
         idx = self._get_list_index()
@@ -4999,12 +5110,25 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
         self._sort_az = not self._sort_az
         if self._sort_az:
             self._shows = sorted(self._shows_orig, key=lambda s: s.get("title", "").lower())
-            self["hint_green"].setText(_b("Zur\xc3\xbcck"))
+            self["hint_green"].setText(_b("Original"))
         else:
             self._shows = list(self._shows_orig)
             self["hint_green"].setText(_b("A-Z"))
         self._set_list([_b(s.get("title", "")) for s in self._shows])
         self._update_hint_page()
+        self._update_dots()
+
+    def key_blue(self):
+        idx = self._get_list_index()
+        if idx is None or not self._shows or idx >= len(self._shows):
+            return
+        title = self._shows[idx].get("title", "")
+        title_b = _b(title)
+        if is_favorite(title_b):
+            remove_favorite(title_b)
+        else:
+            add_favorite(title_b, b"ZDF UHD")
+        self._update_dots()
 
     def key_cancel(self):
         self.close()
