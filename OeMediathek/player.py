@@ -335,7 +335,15 @@ def _serve_playlist_via_http(content):
                 pass
 
         server = HTTPServer(('127.0.0.1', 0), _Handler)
-        server.timeout = 5.0
+        # Grosszuegig: zwischen Serverstart und dem tatsaechlichen GET durch
+        # exteplayer3 liegen noch Config-Writes (_configure_serviceapp_for_live),
+        # reactor callFromThread-Queueing und der exteplayer3-Prozessstart - auf
+        # langsameren Boxen/Flash kann das mehrere Sekunden dauern. Bei zu kurzem
+        # Timeout schliesst der Server schon, bevor exteplayer3 anfragt ->
+        # "Connection refused" ohne jeden Fehler in unserem Log, Stream startet
+        # einfach nicht (gemeldet von einem User mit altem serviceapp.so + neuem
+        # exteplayer3 v181+, dieser Zweig servierte bisher nur 5s lang).
+        server.timeout = 20.0
         port = server.server_address[1]
 
         t = threading.Thread(target=lambda: (server.handle_request(), server.server_close()))
