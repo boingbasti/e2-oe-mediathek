@@ -2110,11 +2110,52 @@ def _check_stream_status(url, callback):
 
 
 # ------------------------------------------------------------------
+# Live-Streams/Live-Events: A-Z/User-Sortierung der Gruppen
+# ------------------------------------------------------------------
+def _load_group_state(order_file, groups):
+    """Gespeicherten Ansichtsmodus + User-Reihenfolge laden.
+    Gibt (mode, order_liste_oder_None) zurueck. mode ist 'az' oder 'user'."""
+    try:
+        if not os.path.exists(order_file):
+            return "az", None
+        import json as _json
+        with open(order_file, "r") as f:
+            data = _json.load(f)
+        mode  = data.get("mode", "az") if isinstance(data, dict) else "az"
+        order = data.get("order", [])  if isinstance(data, dict) else []
+        name_to_group = {g[0]: g for g in groups}
+        reordered = []
+        for name in order:
+            if name in name_to_group:
+                reordered.append(name_to_group[name])
+        existing = set(order)
+        for g in groups:
+            if g[0] not in existing:
+                reordered.append(g)
+        return mode, (reordered or None)
+    except Exception as e:
+        _log("Live-Zustand laden Fehler: " + str(e))
+        return "az", None
+
+
+def _save_group_state(order_file, mode, groups):
+    try:
+        import json as _json
+        data = {"mode": mode, "order": [g[0] for g in groups]}
+        with open(order_file, "w") as f:
+            _json.dump(data, f)
+        _log("Live-Zustand gespeichert: " + order_file)
+    except Exception as e:
+        _log("Live-Zustand speichern Fehler: " + str(e))
+
+
+# ------------------------------------------------------------------
 # Live-Streams-Screen  (flache Liste aller Sender-Livestreams)
 # ------------------------------------------------------------------
 class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
 
     _CL_ROWS = _LIST_ROWS
+    _ORDER_FILE = "/etc/enigma2/oemediathek_livestream_order.json"
 
     @staticmethod
     def _make_skin():
@@ -2128,6 +2169,8 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
             list_xml += (
                 '<widget name="list_sel_{i}" position="{x},{y}" size="{w},{rh}" '
                 'backgroundColor="#00253850" zPosition="1" transparent="0"/>'
+                '<widget name="list_grab_{i}" position="{x},{y}" size="{w},{rh}" '
+                'backgroundColor="#00503F00" zPosition="1" transparent="0"/>'
                 '<widget name="list_label_{i}" position="{lbx},{y}" size="{lbw},{rh}" '
                 'zPosition="2" font="Regular;{rf}" halign="left" valign="center" '
                 'foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" noWrap="1"/>'
@@ -2139,14 +2182,19 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
                 '<eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
-                '<widget name="status_label" position="910,30" size="920,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="sort_label" position="910,30" size="220,80" font="Regular;28" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="status_label" position="1140,30" size="690,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="30,140" size="1100,780" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
                 '<eLabel position="1160,140" size="730,780" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="description_text" position="1190,160" size="670,740" font="Regular;34" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
                 '<eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5"/>'
-                '<eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2"/>'
+                '<widget name="accent_red" position="50,980" size="8,60" backgroundColor="#EE0000" zPosition="2" transparent="0"/>'
                 '<widget name="hint_red" position="68,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="accent_green" position="450,980" size="8,60" backgroundColor="#00AA00" zPosition="2" transparent="0"/>'
+                '<widget name="hint_green" position="468,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_reorder_ok" position="850,960" size="380,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_reorder_exit" position="1260,960" size="400,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
                 '<widget name="hint_page" position="1698,960" size="172,100" font="Regular;32" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
                 '</screen>'
             )
@@ -2156,14 +2204,19 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
                 '<eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
-                '<widget name="status_label" position="610,20" size="610,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="sort_label" position="610,20" size="147,53" font="Regular;18" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="status_label" position="760,20" size="460,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="30,90" size="733,524" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
                 '<eLabel position="773,90" size="477,524" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="description_text" position="790,103" size="443,504" font="Regular;22" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
                 '<eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5"/>'
-                '<eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2"/>'
+                '<widget name="accent_red" position="33,649" size="5,30" backgroundColor="#EE0000" zPosition="2" transparent="0"/>'
                 '<widget name="hint_red" position="42,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="accent_green" position="290,649" size="5,30" backgroundColor="#00AA00" zPosition="2" transparent="0"/>'
+                '<widget name="hint_green" position="299,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_reorder_ok" position="560,634" size="250,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_reorder_exit" position="830,634" size="280,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
                 '<widget name="hint_page" position="1132,634" size="118,60" font="Regular;21" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
                 '</screen>'
             )
@@ -2172,42 +2225,68 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
         self.skin = self._make_skin()
         Screen.__init__(self, session)
         self._cl_init()
-        self.session    = session
-        self._streams   = streams
-        self.last_index = -1
+        self.session          = session
+        self._streams         = streams
+        self.last_index       = -1
+        self._sort_az         = True
+        self._reorder         = False
+        self._grabbed         = False
+        self._reorder_backup  = None
+        self._view_groups     = []
+        self._custom_order    = None
+
+        for i in range(_LIST_ROWS):
+            self["list_grab_%d" % i] = Label(_b(""))
+            self["list_grab_%d" % i].hide()
+
+        self["title_label"]      = Label(_b(""))
+        self["sort_label"]       = Label(_b(""))
+        self["status_label"]     = Label(_b(""))
+        self["description_text"] = Label(_b(""))
+        self["hint_red"]         = Label(_b(""))
+        self["hint_green"]       = Label(_b(""))
+        self["hint_reorder_ok"]   = Label(_b(""))
+        self["hint_reorder_exit"] = Label(_b(""))
+        self["hint_page"]        = Label(_b(""))
+        self["accent_red"]       = Label(_b(""))
+        self["accent_green"]     = Label(_b(""))
+        if streams is not None:
+            self["accent_red"].hide()
+            self["accent_green"].hide()
 
         if streams is None:
-            items       = [g[0] for g in LIVE_STREAM_GROUPS]
-            status_text = str(len(LIVE_STREAM_GROUPS)) + " Sender"
-            title_text  = "Live-Streams"
+            self["title_label"].setText(_b("Live-Streams"))
+            mode, order = _load_group_state(self._ORDER_FILE, LIVE_STREAM_GROUPS)
+            self._sort_az      = (mode != "user")
+            self._custom_order = order
+            self._rebuild_view()
         else:
-            items       = [name for name, _ in streams]
-            status_text = str(len(streams)) + (" Stream" if len(streams) == 1 else " Streams")
-            title_text  = title or "Live-Streams"
+            items = [name for name, _ in streams]
+            self["title_label"].setText(_b(title or "Live-Streams"))
+            self["status_label"].setText(_b(
+                str(len(streams)) + (" Stream" if len(streams) == 1 else " Streams")))
+            self._set_list([_b(i) for i in items])
 
-        self["title_label"]      = Label(_b(title_text))
-        self["status_label"]     = Label(_b(status_text))
-        self["description_text"] = Label(_b(""))
-        self["hint_red"]         = Label(_b("Zur\xc3\xbcck"))
-        self["hint_page"]        = Label(_b(""))
+        self._update_legend()
 
-        self._set_list([_b(i) for i in items])
-
+        actions = {
+            "ok":           self.key_ok,
+            "cancel":       self.key_cancel,
+            "up":           self.key_up,
+            "down":         self.key_down,
+            "upRepeated":   self.key_up,
+            "downRepeated": self.key_down,
+            "left":         self.key_page_up,
+            "right":        self.key_page_down,
+            "pageUp":       self.key_page_up,
+            "pageDown":     self.key_page_down,
+        }
+        if streams is None:
+            actions["red"]   = self.key_red
+            actions["green"] = self.key_green
         self["actions"] = ActionMap(
             ["OkCancelActions", "ColorActions", "DirectionActions", "ListboxActions"],
-            {
-                "ok":           self.key_ok,
-                "cancel":       self.key_cancel,
-                "red":          self.key_cancel,
-                "up":           self.key_up,
-                "down":         self.key_down,
-                "upRepeated":   self.key_up,
-                "downRepeated": self.key_down,
-                "left":         self.key_page_up,
-                "right":        self.key_page_down,
-                "pageUp":       self.key_page_up,
-                "pageDown":     self.key_page_down,
-            },
+            actions,
             -1,
         )
 
@@ -2223,23 +2302,97 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
         except Exception:
             pass
 
+    def _rebuild_view(self):
+        if self._sort_az:
+            self._view_groups = sorted(LIVE_STREAM_GROUPS, key=lambda g: g[0].lower())
+        else:
+            self._view_groups = list(self._custom_order) if self._custom_order else list(LIVE_STREAM_GROUPS)
+        self["status_label"].setText(_b(str(len(self._view_groups)) + " Sender"))
+        self._list_items = [_b(g[0]) for g in self._view_groups]
+        self._list_focus(0)
+        self.last_index = -1
+        self._update_desc()
+        self._update_grab_overlay()
+
+    def _update_legend(self):
+        if self._streams is not None:
+            self["hint_red"].setText(_b(""))
+            self["hint_green"].setText(_b(""))
+            self["hint_reorder_ok"].setText(_b(""))
+            self["hint_reorder_exit"].setText(_b(""))
+            self["sort_label"].setText(_b(""))
+            return
+        current = "A-Z" if self._sort_az else "Eigene"
+        self["sort_label"].setText(_b(current))
+        if not self._reorder:
+            self["hint_red"].setText(_b("Sortieren"))
+            next_mode = "Eigene" if self._sort_az else "A-Z"
+            self["hint_green"].setText(_b(current + " > " + next_mode))
+            self["hint_reorder_ok"].setText(_b(""))
+            self["hint_reorder_exit"].setText(_b(""))
+        else:
+            self["hint_red"].setText(_b("Fertig"))
+            self["hint_green"].setText(_b("R\xc3\xbcckg\xc3\xa4ngig"))
+            self["hint_reorder_ok"].setText(_b("OK = Ablegen" if self._grabbed else "OK = Greifen"))
+            self["hint_reorder_exit"].setText(_b("EXIT = Abbrechen"))
+
+    def _update_grab_overlay(self):
+        for i in range(_LIST_ROWS):
+            try:
+                self["list_grab_%d" % i].hide()
+            except Exception:
+                pass
+        if not self._grabbed:
+            return
+        row = self._list_sel - self._list_scroll
+        if 0 <= row < _LIST_ROWS:
+            try:
+                self["list_sel_%d" % row].hide()
+                self["list_grab_%d" % row].show()
+            except Exception:
+                pass
+
     def key_up(self):
+        if self._streams is None and self._reorder and self._grabbed:
+            self._move_grabbed(-1)
+            return
         self._list_step(-1)
         self._update_desc()
+        self._update_grab_overlay()
 
     def key_down(self):
+        if self._streams is None and self._reorder and self._grabbed:
+            self._move_grabbed(1)
+            return
         self._list_step(1)
         self._update_desc()
+        self._update_grab_overlay()
+
+    def _move_grabbed(self, direction):
+        old = self._list_sel
+        new = old + direction
+        if new < 0 or new >= len(self._view_groups):
+            return
+        self._view_groups[old], self._view_groups[new] = self._view_groups[new], self._view_groups[old]
+        self._list_items[old], self._list_items[new] = self._list_items[new], self._list_items[old]
+        self._list_focus(new)
+        self._update_grab_overlay()
 
     def key_page_up(self):
+        if self._streams is None and self._reorder and self._grabbed:
+            return
         self._list_page(-1)
         self.last_index = -1
         self._update_desc()
+        self._update_grab_overlay()
 
     def key_page_down(self):
+        if self._streams is None and self._reorder and self._grabbed:
+            return
         self._list_page(1)
         self.last_index = -1
         self._update_desc()
+        self._update_grab_overlay()
 
     def _update_desc(self):
         idx = self._get_list_index()
@@ -2247,9 +2400,9 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
             return
         self.last_index = idx
         if self._streams is None:
-            if idx >= len(LIVE_STREAM_GROUPS):
+            if idx >= len(self._view_groups):
                 return
-            group_name, streams = LIVE_STREAM_GROUPS[idx]
+            group_name, streams = self._view_groups[idx]
             count = len(streams)
             self["description_text"].setText(_b(
                 group_name + "\n\n" +
@@ -2262,13 +2415,18 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
             self["description_text"].setText(_b(name + "\n\n" + url))
 
     def key_ok(self):
+        if self._streams is None and self._reorder:
+            self._grabbed = not self._grabbed
+            self._update_legend()
+            self._update_grab_overlay()
+            return
         idx = self._get_list_index()
         if idx is None:
             return
         if self._streams is None:
-            if idx >= len(LIVE_STREAM_GROUPS):
+            if idx >= len(self._view_groups):
                 return
-            group_name, streams = LIVE_STREAM_GROUPS[idx]
+            group_name, streams = self._view_groups[idx]
             self.session.open(OeMediathekLivestreamScreen, streams, group_name)
         else:
             if idx >= len(self._streams):
@@ -2284,7 +2442,68 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
                               autoconfigure_serviceapp=get_serviceapp_autoconfigure(),
                               streams=flat, stream_index=flat_idx)
 
+    def key_red(self):
+        if self._streams is not None:
+            return
+        if not self._reorder:
+            self._reorder = True
+            self._grabbed = False
+            if self._custom_order:
+                # Vorhandene eigene Reihenfolge zum Weiterbearbeiten laden,
+                # unabhaengig davon welche Ansicht gerade angezeigt wird -
+                # verhindert versehentliches Ueberschreiben mit der A-Z-Ansicht.
+                self._view_groups = list(self._custom_order)
+                self._list_items = [_b(g[0]) for g in self._view_groups]
+                self._list_focus(0)
+                self._sort_az = False
+            self._reorder_backup = list(self._view_groups)
+        else:
+            self._reorder = False
+            self._grabbed = False
+            changed = self._view_groups != self._reorder_backup
+            self._reorder_backup = None
+            if changed:
+                self._custom_order = list(self._view_groups)
+                self._sort_az = False
+                _save_group_state(self._ORDER_FILE, "user", self._custom_order)
+            else:
+                self._rebuild_view()
+        self._update_legend()
+        self._update_grab_overlay()
+
+    def key_green(self):
+        if self._streams is not None:
+            return
+        if self._reorder:
+            self._view_groups = list(self._reorder_backup)
+            self._grabbed = False
+            self._list_items = [_b(g[0]) for g in self._view_groups]
+            idx = min(self._list_sel, len(self._view_groups) - 1) if self._view_groups else 0
+            self._list_focus(idx)
+            self._update_desc()
+        else:
+            self._sort_az = not self._sort_az
+            _save_group_state(
+                self._ORDER_FILE,
+                "az" if self._sort_az else "user",
+                self._custom_order if self._custom_order else LIVE_STREAM_GROUPS,
+            )
+            self._rebuild_view()
+        self._update_legend()
+        self._update_grab_overlay()
+
     def key_cancel(self):
+        if self._streams is None and self._reorder:
+            self._view_groups = list(self._reorder_backup)
+            self._reorder = False
+            self._grabbed = False
+            self._reorder_backup = None
+            self._list_items = [_b(g[0]) for g in self._view_groups]
+            idx = min(self._list_sel, len(self._view_groups) - 1) if self._view_groups else 0
+            self._list_focus(idx)
+            self._update_legend()
+            self._update_grab_overlay()
+            return
         self.close()
 
     def doClose(self):
@@ -2298,6 +2517,7 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
 class OeMediathekLiveScreen(_CustomListMixin, Screen):
 
     _CL_ROWS = _LIST_ROWS
+    _ORDER_FILE = "/etc/enigma2/oemediathek_live_event_order.json"
 
     @staticmethod
     def _make_skin():
@@ -2313,6 +2533,8 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
             list_xml += (
                 '<widget name="list_sel_{i}" position="{x},{y}" size="{w},{rh}" '
                 'backgroundColor="#00253850" zPosition="1" transparent="0"/>'
+                '<widget name="list_grab_{i}" position="{x},{y}" size="{w},{rh}" '
+                'backgroundColor="#00503F00" zPosition="1" transparent="0"/>'
                 '<widget name="list_dot_{i}" position="{dx},{dy}" size="{dw},{dh}" '
                 'alphatest="blend" scale="1" zPosition="3" transparent="1"/>'
                 '<widget name="list_label_{i}" position="{lbx},{y}" size="{lbw},{rh}" '
@@ -2327,15 +2549,21 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
                 '<screen name="OeMediathekLiveScreen" position="0,0" size="1920,1080" flags="wfNoBorder">'
                 '<eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5"/>'
-                '<widget name="title_label" position="50,30" size="1810,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="sort_label" position="910,30" size="220,80" font="Regular;28" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="30,130" size="1100,810" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
                 '<eLabel position="1160,130" size="730,810" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="info_text" position="1190,150" size="670,780" font="Regular;30" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
                 '<eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5"/>'
-                '<eLabel position="50,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2"/>'
+                '<widget name="accent_red" position="50,980" size="8,60" backgroundColor="#EE0000" zPosition="2" transparent="0"/>'
+                '<widget name="hint_red" position="68,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
                 '<widget name="hint_ok"   position="68,960"  size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="accent_green" position="450,980" size="8,60" backgroundColor="#00AA00" zPosition="2" transparent="0"/>'
+                '<widget name="hint_green" position="468,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
                 '<widget name="hint_exit" position="468,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_reorder_ok" position="850,960" size="380,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_reorder_exit" position="1260,960" size="400,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
                 '</screen>'
             )
         else:
@@ -2343,15 +2571,21 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
                 '<screen name="OeMediathekLiveScreen" position="0,0" size="1280,720" flags="wfNoBorder">'
                 '<eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5"/>'
-                '<widget name="title_label" position="43,20" size="1177,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
+                '<widget name="sort_label" position="610,20" size="147,53" font="Regular;18" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="30,83" size="733,540" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
                 '<eLabel position="773,83" size="477,540" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="info_text" position="790,93" size="443,504" font="Regular;20" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
                 '<eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5"/>'
-                '<eLabel position="33,649" size="5,30" backgroundColor="#1A00AA00" zPosition="2"/>'
+                '<widget name="accent_red" position="33,649" size="5,30" backgroundColor="#EE0000" zPosition="2" transparent="0"/>'
+                '<widget name="hint_red" position="42,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
                 '<widget name="hint_ok"   position="42,634"  size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="accent_green" position="290,649" size="5,30" backgroundColor="#00AA00" zPosition="2" transparent="0"/>'
+                '<widget name="hint_green" position="299,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
                 '<widget name="hint_exit" position="290,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_reorder_ok" position="560,634" size="250,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_reorder_exit" position="830,634" size="280,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
                 '</screen>'
             )
 
@@ -2366,6 +2600,12 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
         self._pix_green  = None
         self._pix_yellow = None
         self._pix_red    = None
+        self._sort_az         = True
+        self._reorder         = False
+        self._grabbed         = False
+        self._reorder_backup  = None
+        self._view_groups     = []
+        self._custom_order    = None
 
         for i in range(_LIST_ROWS):
             try:
@@ -2373,39 +2613,56 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
             except Exception:
                 self["list_dot_%d" % i] = Label(_b(""))
             self["list_dot_%d" % i].hide()
+            self["list_grab_%d" % i] = Label(_b(""))
+            self["list_grab_%d" % i].hide()
 
         self.onShow.append(self.__on_show)
 
-        if streams is None:
-            items   = [g[0] for g in LIVE_EVENT_GROUPS]
-            hint_ok = "OK = \xc3\x96ffnen"
-            label   = "Live-Events"
-        else:
-            items   = [name for name, _ in streams]
-            hint_ok = "OK = Abspielen"
-            label   = title or "Live-Events"
-
-        self["title_label"] = Label(_b(label))
-        self["hint_ok"]     = Label(_b(hint_ok))
-        self["hint_exit"]   = Label(_b("EXIT = Zur\xc3\xbcck"))
+        self["title_label"] = Label(_b(""))
+        self["sort_label"]  = Label(_b(""))
+        self["hint_ok"]     = Label(_b(""))
+        self["hint_exit"]   = Label(_b(""))
+        self["hint_red"]    = Label(_b(""))
+        self["hint_green"]  = Label(_b(""))
+        self["hint_reorder_ok"]   = Label(_b(""))
+        self["hint_reorder_exit"] = Label(_b(""))
+        self["accent_red"]  = Label(_b(""))
+        self["accent_green"] = Label(_b(""))
         self["info_text"]   = Label(_b(""))
 
-        self._set_list([_b(i) for i in items])
+        if streams is None:
+            self["title_label"].setText(_b("Live-Events"))
+            mode, order = _load_group_state(self._ORDER_FILE, LIVE_EVENT_GROUPS)
+            self._sort_az      = (mode != "user")
+            self._custom_order = order
+            self._rebuild_view()
+        else:
+            items = [name for name, _ in streams]
+            self["title_label"].setText(_b(title or "Live-Events"))
+            self["hint_ok"].setText(_b("OK = Abspielen"))
+            self["hint_exit"].setText(_b("EXIT = Zur\xc3\xbcck"))
+            self["accent_red"].hide()
+            self["accent_green"].hide()
+            self._set_list([_b(i) for i in items])
 
+        actions = {
+            "ok":           self.key_ok,
+            "cancel":       self.key_cancel,
+            "up":           self.key_up,
+            "down":         self.key_down,
+            "upRepeated":   self.key_up,
+            "downRepeated": self.key_down,
+            "left":         self.key_page_up,
+            "right":        self.key_page_down,
+            "pageUp":       self.key_page_up,
+            "pageDown":     self.key_page_down,
+        }
+        if streams is None:
+            actions["red"]   = self.key_red
+            actions["green"] = self.key_green
         self["actions"] = ActionMap(
-            ["OkCancelActions", "DirectionActions", "ListboxActions"],
-            {
-                "ok":           self.key_ok,
-                "cancel":       self.key_cancel,
-                "up":           self.key_up,
-                "down":         self.key_down,
-                "upRepeated":   self.key_up,
-                "downRepeated": self.key_down,
-                "left":         self.key_page_up,
-                "right":        self.key_page_down,
-                "pageUp":       self.key_page_up,
-                "pageDown":     self.key_page_down,
-            },
+            ["OkCancelActions", "ColorActions", "DirectionActions", "ListboxActions"],
+            actions,
             -1,
         )
         self._on_selection_changed()
@@ -2470,20 +2727,75 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
                 pass
         _check_stream_status(url, on_result)
 
+    def _rebuild_view(self):
+        if self._sort_az:
+            self._view_groups = sorted(LIVE_EVENT_GROUPS, key=lambda g: g[0].lower())
+        else:
+            self._view_groups = list(self._custom_order) if self._custom_order else list(LIVE_EVENT_GROUPS)
+        self._list_items = [_b(g[0]) for g in self._view_groups]
+        self._list_focus(0)
+        self._on_selection_changed()
+        self._update_grab_overlay()
+
+    def _update_legend(self):
+        if self._streams is not None:
+            self["sort_label"].setText(_b(""))
+            return
+        current = "A-Z" if self._sort_az else "Eigene"
+        self["sort_label"].setText(_b(current))
+        if not self._reorder:
+            self["hint_red"].setText(_b("Sortieren"))
+            next_mode = "Eigene" if self._sort_az else "A-Z"
+            self["hint_green"].setText(_b(current + " > " + next_mode))
+            self["hint_reorder_ok"].setText(_b(""))
+            self["hint_reorder_exit"].setText(_b(""))
+        else:
+            self["hint_red"].setText(_b("Fertig"))
+            self["hint_green"].setText(_b("R\xc3\xbcckg\xc3\xa4ngig"))
+            self["hint_reorder_ok"].setText(_b("OK = Ablegen" if self._grabbed else "OK = Greifen"))
+            self["hint_reorder_exit"].setText(_b("EXIT = Abbrechen"))
+
+    def _update_grab_overlay(self):
+        for i in range(_LIST_ROWS):
+            try:
+                self["list_grab_%d" % i].hide()
+            except Exception:
+                pass
+        if not self._grabbed:
+            return
+        row = self._list_sel - self._list_scroll
+        if 0 <= row < _LIST_ROWS:
+            try:
+                self["list_sel_%d" % row].hide()
+                self["list_grab_%d" % row].show()
+            except Exception:
+                pass
+
+    def _move_grabbed(self, direction):
+        old = self._list_sel
+        new = old + direction
+        if new < 0 or new >= len(self._view_groups):
+            return
+        self._view_groups[old], self._view_groups[new] = self._view_groups[new], self._view_groups[old]
+        self._list_items[old], self._list_items[new] = self._list_items[new], self._list_items[old]
+        self._list_focus(new)
+        self._update_grab_overlay()
+
     def _on_selection_changed(self):
         idx = self._get_list_index()
         if idx is None:
             self["info_text"].setText(_b(""))
             return
         if self._streams is None:
-            if idx >= len(LIVE_EVENT_GROUPS):
+            if idx >= len(self._view_groups):
                 return
-            group_name, streams = LIVE_EVENT_GROUPS[idx]
+            group_name, streams = self._view_groups[idx]
             count = len(streams)
             self["info_text"].setText(_b(
                 group_name + "\n\n" +
                 str(count) + (" Stream" if count == 1 else " Streams")
             ))
+            self._update_legend()
         else:
             if idx >= len(self._streams):
                 return
@@ -2515,29 +2827,48 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
         self._update_dots()
 
     def key_up(self):
+        if self._streams is None and self._reorder and self._grabbed:
+            self._move_grabbed(-1)
+            return
         self._list_step(-1)
         self._on_selection_changed()
+        self._update_grab_overlay()
 
     def key_down(self):
+        if self._streams is None and self._reorder and self._grabbed:
+            self._move_grabbed(1)
+            return
         self._list_step(1)
         self._on_selection_changed()
+        self._update_grab_overlay()
 
     def key_page_up(self):
+        if self._streams is None and self._reorder and self._grabbed:
+            return
         self._list_page(-1)
         self._on_selection_changed()
+        self._update_grab_overlay()
 
     def key_page_down(self):
+        if self._streams is None and self._reorder and self._grabbed:
+            return
         self._list_page(1)
         self._on_selection_changed()
+        self._update_grab_overlay()
 
     def key_ok(self):
+        if self._streams is None and self._reorder:
+            self._grabbed = not self._grabbed
+            self._update_legend()
+            self._update_grab_overlay()
+            return
         idx = self._get_list_index()
         if idx is None:
             return
         if self._streams is None:
-            if idx >= len(LIVE_EVENT_GROUPS):
+            if idx >= len(self._view_groups):
                 return
-            group_name, streams = LIVE_EVENT_GROUPS[idx]
+            group_name, streams = self._view_groups[idx]
             self.session.open(OeMediathekLiveScreen, streams, group_name)
         else:
             if idx >= len(self._streams):
@@ -2553,7 +2884,68 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
                               autoconfigure_serviceapp=get_serviceapp_autoconfigure(),
                               streams=flat, stream_index=flat_idx)
 
+    def key_red(self):
+        if self._streams is not None:
+            return
+        if not self._reorder:
+            self._reorder = True
+            self._grabbed = False
+            if self._custom_order:
+                # Vorhandene eigene Reihenfolge zum Weiterbearbeiten laden,
+                # unabhaengig davon welche Ansicht gerade angezeigt wird -
+                # verhindert versehentliches Ueberschreiben mit der A-Z-Ansicht.
+                self._view_groups = list(self._custom_order)
+                self._list_items = [_b(g[0]) for g in self._view_groups]
+                self._list_focus(0)
+                self._sort_az = False
+            self._reorder_backup = list(self._view_groups)
+        else:
+            self._reorder = False
+            self._grabbed = False
+            changed = self._view_groups != self._reorder_backup
+            self._reorder_backup = None
+            if changed:
+                self._custom_order = list(self._view_groups)
+                self._sort_az = False
+                _save_group_state(self._ORDER_FILE, "user", self._custom_order)
+            else:
+                self._rebuild_view()
+        self._update_legend()
+        self._update_grab_overlay()
+
+    def key_green(self):
+        if self._streams is not None:
+            return
+        if self._reorder:
+            self._view_groups = list(self._reorder_backup)
+            self._grabbed = False
+            self._list_items = [_b(g[0]) for g in self._view_groups]
+            idx = min(self._list_sel, len(self._view_groups) - 1) if self._view_groups else 0
+            self._list_focus(idx)
+            self._on_selection_changed()
+        else:
+            self._sort_az = not self._sort_az
+            _save_group_state(
+                self._ORDER_FILE,
+                "az" if self._sort_az else "user",
+                self._custom_order if self._custom_order else LIVE_EVENT_GROUPS,
+            )
+            self._rebuild_view()
+        self._update_legend()
+        self._update_grab_overlay()
+
     def key_cancel(self):
+        if self._streams is None and self._reorder:
+            self._view_groups = list(self._reorder_backup)
+            self._reorder = False
+            self._grabbed = False
+            self._reorder_backup = None
+            self._list_items = [_b(g[0]) for g in self._view_groups]
+            idx = min(self._list_sel, len(self._view_groups) - 1) if self._view_groups else 0
+            self._list_focus(idx)
+            self._update_legend()
+            self._update_grab_overlay()
+            return
         self.close()
 
     def doClose(self):
