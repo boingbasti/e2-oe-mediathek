@@ -5149,18 +5149,27 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
 
 class OeMediathekSettingsScreen(Screen):
 
-    # Einträge: (label_text, action_id, status_fn_or_None)
+    # Einträge: (label_text, action_id, status_fn_or_None, description_text)
     # action_id: 0=Browse, 1=ToggleConvert, 2=ResetOrder, 3=ToggleWrapLR
     _ENTRIES = [
-        ("Download-Ordner",               0, None),
-        ("MP4 -> TS Konvertierung:",       1, get_auto_convert),
-        ("Download-Qualit\xc3\xa4t:",      6, get_download_quality_label),
-        ("Abspielqualit\xc3\xa4t:",        7, get_stream_quality_label),
-        ("Seite wechseln mit Links/Rechts:", 3, get_tile_wrap_lr),
-        ("ServiceApp f\xc3\xbcr Live-Streams konfigurieren:", 4, get_serviceapp_autoconfigure),
-        ("Debug-Logging:",                5, get_debug_logging),
-        ("exteplayer3 f\xc3\xbcr VOD-Streams:", 8, get_force_exteplayer),
-        ("Reihenfolge zur\xc3\xbccksetzen", 2, None),
+        ("Download-Ordner",               0, None,
+         "Speicherort f\xc3\xbcr heruntergeladene Sendungen auf der Box ausw\xc3\xa4hlen."),
+        ("MP4 -> TS Konvertierung:",       1, get_auto_convert,
+         "Heruntergeladene MP4-Dateien nach dem Download automatisch in TS umwandeln."),
+        ("Download-Qualit\xc3\xa4t:",      6, get_download_quality_label,
+         "Feste Aufl\xc3\xb6sung f\xc3\xbcr Downloads, mit Fallback falls nicht verf\xc3\xbcgbar."),
+        ("Abspielqualit\xc3\xa4t:",        7, get_stream_quality_label,
+         "Aufl\xc3\xb6sung beim Starten eines Videos, oder ob vorher jedes Mal gefragt wird."),
+        ("Seite wechseln mit Links/Rechts:", 3, get_tile_wrap_lr,
+         "Mit Links/Rechts im Hauptmen\xc3\xbc zwischen den Seiten bl\xc3\xa4ttern."),
+        ("ServiceApp f\xc3\xbcr Live-Streams konfigurieren:", 4, get_serviceapp_autoconfigure,
+         "ServiceApp automatisch f\xc3\xbcr synchrone Live-Stream-Wiedergabe einrichten."),
+        ("Debug-Logging:",                5, get_debug_logging,
+         "Ausf\xc3\xbchrliches Log unter /tmp/OeMediathek/oemediathek.log f\xc3\xbcr die Fehlersuche schreiben."),
+        ("exteplayer3 f\xc3\xbcr VOD-Streams:", 8, get_force_exteplayer,
+         "Mediathek-Episoden \xc3\xbcber exteplayer3 statt den internen Player abspielen."),
+        ("Reihenfolge zur\xc3\xbccksetzen", 2, None,
+         "Sortierreihenfolge der Kacheln im Hauptmen\xc3\xbc auf Standard zur\xc3\xbccksetzen."),
     ]
 
     # Layout-Konstanten je Auflösung: (x, y_first_row, row_h, font_title, font_row, font_hint, w, h, status_w)
@@ -5176,9 +5185,11 @@ class OeMediathekSettingsScreen(Screen):
         lw = iw - sw - 10     # Label-Breite (links)
         n  = len(cls._ENTRIES)
         list_h = n * rh
+        desc_h = 2 * (fh + 6)  # zweizeilig, fuer laengere Beschreibungen
         y_line1 = y0 - 5
-        y_hint  = y0 + list_h + 10
-        y_line2 = y_hint - 5
+        y_line2 = y0 + list_h + 5
+        y_desc  = y_line2 + 10
+        y_hint  = y_desc + desc_h + 8
         total_h = y_hint + fh + 15
 
         rows = ""
@@ -5197,13 +5208,14 @@ class OeMediathekSettingsScreen(Screen):
             <eLabel position="{x},{y_line1}" size="{iw},2" backgroundColor="#44FFFFFF" zPosition="-4" />
             {rows}
             <eLabel position="{x},{y_line2}" size="{iw},2" backgroundColor="#44FFFFFF" zPosition="-4" />
+            <widget name="desc_label" position="{x},{y_desc}" size="{iw},{desc_h}" font="Regular;{fh_size}" halign="center" valign="top" foregroundColor="#BBBBBB" backgroundColor="#1A000000" transparent="1" />
             <widget name="hint_label" position="{x},{y_hint}" size="{iw},{fh}" font="Regular;{fh_size}" halign="center" valign="center" foregroundColor="#AAAAAA" backgroundColor="#1A000000" transparent="1" />
         </screen>""".format(
             px=(1920 - w) // 2 if IS_FHD else (1280 - w) // 2,
             py=(1080 - total_h) // 2 if IS_FHD else (720 - total_h) // 2,
             w=w, total_h=total_h, x=x, iw=iw,
             ft=ft, ft_h=ft + 10,
-            y_line1=y_line1, y_line2=y_line2,
+            y_line1=y_line1, y_line2=y_line2, y_desc=y_desc, desc_h=desc_h,
             rows=rows,
             y_hint=y_hint, fh=fh + 4, fh_size=fh,
         )
@@ -5214,9 +5226,10 @@ class OeMediathekSettingsScreen(Screen):
         self._sel = 0
 
         self["title_label"] = Label(_b("Einstellungen"))
+        self["desc_label"]  = Label(_b(""))
         self["hint_label"]  = Label(_b("OK = Ausw\xc3\xa4hlen   |   EXIT = Schlie\xc3\x9fen"))
 
-        for i, (label, _, _fn) in enumerate(self._ENTRIES):
+        for i, (label, _, _fn, _desc) in enumerate(self._ENTRIES):
             self["lbl_%d"  % i] = Label(_b(label))
             self["stat_%d" % i] = Label(_b(""))
             self["sel_%d"  % i] = Label(_b(""))
@@ -5237,7 +5250,7 @@ class OeMediathekSettingsScreen(Screen):
         self.onShow.append(self._refresh)
 
     def _refresh(self):
-        for i, (_label, _aid, fn) in enumerate(self._ENTRIES):
+        for i, (_label, _aid, fn, _desc) in enumerate(self._ENTRIES):
             if fn is not None:
                 val = fn()
                 if isinstance(val, str):
@@ -5249,6 +5262,7 @@ class OeMediathekSettingsScreen(Screen):
         self._update_highlight()
 
     def _update_highlight(self):
+        self["desc_label"].setText(_b(self._ENTRIES[self._sel][3]))
         for i in range(len(self._ENTRIES)):
             try:
                 if i == self._sel:
@@ -5267,7 +5281,7 @@ class OeMediathekSettingsScreen(Screen):
         self._update_highlight()
 
     def _on_ok(self):
-        _, action_id, _ = self._ENTRIES[self._sel]
+        _, action_id, _, _ = self._ENTRIES[self._sel]
         if action_id == 0:
             self._browse()
         elif action_id == 1:
