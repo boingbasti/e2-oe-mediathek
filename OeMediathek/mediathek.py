@@ -787,14 +787,18 @@ def _find_uhd_streams_in(obj):
     return result
 
 
-def resolve_uhd_url_via_document_api(url_website):
-    """ZDF Document API → exakte _p72v (4K) / _p71v (1080p HDR) URL. Gibt None bei Fehler."""
+def resolve_uhd_url_via_document_api(url_website, with_meta=False):
+    """ZDF Document API → exakte _p72v (4K) / _p71v (1080p HDR) URL. Gibt None bei Fehler.
+    Mit with_meta=True wird stattdessen (url, season, episode) zurueckgegeben -
+    season/episode sind None, falls ZDF sie fuer diese Sendung nicht pflegt
+    (nur bei manchen Serien wie "Die Bergretter" vorhanden, siehe [[project_zdf_uhd]])."""
+    empty = (None, None, None) if with_meta else None
     if not url_website:
-        return None
+        return empty
     ws = url_website if isinstance(url_website, str) else url_website.decode("utf-8", "replace")
     canonical = ws.rstrip("/").split("/")[-1]
     if not canonical:
-        return None
+        return empty
     api_url = "https://zdf-prod-futura.zdf.de/mediathekV2/document/" + canonical
     try:
         req = Request(api_url)
@@ -803,11 +807,23 @@ def resolve_uhd_url_via_document_api(url_website):
         streams = _find_uhd_streams_in(data)
         uhd = [u for u in streams if "_p72v" in u or "_p71v" in u]
         if not uhd:
-            return None
+            return empty
         main = [u for u in uhd if "_a1a2_" in u]
-        return main[0] if main else uhd[0]
+        url = main[0] if main else uhd[0]
+        if not with_meta:
+            return url
+        doc = data.get("document", {}) if isinstance(data, dict) else {}
+        season = episode = None
+        try:
+            if doc.get("seasonNumber") is not None:
+                season = int(doc.get("seasonNumber"))
+            if doc.get("episodeNumber") is not None:
+                episode = int(doc.get("episodeNumber"))
+        except (TypeError, ValueError):
+            season = episode = None
+        return url, season, episode
     except Exception:
-        return None
+        return empty
 
 
 def get_zdf_uhd_topic_episodes(topic, offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp"):
@@ -903,6 +919,8 @@ def get_zdf_uhd_static_episodes(topic, search_term=None):
             "duration":      _s(""),
             "timestamp":     ts,
             "url_website":   _s(entry.get("web_url") or ""),
+            "season":        entry.get("season"),
+            "episode":       entry.get("episode"),
         })
     results.sort(key=lambda x: x["timestamp"], reverse=True)
 
@@ -1009,10 +1027,11 @@ def refresh_uhd_static():
         verified = [None] * len(episodes)
         def _resolve(args):
             i, ep = args
-            url = resolve_uhd_url_via_document_api(ep["canonical"])
+            url, season, episode = resolve_uhd_url_via_document_api(ep["canonical"], with_meta=True)
             if url:
                 verified[i] = {"topic": ep["topic"], "title": ep["title"],
-                               "web_url": "", "uhd_url": url, "timestamp": 0}
+                               "web_url": "", "uhd_url": url, "timestamp": 0,
+                               "season": season, "episode": episode}
         threads = []
         for i, ep in enumerate(episodes):
             t = _thr.Thread(target=_resolve, args=((i, ep),))
@@ -1057,7 +1076,8 @@ def refresh_uhd_static():
                         req2.get_method = lambda: "HEAD"
                         r2 = urlopen(req2, timeout=2, context=_ssl_context) if _ssl_context else urlopen(req2, timeout=2)
                         if r2.getcode() == 200:
-                            return {"topic": topic2, "title": title2, "web_url": "", "uhd_url": candidate, "timestamp": ts2}
+                            return {"topic": topic2, "title": title2, "web_url": "", "uhd_url": candidate, "timestamp": ts2,
+                                    "season": None, "episode": None}
                     except Exception:
                         pass
                 return None

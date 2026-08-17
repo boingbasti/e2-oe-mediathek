@@ -613,33 +613,39 @@ _SV_ENTRY  = b">> Sendung verpasst?"
 _SN_ENTRY  = b">> Demn\xc3\xa4chst"
 
 
-def _episode_label(title_bytes, topic_bytes=None, watched=False):
+def _episode_label(title_bytes, topic_bytes=None, watched=False, season=None, episode=None):
     """
     Gibt einen Listeneintrag zurueck. Falls der Titel (SXX/EYY) enthaelt,
     wird 'S12E08  <Titel ohne Tag>' vorangestellt, sonst unveraendert.
     Optional: topic_bytes als Praefix voranstellen (z.B. fuer Direkte Treffer),
     aber nur wenn das Topic nicht bereits im Titel enthalten ist.
     watched=True fuegt ein '[S] ' Praefix hinzu.
+    season/episode: falls bereits als Zahlen bekannt (z.B. ZDF UHD ueber die
+    ZDF Document API, siehe [[project_zdf_uhd]]), werden diese statt der
+    Regex-Erkennung aus dem Titeltext verwendet.
     """
     import re
     try:
         title = title_bytes.decode("utf-8", "replace")
     except Exception:
         title = str(title_bytes)
-    m = re.search(r'\(S(\d+)/E(\d+)\)', title)
-    if m:
-        season  = int(m.group(1))
-        episode = int(m.group(2))
-        clean   = re.sub(r'\s*\(S\d+/E\d+\)', '', title).strip()
-        label   = "S%02dE%02d  %s" % (season, episode, clean)
+    if season is not None and episode is not None:
+        label = "S%02dE%02d  %s" % (int(season), int(episode), title.strip())
     else:
-        m2 = re.search(r'\|\s*(?:Folge\s+)?(\d+)', title)
-        if m2:
-            folge = int(m2.group(1))
-            clean = re.sub(r'\s*\xb7.*$', '', title).strip()
-            label = "F%04d  %s" % (folge, clean)
+        m = re.search(r'\(S(\d+)/E(\d+)\)', title)
+        if m:
+            s  = int(m.group(1))
+            e = int(m.group(2))
+            clean   = re.sub(r'\s*\(S\d+/E\d+\)', '', title).strip()
+            label   = "S%02dE%02d  %s" % (s, e, clean)
         else:
-            label = title
+            m2 = re.search(r'\|\s*(?:Folge\s+)?(\d+)', title)
+            if m2:
+                folge = int(m2.group(1))
+                clean = re.sub(r'\s*\xb7.*$', '', title).strip()
+                label = "F%04d  %s" % (folge, clean)
+            else:
+                label = title
     if topic_bytes:
         try:
             topic = topic_bytes.decode("utf-8", "replace")
@@ -3718,7 +3724,7 @@ class OeMediathekScreen(Screen):
         self._sv_sn_date_str = date_str
         if self._ep_sort_mode == "title":
             def _sk(i):
-                lb = _episode_label(i["title"])
+                lb = _episode_label(i["title"], season=i.get("season"), episode=i.get("episode"))
                 try: return lb.decode("utf-8", "replace").lower()
                 except Exception: return str(lb).lower()
             items = sorted(self._sv_sn_items, key=_sk)
@@ -3735,7 +3741,8 @@ class OeMediathekScreen(Screen):
         self["title_label"].setText(self.source_name + b" | " + _b(date_str))
         self._set_list([
             _episode_label(i["title"], i.get("group"),
-                           watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""))
+                           watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""),
+                           season=i.get("season"), episode=i.get("episode"))
             for i in items
         ])
         self["status_label"].setText(_b("%d Sendungen" % len(items)))
@@ -3913,7 +3920,7 @@ class OeMediathekScreen(Screen):
 
         if self._ep_sort_mode == "title":
             def _sort_key(i):
-                lb = _episode_label(i["title"])
+                lb = _episode_label(i["title"], season=i.get("season"), episode=i.get("episode"))
                 try:
                     return lb.decode("utf-8", "replace").lower()
                 except Exception:
@@ -3926,7 +3933,7 @@ class OeMediathekScreen(Screen):
 
         is_direct_hits = self.cur_group_name.startswith(b">> Direkte Treffer")
         show_group = is_direct_hits or self.source_name == "Meine Favoriten"
-        self._set_list([_episode_label(i["title"], i.get("group") if show_group else None, watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b"")) for i in self.cur_episodes])
+        self._set_list([_episode_label(i["title"], i.get("group") if show_group else None, watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""), season=i.get("season"), episode=i.get("episode")) for i in self.cur_episodes])
 
         if self.ep_total > 0 and (self.ep_has_more or self.ep_page > 0):
             self["status_label"].setText(_b("%d  \xc2\xb7  ~%d gesamt" % (len(self.cur_episodes), self.ep_total)))
@@ -4128,6 +4135,15 @@ class OeMediathekScreen(Screen):
                 dur      = item.get("duration", b"")
                 dl_topic = item.get("group") or self.cur_group_name if self.cur_group_name.startswith(b">> Direkte Treffer") else self.cur_group_name
                 _title   = item["title"]
+                _season, _episode = item.get("season"), item.get("episode")
+                if _season is not None and _episode is not None:
+                    try:
+                        was_bytes = isinstance(_title, bytes)
+                        _tstr = _title.decode("utf-8", "replace") if was_bytes else _title
+                        _tstr = "S%02dE%02d %s" % (int(_season), int(_episode), _tstr)
+                        _title = _tstr.encode("utf-8") if was_bytes else _tstr
+                    except Exception:
+                        pass
                 _self    = self
                 _web = item.get("url_website", b"")
                 def _enqueue_uhd(_u=base, _tl=_title, _dt=dl_topic, _d=desc, _dr=dur, _w=_web):
@@ -4844,7 +4860,7 @@ class OeMediathekScreen(Screen):
             toggle_watched(url)
             is_direct_hits = self.cur_group_name.startswith(b">> Direkte Treffer")
             show_group = is_direct_hits or self.source_name == "Meine Favoriten"
-            self._list_items = [_episode_label(i["title"], i.get("group") if show_group else None, watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b"")) for i in self.cur_episodes]
+            self._list_items = [_episode_label(i["title"], i.get("group") if show_group else None, watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""), season=i.get("season"), episode=i.get("episode")) for i in self.cur_episodes]
             self._list_focus(idx)
             self._update_info_hint()
         except Exception:
@@ -4864,7 +4880,7 @@ class OeMediathekScreen(Screen):
                 self._show_toast(_b("Favorit entfernt"), added=False)
                 if self.source_name == "Meine Favoriten" and self._fav_show_episodes:
                     self.cur_episodes = [i for i in self.cur_episodes if (i.get("stream_url_hd") or i.get("stream_url_sd") or b"") != url]
-                    self._list_items = [_episode_label(i["title"], i.get("group"), watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b"")) for i in self.cur_episodes]
+                    self._list_items = [_episode_label(i["title"], i.get("group"), watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""), season=i.get("season"), episode=i.get("episode")) for i in self.cur_episodes]
                     self["status_label"].setText(_b("%d Einzelfolgen" % len(self.cur_episodes)))
                     new_idx = min(idx, len(self.cur_episodes) - 1)
                     if new_idx >= 0:
@@ -4906,7 +4922,7 @@ class OeMediathekScreen(Screen):
     def _show_episode_favorites(self):
         items = get_episode_favorites()
         self["status_label"].setText(_b("%d Einzelfolgen" % len(items)))
-        self._set_list([_episode_label(i["title"], i.get("group"), watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b"")) for i in items])
+        self._set_list([_episode_label(i["title"], i.get("group"), watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""), season=i.get("season"), episode=i.get("episode")) for i in items])
         self.cur_episodes = items
         self.mode = MODE_EPISODES
         self.last_index = -1
@@ -4956,7 +4972,7 @@ class OeMediathekScreen(Screen):
     def _ep_fav_list_entries(self):
         entries = []
         for i, item in enumerate(self.cur_episodes):
-            label = _episode_label(item["title"], item.get("group"), watched=is_watched(item.get("stream_url_hd") or item.get("stream_url_sd") or b""))
+            label = _episode_label(item["title"], item.get("group"), watched=is_watched(item.get("stream_url_hd") or item.get("stream_url_sd") or b""), season=item.get("season"), episode=item.get("episode"))
             if i == self._ep_fav_grabbed:
                 label = _b("\xc2\xbb ") + label
             entries.append(label)
