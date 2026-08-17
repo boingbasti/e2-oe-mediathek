@@ -161,6 +161,18 @@ def get_stream_quality_label():
     v = get_stream_quality()
     return {"ask": "Auswahl", "hd": "1080p", "720p": "720p"}.get(v, "Auswahl")
 
+def get_download_extra_info():
+    return load_settings().get("download_extra_info", "both")
+
+def set_download_extra_info(mode):
+    s = load_settings()
+    s["download_extra_info"] = mode
+    save_settings(s)
+
+def get_download_extra_info_label():
+    v = get_download_extra_info()
+    return {"meta": ".meta", "txt": ".txt", "both": "Beide"}.get(v, "Beide")
+
 def write_info_txt(filepath, title, description=None, duration=None, topic=None):
     """Schreibt eine .txt Datei mit Sendungsinfos neben die Download-Datei."""
     try:
@@ -746,8 +758,11 @@ class Downloader(object):
                 if self.on_error:
                     self.on_error("Abgebrochen")
             else:
-                write_info_txt(self.filepath, self.title, self.description, self.duration, self.topic)
-                write_meta(self.filepath, self.title, self.description, self.duration)
+                extra_info = get_download_extra_info()
+                if extra_info in ("txt", "both"):
+                    write_info_txt(self.filepath, self.title, self.description, self.duration, self.topic)
+                if extra_info in ("meta", "both"):
+                    write_meta(self.filepath, self.title, self.description, self.duration)
                 _log("Fertig: %s" % self.title)
                 if self.on_done:
                     self.on_done(self.filepath)
