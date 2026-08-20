@@ -69,6 +69,28 @@ except Exception:
     _ssl_context = None
 
 
+def _dedupe_by_url(items):
+    """Entfernt Duplikate anhand des URL-Pfads (Hostname ignoriert, da CDN-Varianten
+    existieren). MVW liefert vereinzelt denselben Eintrag doppelt oder dreifach zurueck
+    (z.B. durch Re-Indexierung eines Senderfeeds) - betraf u.a. "Sendung verpasst?".
+    Behaelt die Reihenfolge, der erste Treffer gewinnt."""
+    seen = set()
+    result = []
+    for item in items:
+        url = item.get("stream_url_hd") or item.get("stream_url_sd") or b""
+        url_str = url.decode("utf-8", "replace") if isinstance(url, bytes) else (url or "")
+        try:
+            path_key = url_str.split("://", 1)[1].split("/", 1)[1] if "://" in url_str else url_str
+        except Exception:
+            path_key = url_str
+        if path_key and path_key in seen:
+            continue
+        if path_key:
+            seen.add(path_key)
+        result.append(item)
+    return result
+
+
 # ------------------------------------------------------------------
 # MediathekViewWeb-API
 # POST https://mediathekviewweb.de/api/query
@@ -232,6 +254,8 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
             "timestamp":     ts,
             "url_website":   _s(entry.get("url_website") or ""),
         })
+
+    items = _dedupe_by_url(items)
 
     _log("MVW %d Sendungen verarbeitet" % len(items))
     return items, total_results, raw_count

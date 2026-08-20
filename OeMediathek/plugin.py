@@ -639,7 +639,9 @@ def _episode_label(title_bytes, topic_bytes=None, watched=False, season=None, ep
             clean   = re.sub(r'\s*\(S\d+/E\d+\)', '', title).strip()
             label   = "S%02dE%02d  %s" % (s, e, clean)
         else:
-            m2 = re.search(r'\|\s*(?:Folge\s+)?(\d+)', title)
+            # "Folge" ist Pflicht, nicht optional: sonst matcht z.B. WDRs Titel-Konvention
+            # "Titel | 18.08.2026" faelschlich als "Folge 18" (Tag des Datums).
+            m2 = re.search(r'\|\s*Folge\s+(\d+)', title)
             if m2:
                 folge = int(m2.group(1))
                 clean = re.sub(r'\s*\xb7.*$', '', title).strip()
@@ -1632,7 +1634,11 @@ class OeMediathekMainScreen(Screen):
     def key_right(self):
         tile_idx = self.selected % TILES_PER_PAGE
         col = tile_idx % TILE_COLS
-        if col == TILE_COLS - 1:
+        # Bei unvollstaendiger letzter Zeile (Kachelanzahl kein Vielfaches von
+        # TILE_COLS) steht die letzte Kachel nicht zwingend in der letzten Spalte -
+        # "at_end" faengt diesen Fall ab, sonst greift der Wrap-Around nie.
+        at_end = self.selected == len(SOURCES) - 1
+        if col == TILE_COLS - 1 or at_end:
             if not get_tile_wrap_lr():
                 row = tile_idx // TILE_COLS
                 new = self.main_page * TILES_PER_PAGE + row * TILE_COLS
@@ -3723,8 +3729,12 @@ class OeMediathekScreen(Screen):
         """Zeigt SV/SN-Items direkt als flache Episodenliste, ohne Gruppen-Zwischenschritt."""
         self._sv_sn_date_str = date_str
         if self._ep_sort_mode == "title":
+            # Sortierschluessel MUSS exakt dem Anzeigetext entsprechen (inkl. Topic-
+            # Praefix) - sonst landen Episoden wie bei "Der Elefant" (Topic steht nicht
+            # im Titel, wird beim Anzeigen vorangestellt) an der falschen Position,
+            # weil nach dem reinen Titel statt dem sichtbaren Text sortiert wuerde.
             def _sk(i):
-                lb = _episode_label(i["title"], season=i.get("season"), episode=i.get("episode"))
+                lb = _episode_label(i["title"], i.get("group"), season=i.get("season"), episode=i.get("episode"))
                 try: return lb.decode("utf-8", "replace").lower()
                 except Exception: return str(lb).lower()
             items = sorted(self._sv_sn_items, key=_sk)
@@ -3918,9 +3928,14 @@ class OeMediathekScreen(Screen):
         if self._fetch_error:
             _log("Episoden Fetch Fehler: " + str(self._fetch_error))
 
+        is_direct_hits = self.cur_group_name.startswith(b">> Direkte Treffer")
+        show_group = is_direct_hits or self.source_name == "Meine Favoriten"
+
         if self._ep_sort_mode == "title":
+            # Sortierschluessel MUSS exakt dem Anzeigetext entsprechen (inkl. Topic-
+            # Praefix bei show_group) - siehe _show_sv_sn_flat fuer denselben Fix.
             def _sort_key(i):
-                lb = _episode_label(i["title"], season=i.get("season"), episode=i.get("episode"))
+                lb = _episode_label(i["title"], i.get("group") if show_group else None, season=i.get("season"), episode=i.get("episode"))
                 try:
                     return lb.decode("utf-8", "replace").lower()
                 except Exception:
@@ -3931,8 +3946,6 @@ class OeMediathekScreen(Screen):
             self.cur_episodes = self._fetch_episodes_result
             self.ep_has_more = getattr(self, "_ep_api_has_more", False)
 
-        is_direct_hits = self.cur_group_name.startswith(b">> Direkte Treffer")
-        show_group = is_direct_hits or self.source_name == "Meine Favoriten"
         self._set_list([_episode_label(i["title"], i.get("group") if show_group else None, watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""), season=i.get("season"), episode=i.get("episode")) for i in self.cur_episodes])
 
         if self.ep_total > 0 and (self.ep_has_more or self.ep_page > 0):
