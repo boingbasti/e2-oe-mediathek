@@ -157,16 +157,6 @@ def _b(val):
         return str(val)
 
 
-def _root_bg_color(default="#66000000"):
-    """Hintergrundfarbe fuer den untersten Screen-Layer (volle Bildschirmgroesse,
-    zPosition=-6). Bei "Live TV im Hintergrund" = AUS blickdicht schwarz, damit ein
-    haengengebliebenes Standbild vom zuletzt geschlossenen Player nicht durchscheint
-    (stopService() alleine raeumt den Video-Layer auf manchen Boxen nicht zuverlaessig
-    auf). Sonst die gewohnte halbtransparente Verdunklung (default-Parameter, je nach
-    Screen unterschiedlich stark), durch die Live-TV durchscheint."""
-    return "#00000000" if not get_live_tv_background() else default
-
-
 LIVE_EVENT_GROUPS = [
     # (Gruppenname, [(Anzeigename, Stream-URL), ...])
     ("Arte Concert", [
@@ -865,7 +855,7 @@ class OeMediathekAlphaPickerScreen(Screen):
 
         return """
         <screen name="OeMediathekAlphaPickerScreen" position="0,0" size="%d,%d" flags="wfNoBorder">
-            <eLabel position="0,0" size="%d,%d" backgroundColor="%s" zPosition="-6" />
+            <eLabel position="0,0" size="%d,%d" backgroundColor="#66000000" zPosition="-6" />
             <eLabel position="%d,%d" size="%d,%d" backgroundColor="#33000000" zPosition="-5" />
 
             <widget name="title_label" position="%d,%d" size="%d,%d"
@@ -881,7 +871,7 @@ class OeMediathekAlphaPickerScreen(Screen):
         </screen>
         """ % (
             screen_w, screen_h,
-            screen_w, screen_h, _root_bg_color(),
+            screen_w, screen_h,
             bg_x, bg_y, bg_w, bg_h,
             bg_x, bg_y + (20 if IS_FHD else 13), bg_w, title_h, font_title,
             _ALPHA_X0, _ALPHA_Y0, _ALPHA_CW, _ALPHA_CH,
@@ -982,7 +972,7 @@ class OeMediathekInfoScreen(Screen):
         if IS_FHD:
             return """
         <screen name="OeMediathekInfoScreen" position="0,0" size="1920,1080" flags="wfNoBorder">
-            <eLabel position="0,0" size="1920,1080" backgroundColor="%s" zPosition="-6" />
+            <eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6" />
             <eLabel position="360,140" size="1200,800" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="400,170" size="1120,60" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
             <widget name="duration_label" position="400,240" size="1120,40" font="Regular;28" halign="left" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
@@ -990,11 +980,11 @@ class OeMediathekInfoScreen(Screen):
             <widget name="text_label" position="400,330" size="1120,520" font="Regular;36" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
             <widget name="hint_label" position="400,870" size="1120,40" font="Regular;24" halign="center" valign="center" foregroundColor="#555555" backgroundColor="#33000000" transparent="1" />
         </screen>
-            """ % _root_bg_color()
+            """
         else:
             return """
         <screen name="OeMediathekInfoScreen" position="0,0" size="1280,720" flags="wfNoBorder">
-            <eLabel position="0,0" size="1280,720" backgroundColor="%s" zPosition="-6" />
+            <eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6" />
             <eLabel position="240,93" size="800,534" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="266,113" size="746,40" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
             <widget name="duration_label" position="266,160" size="746,26" font="Regular;18" halign="left" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
@@ -1002,7 +992,7 @@ class OeMediathekInfoScreen(Screen):
             <widget name="text_label" position="266,220" size="746,346" font="Regular;24" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1" />
             <widget name="hint_label" position="266,580" size="746,26" font="Regular;16" halign="center" valign="center" foregroundColor="#555555" backgroundColor="#33000000" transparent="1" />
         </screen>
-            """ % _root_bg_color()
+            """
 
     def __init__(self, session, title, description, duration):
         self.skin = self._make_skin()
@@ -1237,11 +1227,10 @@ class OeMediathekMainScreen(Screen):
 
         margin = 30
 
-        root_bg = _root_bg_color("#33000000")
         if IS_FHD:
             return """
         <screen name="OeMediathekMainScreen" position="0,0" size="%d,%d" flags="wfNoBorder">
-            <eLabel position="0,0" size="%d,%d" backgroundColor="%s" zPosition="-6" />
+            <eLabel position="0,0" size="%d,%d" backgroundColor="#33000000" zPosition="-6" />
             <eLabel position="%d,%d" size="%d,%d" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
             <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#00253850" zPosition="-3" />
@@ -1260,7 +1249,7 @@ class OeMediathekMainScreen(Screen):
             <widget name="version_label" position="1530,30" size="330,80" font="Regular;24" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
         </screen>
         """ % (
-                sw, sh, sw, sh, root_bg,
+                sw, sh, sw, sh,
                 margin, hdr_y, sw - 2 * margin, hdr_h,
                 margin, hdr_y, sw - 2 * margin, hdr_h, font_title,
                 _TX[0], _TY[0], TILE_W, TILE_H,
@@ -1269,7 +1258,7 @@ class OeMediathekMainScreen(Screen):
         else:
             return """
         <screen name="OeMediathekMainScreen" position="0,0" size="%d,%d" flags="wfNoBorder">
-            <eLabel position="0,0" size="%d,%d" backgroundColor="%s" zPosition="-6" />
+            <eLabel position="0,0" size="%d,%d" backgroundColor="#33000000" zPosition="-6" />
             <eLabel position="%d,%d" size="%d,%d" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
             <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#00253850" zPosition="-3" />
@@ -1288,7 +1277,7 @@ class OeMediathekMainScreen(Screen):
             <widget name="version_label" position="1010,20" size="220,53" font="Regular;16" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1" />
         </screen>
         """ % (
-                sw, sh, sw, sh, root_bg,
+                sw, sh, sw, sh,
                 margin, hdr_y, sw - 2 * margin, hdr_h,
                 margin, hdr_y, sw - 2 * margin, hdr_h, font_title,
                 _TX[0], _TY[0], TILE_W, TILE_H,
@@ -1798,7 +1787,7 @@ class OeMediathekSearchHistoryScreen(_CustomListMixin, Screen):
         if IS_FHD:
             return (
                 '<screen name="OeMediathekSearchHistoryScreen" position="0,0" size="1920,1080" flags="wfNoBorder">'
-                '<eLabel position="0,0" size="1920,1080" backgroundColor="' + _root_bg_color() + '" zPosition="-6"/>'
+                '<eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="560,200" size="800,680" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="600,230" size="720,60" font="Regular;38" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="600,306" size="720,2" backgroundColor="#33FFFFFF" zPosition="-4"/>'
@@ -1813,7 +1802,7 @@ class OeMediathekSearchHistoryScreen(_CustomListMixin, Screen):
         else:
             return (
                 '<screen name="OeMediathekSearchHistoryScreen" position="0,0" size="1280,720" flags="wfNoBorder">'
-                '<eLabel position="0,0" size="1280,720" backgroundColor="' + _root_bg_color() + '" zPosition="-6"/>'
+                '<eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="373,133" size="534,453" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="400,153" size="480,40" font="Regular;25" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="400,204" size="480,1" backgroundColor="#33FFFFFF" zPosition="-4"/>'
@@ -1986,11 +1975,11 @@ class OeMediathekPickerScreen(_CustomListMixin, Screen):
 
         return (
             '<screen name="OeMediathekPickerScreen" position="0,0" size="{sz}" flags="wfNoBorder">'
-            '<eLabel position="0,0" size="{sz}" backgroundColor="{rootbg}" zPosition="-6"/>'
+            '<eLabel position="0,0" size="{sz}" backgroundColor="#66000000" zPosition="-6"/>'
             '<eLabel position="{px},{py}" size="{pw},{ph}" backgroundColor="#33000000" zPosition="-5"/>'
             '<widget name="title_label" position="{lx},{ty}" size="{lw},{rh}" font="Regular;{tf}" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
             '<eLabel position="{lx},{sy}" size="{lw},{sh}" backgroundColor="#33FFFFFF" zPosition="-4"/>'
-        ).format(sz=sz, px=px, py=py, pw=pw, ph=ph, lx=lx, ty=title_y, lw=lw, rh=rh, tf=tf, sy=sep_y, sh=sep_h, rootbg=_root_bg_color()) + list_xml + (
+        ).format(sz=sz, px=px, py=py, pw=pw, ph=ph, lx=lx, ty=title_y, lw=lw, rh=rh, tf=tf, sy=sep_y, sh=sep_h) + list_xml + (
             '<eLabel position="{px},{hy}" size="{pw},{hh}" backgroundColor="#1A000000" zPosition="-4"/>'
             '<widget name="hint_ok"    position="{lx},{hy}" size="360,{hh}" font="Regular;{hf}" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
             '<widget name="hint_label" position="{px},{hy}" size="{hw},{hh}" font="Regular;{hf}" halign="right" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
@@ -2228,7 +2217,7 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
         if IS_FHD:
             return (
                 '<screen name="OeMediathekLivestreamScreen" position="0,0" size="1920,1080" flags="wfNoBorder">'
-                '<eLabel position="0,0" size="1920,1080" backgroundColor="' + _root_bg_color() + '" zPosition="-6"/>'
+                '<eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<widget name="sort_label" position="910,30" size="220,80" font="Regular;28" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
@@ -2250,7 +2239,7 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
         else:
             return (
                 '<screen name="OeMediathekLivestreamScreen" position="0,0" size="1280,720" flags="wfNoBorder">'
-                '<eLabel position="0,0" size="1280,720" backgroundColor="' + _root_bg_color() + '" zPosition="-6"/>'
+                '<eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<widget name="sort_label" position="610,20" size="147,53" font="Regular;18" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
@@ -2596,7 +2585,7 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
         if IS_FHD:
             return (
                 '<screen name="OeMediathekLiveScreen" position="0,0" size="1920,1080" flags="wfNoBorder">'
-                '<eLabel position="0,0" size="1920,1080" backgroundColor="' + _root_bg_color() + '" zPosition="-6"/>'
+                '<eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<widget name="sort_label" position="910,30" size="220,80" font="Regular;28" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
@@ -2618,7 +2607,7 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
         else:
             return (
                 '<screen name="OeMediathekLiveScreen" position="0,0" size="1280,720" flags="wfNoBorder">'
-                '<eLabel position="0,0" size="1280,720" backgroundColor="' + _root_bg_color() + '" zPosition="-6"/>'
+                '<eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<widget name="sort_label" position="610,20" size="147,53" font="Regular;18" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
@@ -3039,7 +3028,7 @@ class OeMediathekScreen(Screen):
         if IS_FHD:
             return (
                 '<screen name="OeMediathekScreen" position="0,0" size="1920,1080" flags="wfNoBorder">'
-                '<eLabel position="0,0" size="1920,1080" backgroundColor="' + _root_bg_color() + '" zPosition="-6"/>'
+                '<eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<widget name="sort_label" position="910,30" size="220,80" font="Regular;28" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
@@ -3064,7 +3053,7 @@ class OeMediathekScreen(Screen):
         else:
             return (
                 '<screen name="OeMediathekScreen" position="0,0" size="1280,720" flags="wfNoBorder">'
-                '<eLabel position="0,0" size="1280,720" backgroundColor="' + _root_bg_color() + '" zPosition="-6"/>'
+                '<eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<widget name="sort_label" position="610,20" size="147,53" font="Regular;18" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
@@ -5325,7 +5314,7 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
         if IS_FHD:
             return (
                 '<screen name="OeMediathekZdfUhdScreen" position="0,0" size="1920,1080" flags="wfNoBorder">'
-                '<eLabel position="0,0" size="1920,1080" backgroundColor="' + _root_bg_color() + '" zPosition="-6"/>'
+                '<eLabel position="0,0" size="1920,1080" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="30,30" size="1860,80" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="50,30" size="850,80" font="Regular;42" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<widget name="status_label" position="910,30" size="920,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
@@ -5344,7 +5333,7 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
         else:
             return (
                 '<screen name="OeMediathekZdfUhdScreen" position="0,0" size="1280,720" flags="wfNoBorder">'
-                '<eLabel position="0,0" size="1280,720" backgroundColor="' + _root_bg_color() + '" zPosition="-6"/>'
+                '<eLabel position="0,0" size="1280,720" backgroundColor="#66000000" zPosition="-6"/>'
                 '<eLabel position="30,20" size="1220,53" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="title_label" position="43,20" size="560,53" font="Regular;28" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<widget name="status_label" position="610,20" size="610,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
