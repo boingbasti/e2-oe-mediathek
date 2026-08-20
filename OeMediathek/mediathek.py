@@ -69,6 +69,20 @@ except Exception:
     _ssl_context = None
 
 
+def _normalize_stream_url(url):
+    """MVW liefert bei manchen Feeds (bestaetigt: BR/ARD-alpha) die Stream-URL
+    protokollrelativ ohne Schema zurueck ("//cdn-storage.br.de/..." statt
+    "https://cdn-storage.br.de/..."). exteplayer3/serviceapp interpretiert das
+    dann als lokalen Dateipfad (file:////cdn-storage.br.de/...), findet die
+    Datei natuerlich nicht und beendet sich sofort ohne sichtbaren Fehler
+    (serviceapp.log: PLAYBACK_OPEN sts=-1, exteplayer3 exited innerhalb weniger
+    Millisekunden). Fehlendes Schema hier ergaenzen, bevor die URL irgendwo
+    weiterverwendet wird."""
+    if url and url.startswith("//"):
+        return "https:" + url
+    return url
+
+
 def _dedupe_by_url(items):
     """Entfernt Duplikate anhand des URL-Pfads (Hostname ignoriert, da CDN-Varianten
     existieren). MVW liefert vereinzelt denselben Eintrag doppelt oder dreifach zurueck
@@ -179,11 +193,19 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
         # Die API liefert auch ARTE.FR, ARTE.IT etc. bei channel="ARTE"-Abfragen.
         if ch.upper().startswith("ARTE") and ch.upper() != "ARTE.DE":
             continue
-        
+
+        # MVW-Channel-Suche ist eine Textsuche, kein Exact-Match: "ARD" matcht auch
+        # "ARD-alpha", "ZDF" matcht auch "ZDFneo"/"ZDF-tivi", "SR" matcht auch "SRF".
+        # Fuer eigene Sender-Kacheln (channel-Filter gesetzt) nur exakte Treffer
+        # behalten, sonst landen Sendungen anderer, eigenstaendiger Kacheln zusaetzlich
+        # in der falschen Kachel (z.B. RESPEKT/ARD-alpha in "ARD Mediathek").
+        if channel and ch.upper() != channel.upper() and not (channel.upper() == "ARTE" and ch.upper() == "ARTE.DE"):
+            continue
+
         # HD und SD getrennt auslesen
         # ORF: Q8C (HD) seit 2026-06 auf "video_not_available"-Tafel umgeleitet — kein HD anbieten
-        url_hd     = "" if ch.upper() == "ORF" else (entry.get("url_video_hd") or "")
-        url_sd     = entry.get("url_video") or ""
+        url_hd     = "" if ch.upper() == "ORF" else _normalize_stream_url(entry.get("url_video_hd") or "")
+        url_sd     = _normalize_stream_url(entry.get("url_video") or "")
         
         desc       = entry.get("description", "")
         duration   = entry.get("duration", 0)
