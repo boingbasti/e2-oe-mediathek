@@ -5606,7 +5606,7 @@ class OeMediathekSettingsScreen(Screen):
         ("Download-Qualit\xc3\xa4t:",      6, get_download_quality_label,
          "Feste Aufl\xc3\xb6sung f\xc3\xbcr Downloads, mit Fallback falls nicht verf\xc3\xbcgbar."),
         ("Zusatzinfos bei Downloads:",     9, get_download_extra_info_label,
-         "Begleitdateien pro Download: .meta und/oder .txt. Ohne .meta fehlt die Info in der Filmliste."),
+         ".meta f\xc3\xbcllt die Enigma2-Filmliste, .txt lesen auch andere Mediaplayer."),
         ("Abspielqualit\xc3\xa4t:",        7, get_stream_quality_label,
          "Aufl\xc3\xb6sung beim Starten eines Videos, oder ob vorher jedes Mal gefragt wird."),
         ("Seite wechseln mit Links/Rechts:", 3, get_tile_wrap_lr,
