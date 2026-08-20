@@ -27,7 +27,7 @@ except ImportError:
 
 from enigma import eServiceReference
 
-from downloader import get_debug_logging, get_force_exteplayer
+from downloader import get_debug_logging, get_force_exteplayer, get_live_tv_background
 
 _LOG_FILE = "/tmp/OeMediathek/oemediathek.log"
 
@@ -173,6 +173,22 @@ def _offline_ref(name=""):
         title = (name + " (Offline)").encode("utf-8") if isinstance(name, type(u"")) else (name + b" (Offline)")
         ref.setName(title)
     return ref
+
+
+_BLACK_BACKGROUND_VIDEO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "black_background.mp4")
+
+
+def black_background_ref():
+    """Service-Referenz auf einen stillen schwarzen Platzhalter-Clip (10 Min, loopt
+    sich durch Neustart bei jedem Menue-Aufruf effektiv selbst). Wird als Hintergrund
+    abgespielt wenn 'Live TV im Hintergrund' aus ist: einzelne Listen-/Kachel-Widgets
+    haben eigene halbtransparente Hintergrundfarben und blenden unabhaengig vom
+    Root-Layer direkt gegen die Video-Ebene - ein blosses stopService() laesst dort
+    ein haengengebliebenes Standbild vom zuletzt geschlossenen Player durchscheinen.
+    Ersetzt die Video-Ebene komplett durch garantiert Schwarz statt zu versuchen,
+    sie zu verdecken."""
+    path = _BLACK_BACKGROUND_VIDEO.encode("utf-8") if isinstance(_BLACK_BACKGROUND_VIDEO, str) else _BLACK_BACKGROUND_VIDEO
+    return eServiceReference(4097, 0, path)
 
 
 def _tmp_playlist_path(master_url):
@@ -543,7 +559,18 @@ def play_resolved_stream(session, stream_url_bytes, title_bytes, player_id, stre
     """
     ref = eServiceReference(player_id, 0, stream_url_bytes)
     ref.setName(title_bytes)
-    session.open(OeStreamPlayer, ref, streams, stream_index, autoconfigure_serviceapp)
+
+    def _on_player_closed(*args):
+        # Laeuft fuer JEDE Wiedergabe, egal aus welchem Screen gestartet - im
+        # Gegensatz zu einem Hook nur in OeMediathekMainScreen.__on_show, der nie
+        # feuert wenn man z.B. nur bis zur Episodenliste zurueckkehrt.
+        if not get_live_tv_background():
+            try:
+                session.nav.playService(black_background_ref())
+            except Exception:
+                pass
+
+    session.openWithCallback(_on_player_closed, OeStreamPlayer, ref, streams, stream_index, autoconfigure_serviceapp)
 
 
 _active_play_thread_running = False

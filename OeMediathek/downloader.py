@@ -173,6 +173,14 @@ def get_download_extra_info_label():
     v = get_download_extra_info()
     return {"meta": ".meta", "txt": ".txt", "both": "Beide"}.get(v, "Beide")
 
+def get_live_tv_background():
+    return load_settings().get("live_tv_background", True)
+
+def set_live_tv_background(enabled):
+    s = load_settings()
+    s["live_tv_background"] = bool(enabled)
+    save_settings(s)
+
 def write_info_txt(filepath, title, description=None, duration=None, topic=None):
     """Schreibt eine .txt Datei mit Sendungsinfos neben die Download-Datei."""
     try:
