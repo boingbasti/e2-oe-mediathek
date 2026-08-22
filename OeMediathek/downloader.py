@@ -262,7 +262,9 @@ def convert_mp4_to_ts(mp4_path, on_done=None, on_error=None):
             )
             _out, _err = proc.communicate()
             if proc.returncode != 0:
-                raise Exception("ffmpeg Fehler (Code %d)" % proc.returncode)
+                err_str = _err.decode("utf-8", "replace") if _err else ""
+                err_tail = "\n".join(err_str.strip().splitlines()[-5:])
+                raise Exception("ffmpeg Fehler (Code %d): %s" % (proc.returncode, err_tail))
             try:
                 os.remove(mp4_path)
             except Exception:
