@@ -3448,9 +3448,14 @@ class OeMediathekScreen(Screen):
                         title = item["title"].decode("utf-8", "replace") if isinstance(item["title"], bytes) else item["title"]
                     except Exception:
                         title = str(item["title"])
-                    desc = item.get("description", _b("Keine Beschreibung verfügbar."))
+                    desc = item.get("description") or _b("Keine Beschreibung verfügbar.")
                     dur  = item.get("duration", b"Unbekannt")
-                    full_text = _b(title) + _b("\n\n[") + _b(dur) + _b("]\n\n") + _b(desc)
+                    quality = item.get("quality")
+                    if quality:
+                        bracket = _b(quality) + (_b(" \xc2\xb7 ") + _b(dur) if dur else _b(""))
+                    else:
+                        bracket = _b(dur)
+                    full_text = _b(title) + _b("\n\n[") + bracket + _b("]\n\n") + _b(desc)
                     ts = item.get("timestamp", 0)
                     if ts:
                         import time as _time
