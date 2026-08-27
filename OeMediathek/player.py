@@ -246,6 +246,11 @@ def _configure_serviceapp_for_live():
         except ImportError:
             has_debug_logging_control = False
 
+        try:
+            from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_PCM_AUDIO_EXPORT as has_pcm_audio_export
+        except ImportError:
+            has_pcm_audio_export = False
+
         if not ext3.downmix.value:
             ext3.downmix.value = True; ext3.downmix.save(); changed = True
 
@@ -281,6 +286,17 @@ def _configure_serviceapp_for_live():
         # Parameter ueberhaupt kennt - sonst wirft der C-Aufruf bei einer aelteren
         # Version einen TypeError (zu viele Argumente).
         extra_kwargs = {"debugLoggingEnabled": debug_logging} if has_debug_logging_control else {}
+        # Eigene Kopie fuer setExtEplayer3Settings: pcmAudioExportEnabled kennt nur
+        # dieses Setter-Paar, nicht setServiceAppSettings() weiter unten (das teilt
+        # sich extra_kwargs mit). MUSS mitgegeben werden, wenn bekannt: der
+        # zugrundeliegende C-Struct ist global/prozessweit, ein fehlender Parameter
+        # faellt auf Pythons Default (False) zurueck und ueberschreibt damit
+        # unbemerkt den im Setup gesetzten Wert - auch fuer alle spaeteren Streams
+        # anderer Plugins, bis das Setup erneut gespeichert oder Enigma2 neu
+        # gestartet wird.
+        extra_kwargs_ext3 = dict(extra_kwargs)
+        if has_pcm_audio_export and hasattr(ext3, "pcm_audio_export"):
+            extra_kwargs_ext3["pcmAudioExportEnabled"] = ext3.pcm_audio_export.value
         if has_quality_select:
             hls_qm = {"auto": 0, "lowest": 1, "highest": 2}.get(ext3.hls_quality_mode.value, 0)
             setExtEplayer3Settings(
@@ -292,7 +308,7 @@ def _configure_serviceapp_for_live():
                 ext3.downmix.value,
                 hls_qm,
                 ext3.hls_audio_default_only.value,
-                **extra_kwargs
+                **extra_kwargs_ext3
             )
         else:
             setExtEplayer3Settings(
@@ -302,7 +318,7 @@ def _configure_serviceapp_for_live():
                 ext3.wma_swdecoding.value,
                 ext3.lpcm_injecion.value,
                 ext3.downmix.value,
-                **extra_kwargs
+                **extra_kwargs_ext3
             )
 
         if has_new_serviceapp and hasattr(opts, "hls_audio_filter"):
