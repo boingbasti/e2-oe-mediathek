@@ -27,7 +27,7 @@ except ImportError:
 
 from enigma import eServiceReference
 
-from downloader import get_debug_logging, get_force_exteplayer, get_live_tv_background
+from downloader import get_debug_logging, get_force_exteplayer, get_live_tv_background, load_settings, save_settings
 
 _LOG_FILE = "/tmp/OeMediathek/oemediathek.log"
 
@@ -80,6 +80,7 @@ class OeStreamPlayer(MoviePlayer):
 
     def __on_close(self):
         self._closed = True
+        _restore_serviceapp_settings()
 
     def _switch_channel(self, direction):
         # Calculate next target stream index immediately in main thread
@@ -210,74 +211,98 @@ def _has_new_exteplayer3():
     return os.path.isdir("/usr/lib/exteplayer3_deps")
 
 
-def _configure_serviceapp_for_live():
-    """Setzt serviceapp-Einstellungen fuer synchrone HLS-Live-Streams.
-    Bei exteplayer3 >= v181 wird aac_swdecoding nicht gesetzt (inkompatibel mit
-    altem serviceapp.so: generiert '-a' ohne Wert, v181 erwartet '-a 0|1|2|3').
-    """
+# Felder, die _configure_serviceapp_for_live() live-tunt und die deshalb vor
+# der ersten Aenderung gesichert und beim Verlassen der Live-Wiedergabe
+# wiederhergestellt werden muessen. debugLoggingEnabled/pcmAudioExportEnabled
+# gehoeren NICHT hierher - die werden nie .save()t, nur als Kwargs an
+# setExtEplayer3Settings() durchgereicht (siehe _push_serviceapp_native_settings).
+_SERVICEAPP_BACKUP_FIELDS = (
+    ("opts", "hls_explorer"),
+    ("opts", "autoselect_stream"),
+    ("opts", "hls_audio_filter"),
+    ("ext3", "downmix"),
+    ("ext3", "aac_swdecoding"),
+    ("ext3", "hls_quality_mode"),
+    ("ext3", "hls_audio_default_only"),
+)
+
+# Bekannte Settings-Dateien der drei Schwester-Plugins desselben Autors
+# (StreamAnything/OeMediathek/MagentaMusik), die alle dieselbe globale
+# ServiceApp-Config antasten. Fuer plugin-uebergreifendes Self-Healing, siehe
+# _self_heal_all_serviceapp_backups().
+_SIBLING_SERVICEAPP_BACKUP_SOURCES = (
+    ("/etc/enigma2/streamanything.json",       "settings"),
+    ("/etc/enigma2/oemediathek_settings.json", None),
+    ("/etc/enigma2/magentamusik.json",         "settings"),
+)
+
+
+def _capture_serviceapp_field_values(opts, ext3):
+    objs = {"opts": opts, "ext3": ext3}
+    out = {}
+    for obj_name, attr in _SERVICEAPP_BACKUP_FIELDS:
+        obj = objs[obj_name]
+        if hasattr(obj, attr):
+            out["%s.%s" % (obj_name, attr)] = getattr(obj, attr).value
+    return out
+
+
+def _load_serviceapp_backup():
+    try:
+        return load_settings().get("serviceapp_backup")
+    except Exception:
+        return None
+
+
+def _save_serviceapp_backup(backup):
+    try:
+        s = load_settings()
+        s["serviceapp_backup"] = backup
+        save_settings(s)
+    except Exception:
+        pass
+
+
+def _clear_serviceapp_backup():
+    try:
+        s = load_settings()
+        s.pop("serviceapp_backup", None)
+        save_settings(s)
+    except Exception:
+        pass
+
+
+def _push_serviceapp_native_settings(opts, ext3):
+    """Schreibt die aktuellen opts/ext3-Werte in ServiceApps globalen,
+    prozessweiten C-Struct (setExtEplayer3Settings()/setServiceAppSettings()).
+    Aus _configure_serviceapp_for_live() herausgezogen, damit
+    _restore_serviceapp_settings() dieselbe has_*-gated Kwargs-Logik
+    wiederverwenden kann - genau deren Duplizierung hat den
+    debugLoggingEnabled- und pcmAudioExportEnabled-Bug verursacht
+    (siehe Commits d40b0b1 / 4340f6e)."""
     try:
         from Components.config import config
         from Plugins.SystemPlugins.ServiceApp.serviceapp_client import (
             setExtEplayer3Settings, setServiceAppSettings, OPTIONS_SERVICEEXTEPLAYER3
         )
-        key  = "serviceexteplayer3"
-        opts = config.plugins.serviceapp.options[key]
-        ext3 = config.plugins.serviceapp.exteplayer3[key]
-        changed = False
-        # debugLoggingEnabled ist der 9. Parameter von setExtEplayer3Settings, ohne
-        # ihn faellt der C-Aufruf auf False zurueck und ueberschreibt damit die
-        # globale, prozessweite Option - unabhaengig vom eigentlichen Setup-Schalter
-        # und auch fuer alle SPAETEREN Streams anderer Plugins, bis das Setup erneut
-        # gespeichert wird.
         debug_logging = config.plugins.serviceapp.debug_logging.value
 
         try:
             from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_NATIVE_REFERER as has_new_serviceapp
         except ImportError:
             has_new_serviceapp = False
-
         try:
             from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_HLS_QUALITY_SELECT as has_quality_select
         except ImportError:
             has_quality_select = False
-
         try:
             from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_DEBUG_LOGGING_CONTROL as has_debug_logging_control
         except ImportError:
             has_debug_logging_control = False
-
         try:
             from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_PCM_AUDIO_EXPORT as has_pcm_audio_export
         except ImportError:
             has_pcm_audio_export = False
-
-        if not ext3.downmix.value:
-            ext3.downmix.value = True; ext3.downmix.save(); changed = True
-
-        if _has_new_exteplayer3():
-            # v181+: exteplayer3's ffmpeg parst Master-Playlist inkl. EXT-X-MEDIA selbst.
-            # HLS-Explorer deaktivieren damit serviceapp die URL unveraendert durchreicht.
-            if opts.hls_explorer.value:
-                opts.hls_explorer.value = False; opts.hls_explorer.save(); changed = True
-        else:
-            # Alte exteplayer3: HLS-Explorer an, autoselect aus (kein ABR-Stutter), AAC SW-Decode an.
-            if not opts.hls_explorer.value:
-                opts.hls_explorer.value = True;  opts.hls_explorer.save(); changed = True
-            if opts.autoselect_stream.value:
-                opts.autoselect_stream.value = False; opts.autoselect_stream.save(); changed = True
-            if not ext3.aac_swdecoding.value:
-                ext3.aac_swdecoding.value = True; ext3.aac_swdecoding.save(); changed = True
-
-        if has_new_serviceapp and hasattr(opts, "hls_audio_filter"):
-            if not opts.hls_audio_filter.value:
-                opts.hls_audio_filter.value = True; opts.hls_audio_filter.save(); changed = True
-
-        if has_quality_select and hasattr(ext3, "hls_quality_mode"):
-            if ext3.hls_quality_mode.value != "highest":
-                ext3.hls_quality_mode.value = "highest"; ext3.hls_quality_mode.save(); changed = True
-        if has_quality_select and hasattr(ext3, "hls_audio_default_only"):
-            if not ext3.hls_audio_default_only.value:
-                ext3.hls_audio_default_only.value = True; ext3.hls_audio_default_only.save(); changed = True
 
         # Bei v181 aac_swdecoding=False erzwingen: altes serviceapp.so wuerde sonst
         # '-a' ohne Wert generieren (Boolean-Flag statt 0|1|2|3) -> exteplayer3 v181 haengt.
@@ -297,6 +322,7 @@ def _configure_serviceapp_for_live():
         extra_kwargs_ext3 = dict(extra_kwargs)
         if has_pcm_audio_export and hasattr(ext3, "pcm_audio_export"):
             extra_kwargs_ext3["pcmAudioExportEnabled"] = ext3.pcm_audio_export.value
+
         if has_quality_select:
             hls_qm = {"auto": 0, "lowest": 1, "highest": 2}.get(ext3.hls_quality_mode.value, 0)
             setExtEplayer3Settings(
@@ -340,6 +366,185 @@ def _configure_serviceapp_for_live():
                 opts.autoturnon_subtitles.value,
                 **extra_kwargs
             )
+    except Exception:
+        pass
+
+
+def _restore_backup_dict(backup):
+    """Wendet einen einzelnen Backup-Blob auf ServiceApps aktuelle Config an.
+    Restauriert pro Feld nur, wenn der aktuelle Wert noch exakt dem zuletzt
+    von HIER geschriebenen Wert entspricht (last_applied) - hat der Nutzer
+    (oder ein anderes Plugin/das native Setup) den Wert seitdem bewusst
+    geaendert, bleibt dieses Feld unangetastet. Gibt True zurueck, wenn der
+    Backup-Block verarbeitet wurde (unabhaengig davon ob dabei tatsaechlich
+    etwas geaendert wurde)."""
+    if not backup:
+        return False
+    try:
+        from Components.config import config
+        key  = "serviceexteplayer3"
+        opts = config.plugins.serviceapp.options[key]
+        ext3 = config.plugins.serviceapp.exteplayer3[key]
+        objs = {"opts": opts, "ext3": ext3}
+        values       = backup.get("values", {}) or {}
+        last_applied = backup.get("last_applied", {}) or {}
+        for field_key, orig_value in values.items():
+            obj_name, attr = field_key.split(".", 1)
+            obj = objs.get(obj_name)
+            if obj is None or not hasattr(obj, attr):
+                continue
+            cfg_item = getattr(obj, attr)
+            applied = last_applied.get(field_key, cfg_item.value)
+            if cfg_item.value != applied:
+                continue
+            if cfg_item.value != orig_value:
+                cfg_item.value = orig_value
+                cfg_item.save()
+        _push_serviceapp_native_settings(opts, ext3)
+        return True
+    except Exception:
+        return False
+
+
+def _restore_serviceapp_settings():
+    """Wird beim echten Schliessen des Live-Players aufgerufen (siehe
+    OeStreamPlayer.__on_close). Idempotent - No-Op, wenn kein Backup aussteht
+    (z.B. weil das Self-Healing es schon behandelt hat)."""
+    backup = _load_serviceapp_backup()
+    if not backup:
+        return
+    if _restore_backup_dict(backup):
+        _clear_serviceapp_backup()
+        _log("_restore_serviceapp_settings: restored")
+
+
+def _restore_serviceapp_settings_from(json_path, settings_subkey):
+    """Plugin-uebergreifendes Self-Healing: liest/loescht ein
+    'serviceapp_backup' direkt aus der Settings-JSON eines der SCHWESTER-
+    Plugins (StreamAnything/OeMediathek/MagentaMusik teilen sich dieselbe
+    globale ServiceApp-Config, fuehren aber jeweils ihr eigenes, isoliertes
+    Backup). Kein Fehlerfall, wenn die Datei fehlt (Plugin nicht installiert)
+    oder keinen Backup-Key enthaelt."""
+    try:
+        import json
+        if not os.path.exists(json_path):
+            return
+        with open(json_path, "r") as f:
+            data = json.load(f)
+        settings = data.get(settings_subkey) if settings_subkey else data
+        if not isinstance(settings, dict):
+            return
+        backup = settings.get("serviceapp_backup")
+        if not backup:
+            return
+        if _restore_backup_dict(backup):
+            del settings["serviceapp_backup"]
+            with open(json_path, "w") as f:
+                json.dump(data, f, ensure_ascii=False)
+            _log("_restore_serviceapp_settings_from: healed %s" % json_path)
+    except Exception:
+        pass
+
+
+def _self_heal_all_serviceapp_backups(session):
+    """Am Plugin-Menue-Einstieg (main()) aufgerufen: heilt ein liegen
+    gebliebenes Backup aus einer nicht sauber beendeten Sitzung EINES DER DREI
+    Schwester-Plugins, unabhaengig davon welches der drei gerade geoeffnet
+    wird. Ein gefundenes Backup ist aber nicht automatisch eine Absturz-
+    Leiche - es kann auch zu einer gerade noch laufenden Sitzung eines
+    ANDEREN, noch offenen Plugins gehoeren. Restaurieren waere in dem Fall
+    genau der Fehler, den der Mechanismus verhindern soll, nur durch die
+    Hintertuer: das andere Plugin faende beim eigenen Schliessen kein Backup
+    mehr vor und koennte seine echten Originalwerte nicht mehr
+    wiederherstellen. Deshalb nur restaurieren, wenn gerade NICHTS abgespielt
+    wird - dann ist ein gefundenes Backup mit hoher Sicherheit ein echter
+    Leichnam. Deckt NICHT den Fall ab, dass ein anderes Plugin offen, aber
+    pausiert/idle ist ohne aktiven Service - bewusst akzeptierte Restluecke.
+
+    Weitere bekannte, bewusst nicht geloeste Einschraenkung: Laufen zwei
+    dieser Plugins zeitlich UEBERLAPPEND (selten, da Enigma2 i.d.R. nur einen
+    Service gleichzeitig abspielt, aber nicht ausgeschlossen), sieht das
+    zweite beim eigenen Snapshot bereits die vom ersten getunten Werte als
+    "Original". Eine echte Loesung dafuer braeuchte Locking/Refcounting ueber
+    alle drei Plugins hinweg - deutlich groesserer Scope als hier
+    gerechtfertigt."""
+    try:
+        if session.nav.getCurrentlyPlayingServiceReference() is not None:
+            return
+    except Exception:
+        return
+    for path, settings_subkey in _SIBLING_SERVICEAPP_BACKUP_SOURCES:
+        _restore_serviceapp_settings_from(path, settings_subkey)
+
+
+def _configure_serviceapp_for_live():
+    """Setzt serviceapp-Einstellungen fuer synchrone HLS-Live-Streams.
+    Bei exteplayer3 >= v181 wird aac_swdecoding nicht gesetzt (inkompatibel mit
+    altem serviceapp.so: generiert '-a' ohne Wert, v181 erwartet '-a 0|1|2|3').
+    """
+    try:
+        from Components.config import config
+        key  = "serviceexteplayer3"
+        opts = config.plugins.serviceapp.options[key]
+        ext3 = config.plugins.serviceapp.exteplayer3[key]
+        changed = False
+
+        backup = _load_serviceapp_backup()
+        if backup is None:
+            # Erster Aufruf dieser Sitzung (kein Re-Zap innerhalb einer schon
+            # laufenden) - jetzt, VOR jeder Aenderung, die echten
+            # Originalwerte sichern.
+            backup = {
+                "version": 1,
+                "values": _capture_serviceapp_field_values(opts, ext3),
+                "last_applied": {},
+            }
+            _save_serviceapp_backup(backup)
+            _log("_configure_serviceapp_for_live: snapshot captured")
+        else:
+            _log("_configure_serviceapp_for_live: backup already pending, skipping snapshot")
+
+        if not ext3.downmix.value:
+            ext3.downmix.value = True; ext3.downmix.save(); changed = True
+
+        if _has_new_exteplayer3():
+            # v181+: exteplayer3's ffmpeg parst Master-Playlist inkl. EXT-X-MEDIA selbst.
+            # HLS-Explorer deaktivieren damit serviceapp die URL unveraendert durchreicht.
+            if opts.hls_explorer.value:
+                opts.hls_explorer.value = False; opts.hls_explorer.save(); changed = True
+        else:
+            # Alte exteplayer3: HLS-Explorer an, autoselect aus (kein ABR-Stutter), AAC SW-Decode an.
+            if not opts.hls_explorer.value:
+                opts.hls_explorer.value = True;  opts.hls_explorer.save(); changed = True
+            if opts.autoselect_stream.value:
+                opts.autoselect_stream.value = False; opts.autoselect_stream.save(); changed = True
+            if not ext3.aac_swdecoding.value:
+                ext3.aac_swdecoding.value = True; ext3.aac_swdecoding.save(); changed = True
+
+        try:
+            from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_NATIVE_REFERER as has_new_serviceapp
+        except ImportError:
+            has_new_serviceapp = False
+        try:
+            from Plugins.SystemPlugins.ServiceApp.serviceapp_caps import HAS_HLS_QUALITY_SELECT as has_quality_select
+        except ImportError:
+            has_quality_select = False
+
+        if has_new_serviceapp and hasattr(opts, "hls_audio_filter"):
+            if not opts.hls_audio_filter.value:
+                opts.hls_audio_filter.value = True; opts.hls_audio_filter.save(); changed = True
+
+        if has_quality_select and hasattr(ext3, "hls_quality_mode"):
+            if ext3.hls_quality_mode.value != "highest":
+                ext3.hls_quality_mode.value = "highest"; ext3.hls_quality_mode.save(); changed = True
+        if has_quality_select and hasattr(ext3, "hls_audio_default_only"):
+            if not ext3.hls_audio_default_only.value:
+                ext3.hls_audio_default_only.value = True; ext3.hls_audio_default_only.save(); changed = True
+
+        _push_serviceapp_native_settings(opts, ext3)
+
+        backup["last_applied"] = _capture_serviceapp_field_values(opts, ext3)
+        _save_serviceapp_backup(backup)
         return changed
     except Exception:
         return False
@@ -580,6 +785,10 @@ def play_resolved_stream(session, stream_url_bytes, title_bytes, player_id, stre
         # Laeuft fuer JEDE Wiedergabe, egal aus welchem Screen gestartet - im
         # Gegensatz zu einem Hook nur in OeMediathekMainScreen.__on_show, der nie
         # feuert wenn man z.B. nur bis zur Episodenliste zurueckkehrt.
+        # Zusaetzliches, unabhaengiges Sicherheitsnetz neben
+        # OeStreamPlayer.__on_close - _restore_serviceapp_settings() ist
+        # idempotent (No-Op ohne ausstehendes Backup), daher risikofrei doppelt.
+        _restore_serviceapp_settings()
         if not get_live_tv_background():
             try:
                 session.nav.playService(black_background_ref())

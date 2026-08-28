@@ -83,7 +83,7 @@ from mediathek import (
     resolve_uhd_url,
     resolve_uhd_url_via_document_api,
 )
-from player import play_stream_async, black_background_ref
+from player import play_stream_async, black_background_ref, _self_heal_all_serviceapp_backups
 from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_force_exteplayer, set_force_exteplayer, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label, get_download_extra_info, set_download_extra_info, get_download_extra_info_label, get_live_tv_background, set_live_tv_background
 from download_manager import OeMediathekDownloadManagerScreen
 from Screens.MessageBox import MessageBox as _MessageBox  # für Download-Notification
@@ -5881,6 +5881,7 @@ class OeMediathekSettingsScreen(Screen):
 
 
 def main(session, **kwargs):
+    _self_heal_all_serviceapp_backups(session)
     _log("Plugin gestartet")
     OeMediathekMainScreen.load_order()
     session.open(OeMediathekMainScreen)
