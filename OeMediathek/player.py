@@ -446,6 +446,17 @@ def _restore_serviceapp_settings_from(json_path, settings_subkey):
         pass
 
 
+# Referenztypen, unter denen eine der drei Schwester-Plugins ueberhaupt
+# spielen kann (idServiceMP3/idServiceGstPlayer/idServiceExtEplayer3). Live-
+# Praxistest hat gezeigt: ein reiner "spielt ueberhaupt irgendwas"-Check
+# (jeder eServiceReference-Typ, auch normales DVB-Live-TV = Typ 1) blockiert
+# die Selbstheilung praktisch IMMER, weil beim Oeffnen eines Plugins so gut
+# wie nie wirklich NICHTS laeuft - es sei denn man zappt gezielt auf einen
+# toten Kanal. Normales Live-TV kann aber gar keine unserer serviceapp_backup-
+# Dateien erzeugt haben, blockiert die Heilung also nur unnoetig.
+_SERVICEAPP_RELEVANT_REF_TYPES = (4097, 5001, 5002)
+
+
 def _self_heal_all_serviceapp_backups(session):
     """Am Plugin-Menue-Einstieg (main()) aufgerufen: heilt ein liegen
     gebliebenes Backup aus einer nicht sauber beendeten Sitzung EINES DER DREI
@@ -456,10 +467,16 @@ def _self_heal_all_serviceapp_backups(session):
     genau der Fehler, den der Mechanismus verhindern soll, nur durch die
     Hintertuer: das andere Plugin faende beim eigenen Schliessen kein Backup
     mehr vor und koennte seine echten Originalwerte nicht mehr
-    wiederherstellen. Deshalb nur restaurieren, wenn gerade NICHTS abgespielt
-    wird - dann ist ein gefundenes Backup mit hoher Sicherheit ein echter
-    Leichnam. Deckt NICHT den Fall ab, dass ein anderes Plugin offen, aber
-    pausiert/idle ist ohne aktiven Service - bewusst akzeptierte Restluecke.
+    wiederherstellen. Deshalb nur restaurieren, wenn der aktuell laufende
+    Service NICHT von einem der Referenztypen ist, unter denen ueberhaupt
+    eine dieser drei Plugins spielen kann (4097/5001/5002) - normales
+    Live-TV (Typ 1) blockiert die Heilung also NICHT mehr, siehe
+    _SERVICEAPP_RELEVANT_REF_TYPES. 4097 bleibt bewusst konservativ
+    mitgezaehlt, da darueber sowohl der native Player als auch (je nach
+    Wiedergabemodul) serviceapp laeuft und sich das von hier aus nicht sicher
+    unterscheiden laesst. Deckt weiterhin NICHT den Fall ab, dass ein anderes
+    Plugin offen, aber pausiert/idle ist ohne aktiven Service - bewusst
+    akzeptierte Restluecke.
 
     Weitere bekannte, bewusst nicht geloeste Einschraenkung: Laufen zwei
     dieser Plugins zeitlich UEBERLAPPEND (selten, da Enigma2 i.d.R. nur einen
@@ -469,7 +486,8 @@ def _self_heal_all_serviceapp_backups(session):
     alle drei Plugins hinweg - deutlich groesserer Scope als hier
     gerechtfertigt."""
     try:
-        if session.nav.getCurrentlyPlayingServiceReference() is not None:
+        current_ref = session.nav.getCurrentlyPlayingServiceReference()
+        if current_ref is not None and current_ref.type in _SERVICEAPP_RELEVANT_REF_TYPES:
             return
     except Exception:
         return
