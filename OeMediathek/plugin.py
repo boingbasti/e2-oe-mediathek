@@ -4967,9 +4967,14 @@ class OeMediathekScreen(Screen):
     def _show_episode_favorites(self):
         items = get_episode_favorites()
         self["status_label"].setText(_b("%d Einzelfolgen" % len(items)))
-        self._set_list([_episode_label(i["title"], i.get("group"), watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""), season=i.get("season"), episode=i.get("episode")) for i in items])
+        # cur_episodes/mode MUESSEN vor _set_list() gesetzt werden: _set_list()
+        # rendert die Liste synchron ueber _render_list(), das den Favoriten-
+        # Stern nur zeichnet wenn self.mode bereits MODE_EPISODES ist. War das
+        # noch der alte Wert (Wechsel aus der Gruppen-Favoriten-Ansicht),
+        # fehlte der Stern beim ersten Anzeigen komplett.
         self.cur_episodes = items
         self.mode = MODE_EPISODES
+        self._set_list([_episode_label(i["title"], i.get("group"), watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""), season=i.get("season"), episode=i.get("episode")) for i in items])
         self.last_index = -1
         self._ep_fav_sort_mode = False
         self._ep_fav_grabbed   = None
