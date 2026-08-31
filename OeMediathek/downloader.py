@@ -738,6 +738,7 @@ class Downloader(object):
                     pass
 
                 downloaded = 0
+                consecutive_timeouts = 0
                 with open(self.filepath, "wb") as f:
                     while not self._cancelled:
                         try:
@@ -748,8 +749,21 @@ class Downloader(object):
                             # ssl.SSLError ist KEIN Subtyp von socket.timeout, daher
                             # hier ueber die Meldung statt die exakte Klasse pruefen.
                             if "timed out" in str(e).lower():
+                                consecutive_timeouts += 1
+                                # Ohne Obergrenze haengt ein Download bei einer
+                                # tot abgebrochenen Verbindung fuer immer bei
+                                # z.B. 98% fest: jeder read()-Versuch laeuft
+                                # sofort wieder auf demselben toten Socket in
+                                # denselben Timeout, ohne Fortschritt, ohne
+                                # Fehler, ohne Log-Eintrag - live reproduziert
+                                # (netstat zeigte gar keine Verbindung mehr zum
+                                # CDN-Host). Nach 6 Versuchen (~30s bei
+                                # timeout=5) aufgeben statt endlos haengen.
+                                if consecutive_timeouts >= 6:
+                                    raise Exception("Verbindung abgebrochen (keine Daten mehr empfangen)")
                                 continue
                             raise
+                        consecutive_timeouts = 0
                         if not chunk:
                             break
                         f.write(chunk)

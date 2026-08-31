@@ -18,3 +18,5 @@ build_ipk.py
 *.ipk
 stash/
 zdf_uhd_liste_generator.py
+py3_port_experiment.py
+py3_build/

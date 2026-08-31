@@ -9,13 +9,18 @@ import re as _re
 import threading
 import time
 
-LOG_FILE            = "/tmp/oemediathek.log"
+LOG_FILE            = "/tmp/OeMediathek/oemediathek.log"
 FAVORITES_FILE         = "/etc/enigma2/oemediathek_favorites.json"
 EPISODE_FAVORITES_FILE = "/etc/enigma2/oemediathek_episode_favorites.json"
 WATCHED_FILE           = "/etc/enigma2/oemediathek_watched.json"
 SEARCH_HISTORY_FILE    = "/etc/enigma2/oemediathek_search_history.json"
 SEARCH_HISTORY_MAX  = 10
 DEBUG               = False
+
+try:
+    from downloader import get_debug_logging as _get_debug_logging
+except ImportError:
+    _get_debug_logging = None
 
 # Bekannte Sendernamen fuer die Favoriten-Bereinigung (Duplikat zu CHANNEL_MAP in plugin.py,
 # aber mediathek.py soll ohne plugin.py lauffaehig bleiben).
@@ -46,11 +51,15 @@ def _s(val):
         return str(val)
 
 def _log(msg):
-    if not DEBUG:
+    enabled = _get_debug_logging() if _get_debug_logging else DEBUG
+    if not enabled:
         return
-    line = "[OeMediathek] " + str(msg)
+    line = "[OeMediathek %s] MW: %s" % (time.strftime("%H:%M:%S", time.localtime()), str(msg))
     print(line)
     try:
+        log_dir = os.path.dirname(LOG_FILE)
+        if not os.path.isdir(log_dir):
+            os.makedirs(log_dir)
         with open(LOG_FILE, "a") as f:
             f.write(line + "\n")
     except Exception:
@@ -1028,6 +1037,9 @@ def refresh_uhd_static():
     Gibt (anzahl_episoden, fehler_string_oder_None) zurück."""
     import io as _io2
     import threading as _thr
+
+    old_count = len(_load_uhd_static().get("episodes", []))
+
     try:
         # Token
         token_url = "https://zdf-prod-futura.zdf.de/mediathekV2/token"
@@ -1035,6 +1047,7 @@ def refresh_uhd_static():
         resp = urlopen(req, timeout=10, context=_ssl_context) if _ssl_context else urlopen(req, timeout=10)
         tok_data = json.loads(resp.read().decode("utf-8"))
         token = tok_data["type"] + " " + tok_data["token"]
+        _log("refresh_uhd_static: Token erhalten")
 
         # GraphQL: UHD-Kollektion mit Canonicals
         graphql_url = "https://api.zdf.de/graphql"
@@ -1054,7 +1067,9 @@ def refresh_uhd_static():
             "Apollo-Require-Preflight": "True",
         })
         resp = urlopen(req, timeout=10, context=_ssl_context) if _ssl_context else urlopen(req, timeout=10)
-        cols = json.loads(resp.read().decode("utf-8")).get("data", {}).get("metaCollectionContent", {}).get("smartCollections", [])
+        raw_graphql = resp.read().decode("utf-8")
+        cols = json.loads(raw_graphql).get("data", {}).get("metaCollectionContent", {}).get("smartCollections", [])
+        _log("refresh_uhd_static: GraphQL lieferte %d Collections" % len(cols))
 
         episodes = []
         graphql_topics = set()
@@ -1069,9 +1084,11 @@ def refresh_uhd_static():
                 for node in sc.get("episodes", {}).get("nodes", []):
                     if node.get("canonical") and "audiodeskription" not in node.get("title", "").lower():
                         episodes.append({"topic": topic, "title": node.get("title", ""), "canonical": node["canonical"]})
+        _log("refresh_uhd_static: %d Episoden aus GraphQL (%d Topics), frage Document API ab" % (len(episodes), len(graphql_topics)))
 
         # Document API parallel per Threads
         verified = [None] * len(episodes)
+        _doc_api_fail_count = [0]
         def _resolve(args):
             i, ep = args
             url, season, episode = resolve_uhd_url_via_document_api(ep["canonical"], with_meta=True)
@@ -1079,6 +1096,8 @@ def refresh_uhd_static():
                 verified[i] = {"topic": ep["topic"], "title": ep["title"],
                                "web_url": "", "uhd_url": url, "timestamp": 0,
                                "season": season, "episode": episode}
+            else:
+                _doc_api_fail_count[0] += 1
         threads = []
         for i, ep in enumerate(episodes):
             t = _thr.Thread(target=_resolve, args=((i, ep),))
@@ -1091,6 +1110,8 @@ def refresh_uhd_static():
             for t in batch:
                 t.join()
         verified = [v for v in verified if v]
+        _log("refresh_uhd_static: Document API: %d verifiziert, %d ohne UHD/HDR-Stream oder Fehler" %
+             (len(verified), _doc_api_fail_count[0]))
 
         # Phase 2: EXTRA_THEMEN per MVW + HEAD-Check
         _HDR_SUFFIXES = ["_4692k_p72v16.mp4", "_2892k_p71v16.mp4"]
@@ -1145,11 +1166,25 @@ def refresh_uhd_static():
                 for t in batch:
                     t.join()
             verified.extend(v for v in hc_results if v)
+        _log("refresh_uhd_static: nach Phase 2 (%d Extra-Themen): %d Episoden gesamt" % (len(extra), len(verified)))
 
         # no_hdr_topics + speichern
         topics_found = set(item["topic"] for item in verified)
         no_hdr_topics = sorted(graphql_topics - topics_found)
         verified.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+
+        # Schutz vor stillem Datenverlust: wenn z.B. die Document-API-Aufrufe
+        # aus irgendeinem Grund auf der Box durchgehend fehlschlagen (jeder
+        # einzelne Fehler wird oben in resolve_uhd_url_via_document_api()
+        # lautlos verschluckt), liefert Phase 1 nichts und es bleiben nur die
+        # Phase-2-Fallback-Themen (_UHD_EXTRA_THEMEN, z.B. "Die Bergretter")
+        # uebrig - eine stark geschrumpfte Liste wuerde dann klaglos die gute
+        # alte Datei ueberschreiben. Bei drastischem Rueckgang stattdessen
+        # abbrechen, ohne zu speichern.
+        if old_count >= 10 and len(verified) < old_count * 0.5:
+            _log("refresh_uhd_static: ABBRUCH - nur %d Episoden (vorher %d), Datei NICHT ueberschrieben" %
+                 (len(verified), old_count))
+            return 0, "Nur %d von vorher %d Episoden gefunden - ZDF-API vermutlich gestoert" % (len(verified), old_count)
 
         # Python 2: alle Strings zu unicode normalisieren, sonst schlägt json.dump fehl
         def _to_u(obj):
@@ -1170,6 +1205,8 @@ def refresh_uhd_static():
 
         global _UHD_STATIC_DATA
         _UHD_STATIC_DATA = None
+        _log("refresh_uhd_static: %d Episoden gespeichert" % len(verified))
         return len(verified), None
     except Exception as e:
+        _log("refresh_uhd_static: Fehler - " + str(e))
         return 0, str(e)
