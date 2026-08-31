@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # plugin.py
 
+import io
 import os
 import threading
 
@@ -1522,8 +1523,8 @@ class OeMediathekMainScreen(Screen):
         try:
             import json as _json
             order = [s[0] for s in SOURCES]
-            with open(OeMediathekMainScreen._ORDER_FILE, "w") as f:
-                _json.dump(order, f)
+            with open(OeMediathekMainScreen._ORDER_FILE, "wb") as f:
+                f.write(_json.dumps(order).encode("utf-8"))
             _log("Reihenfolge gespeichert")
         except Exception as e:
             _log("Reihenfolge speichern Fehler: " + str(e))
@@ -1535,7 +1536,7 @@ class OeMediathekMainScreen(Screen):
             import json as _json
             if not os.path.exists(OeMediathekMainScreen._ORDER_FILE):
                 return
-            with open(OeMediathekMainScreen._ORDER_FILE, "r") as f:
+            with io.open(OeMediathekMainScreen._ORDER_FILE, "r", encoding="utf-8") as f:
                 order = _json.load(f)
             name_to_src = {s[0]: s for s in SOURCES}
             reordered = []
@@ -1906,8 +1907,8 @@ class OeMediathekSearchHistoryScreen(_CustomListMixin, Screen):
         history = load_search_history()
         history = [e for e in history if e != text]
         try:
-            with open(SEARCH_HISTORY_FILE, "w") as f:
-                _json.dump(history, f, ensure_ascii=False)
+            with open(SEARCH_HISTORY_FILE, "wb") as f:
+                f.write(_json.dumps(history, ensure_ascii=False).encode("utf-8"))
         except Exception:
             pass
         self._populate()
@@ -2157,7 +2158,7 @@ def _load_group_state(order_file, groups):
         if not os.path.exists(order_file):
             return "az", None
         import json as _json
-        with open(order_file, "r") as f:
+        with io.open(order_file, "r", encoding="utf-8") as f:
             data = _json.load(f)
         mode  = data.get("mode", "az") if isinstance(data, dict) else "az"
         order = data.get("order", [])  if isinstance(data, dict) else []
@@ -2180,8 +2181,8 @@ def _save_group_state(order_file, mode, groups):
     try:
         import json as _json
         data = {"mode": mode, "order": [g[0] for g in groups]}
-        with open(order_file, "w") as f:
-            _json.dump(data, f)
+        with open(order_file, "wb") as f:
+            f.write(_json.dumps(data).encode("utf-8"))
         _log("Live-Zustand gespeichert: " + order_file)
     except Exception as e:
         _log("Live-Zustand speichern Fehler: " + str(e))
@@ -5187,8 +5188,11 @@ class OeMediathekDirBrowser(_CustomListMixin, Screen):
     @staticmethod
     def _normalize_path(path):
         """Pfad immer als UTF-8 Byte-String zurückgeben (Python 2 kompatibel)."""
-        if isinstance(path, unicode):
-            return path.encode("utf-8")
+        try:
+            if isinstance(path, unicode):
+                return path.encode("utf-8")
+        except NameError:
+            pass  # Python 3: unicode == str, kein encode noetig
         return path
 
     def _fill(self, path):
@@ -5203,14 +5207,17 @@ class OeMediathekDirBrowser(_CustomListMixin, Screen):
         try:
             names = sorted(os.listdir(path))
             for name in names:
-                if isinstance(name, unicode):
-                    name = name.encode("utf-8")
+                try:
+                    if isinstance(name, unicode):
+                        name = name.encode("utf-8")
+                except NameError:
+                    pass  # Python 3: unicode == str, kein encode noetig
                 full = os.path.join(path, name)
                 if os.path.isdir(full):
-                    try:
+                    if isinstance(name, bytes):
                         label = "[" + name.decode("utf-8", "replace") + "]"
-                    except Exception:
-                        label = "[" + repr(name) + "]"
+                    else:
+                        label = "[" + name + "]"
                     entries.append((label, full))
         except Exception:
             _log("DirBrowser _fill Fehler: " + _fmt_exc())

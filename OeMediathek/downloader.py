@@ -2,6 +2,7 @@
 # downloader.py
 # HTTP-Download fuer OeMediathek — laedt MP4/TS-Streams direkt auf die Festplatte
 
+import io
 import os
 import json
 import threading
@@ -75,7 +76,7 @@ class KeepHeadersRedirectHandler(HTTPRedirectHandler):
 def load_settings():
     try:
         if os.path.exists(SETTINGS_FILE):
-            with open(SETTINGS_FILE, "r") as f:
+            with io.open(SETTINGS_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 if isinstance(data, dict):
                     return data
@@ -85,8 +86,8 @@ def load_settings():
 
 def save_settings(settings):
     try:
-        with open(SETTINGS_FILE, "w") as f:
-            json.dump(settings, f, ensure_ascii=False)
+        with open(SETTINGS_FILE, "wb") as f:
+            f.write(json.dumps(settings, ensure_ascii=False).encode("utf-8"))
     except Exception:
         pass
 

@@ -3,6 +3,7 @@
 # Startet einen Stream im angepassten Enigma2-Mediaplayer
 
 import hashlib
+import io
 import os
 import re
 import threading
@@ -429,7 +430,7 @@ def _restore_serviceapp_settings_from(json_path, settings_subkey):
         import json
         if not os.path.exists(json_path):
             return
-        with open(json_path, "r") as f:
+        with io.open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         settings = data.get(settings_subkey) if settings_subkey else data
         if not isinstance(settings, dict):
@@ -439,8 +440,8 @@ def _restore_serviceapp_settings_from(json_path, settings_subkey):
             return
         if _restore_backup_dict(backup):
             del settings["serviceapp_backup"]
-            with open(json_path, "w") as f:
-                json.dump(data, f, ensure_ascii=False)
+            with open(json_path, "wb") as f:
+                f.write(json.dumps(data, ensure_ascii=False).encode("utf-8"))
             _log("_restore_serviceapp_settings_from: healed %s" % json_path)
     except Exception:
         pass
@@ -703,8 +704,9 @@ def _build_single_quality_playlist(master_url):
             if not os.path.isdir(_TMP_DIR):
                 os.makedirs(_TMP_DIR)
             tmp_path = _tmp_playlist_path(master_url)
-            with open(tmp_path, 'w') as f:
-                f.write(playlist)
+            playlist_bytes = playlist.encode('utf-8') if not isinstance(playlist, bytes) else playlist
+            with open(tmp_path, 'wb') as f:
+                f.write(playlist_bytes)
             _log("build_single_quality_playlist: serviere via Datei " + tmp_path)
             return 'file://' + tmp_path
 
