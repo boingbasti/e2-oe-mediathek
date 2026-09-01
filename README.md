@@ -111,8 +111,6 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 
 ## Installation
 
-### Per IPK (empfohlen)
-
 Im [Releases-Bereich](../../releases) liegen zwei IPK-Dateien: `enigma2-plugin-extensions-oemediathek_<Version>_all.ipk` für Python 2 (VTi u.ä.) und `enigma2-plugin-extensions-oemediathek_py3_<Version>_all.ipk` für Python 3 (z.B. OpenATV). Die passende Datei herunterladen und auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
@@ -123,16 +121,6 @@ bzw. für Python 3:
 
 ```
 opkg install enigma2-plugin-extensions-oemediathek_py3_1.9.3_all.ipk
-```
-
-Anschließend Enigma2 neu starten.
-
-### Manuell per FTP
-
-Den Ordner `OeMediathek/` auf die Box in folgendes Verzeichnis kopieren:
-
-```
-/usr/lib/enigma2/python/Plugins/Extensions/OeMediathek/
 ```
 
 Anschließend Enigma2 neu starten.
