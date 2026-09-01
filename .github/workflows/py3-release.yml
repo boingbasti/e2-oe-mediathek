@@ -10,6 +10,11 @@ name: Python 3 Port IPK
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release-Tag, an das die Python-3-IPK angehaengt werden soll (Fallback, z.B. falls der release-Trigger beim allerersten Push der Workflow-Datei verpasst wurde)"
+        required: true
 
 permissions:
   contents: write
@@ -40,4 +45,4 @@ jobs:
       - name: IPK an das Release anhaengen
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ github.event.release.tag_name }}" enigma2-plugin-extensions-oemediathek_py3_*.ipk --clobber
+        run: gh release upload "${{ github.event.inputs.tag || github.event.release.tag_name }}" enigma2-plugin-extensions-oemediathek_py3_*.ipk --clobber
