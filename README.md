@@ -1,6 +1,6 @@
 # ÖR Mediathek – Enigma2-Plugin
 
-Enigma2-Plugin (Python 2) zum Streamen der öffentlich-rechtlichen Mediatheken auf VU+ Receivern.
+Enigma2-Plugin zum Streamen der öffentlich-rechtlichen Mediatheken auf VU+/Enigma2-Receivern. Primär für Python 2 (VTi) entwickelt und getestet, seit v1.9.3 gibt es zusätzlich eine Python-3-Variante für Images wie OpenATV (siehe [Installation](#installation)).
 
 Jeder Sender hat eine eigene Mediathek-Ansicht. Über „Alle Mediatheken" sind alle deutschen öffentlich-rechtlichen Sender gemeinsam durchsuchbar. ORF (Österreich) und SRF (Schweiz) sind als eigene Kacheln verfügbar, aber nicht in „Alle Mediatheken" enthalten.
 
@@ -99,7 +99,7 @@ Zusätzlich gibt es zwei neue Kacheln:
 
 ## Voraussetzungen
 
-- Enigma2-Receiver mit **Python 2** (getestet auf VU+ Uno 4K SE mit VTi 15.0.04)
+- Enigma2-Receiver mit **Python 2** (getestet auf VU+ Uno 4K SE mit VTi 15.0.04) — bleibt die primär getestete Hauptversion. Seit v1.9.3 gibt es zusätzlich eine **Python-3-Variante** (z.B. für OpenATV), siehe [Installation](#installation).
 - Internetverbindung
 - Skin mit OSD-Auflösung 1920×1080 (FHD) oder 1280×720 (HD) – wird automatisch erkannt
 
@@ -113,10 +113,16 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 
 ### Per IPK (empfohlen)
 
-Die IPK-Datei aus dem [Releases-Bereich](../../releases) herunterladen und auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
+Im [Releases-Bereich](../../releases) liegen zwei IPK-Dateien: `enigma2-plugin-extensions-oemediathek_<Version>_all.ipk` für Python 2 (VTi u.ä.) und `enigma2-plugin-extensions-oemediathek_py3_<Version>_all.ipk` für Python 3 (z.B. OpenATV). Die passende Datei herunterladen und auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
 opkg install enigma2-plugin-extensions-oemediathek_1.9.3_all.ipk
+```
+
+bzw. für Python 3:
+
+```
+opkg install enigma2-plugin-extensions-oemediathek_py3_1.9.3_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.
