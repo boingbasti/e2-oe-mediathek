@@ -3172,7 +3172,7 @@ class OeMediathekScreen(Screen):
 
         self["actions"] = ActionMap(
             ["OkCancelActions", "ColorActions", "DirectionActions",
-             "ChannelSelectBaseActions", "EPGSelectActions", "ListboxActions"],
+             "ChannelSelectBaseActions", "ListboxActions"],
             {
                 "ok":           self.on_ok,
                 "cancel":       self.on_cancel,
@@ -3180,8 +3180,6 @@ class OeMediathekScreen(Screen):
                 "green":        self.on_green,
                 "yellow":       self.on_yellow,
                 "blue":         self.on_blue,
-                "info":         self.on_info,
-                "epg":          self.on_info,
                 "nextBouquet":  self.next_page,
                 "prevBouquet":  self.prev_page,
                 "up":           self.on_up,
@@ -3192,6 +3190,22 @@ class OeMediathekScreen(Screen):
                 "right":        self.on_page_down,
                 "pageUp":       self.on_page_up,
                 "pageDown":     self.on_page_down,
+            },
+            -1,
+        )
+        # Eigene ActionMap fuer EPGSelectActions: manche Images (z.B. OpenATV)
+        # binden KEY_RED/YELLOW/BLUE dort zusaetzlich auf "red"/"yellow"/"blue"
+        # (mit anderem make/break-Flag als ColorActions) -> waere die Aktion
+        # im selben Dict gebunden, wuerde ein einzelner Tastendruck den
+        # Handler zweimal feuern (einmal beim Druecken, einmal beim
+        # Loslassen). Deshalb hier nur die tatsaechlich benoetigten Aktionen.
+        self["actions_epg"] = ActionMap(
+            ["EPGSelectActions"],
+            {
+                "info":         self.on_info,
+                "epg":          self.on_info,
+                "nextBouquet":  self.next_page,
+                "prevBouquet":  self.prev_page,
             },
             -1,
         )
