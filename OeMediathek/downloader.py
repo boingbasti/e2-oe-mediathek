@@ -717,18 +717,22 @@ class Downloader(object):
                 self._download_m3u8(opener, self.url)
             else:
                 # Standard MP4-Download
-                req = Request(self.url)
-                req.add_header("User-Agent", _ORF_USER_AGENT)
-                req.add_header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-                req.add_header("Accept-Language", "de-DE,de;q=0.9,en-AT;q=0.8,en;q=0.7")
-                
-                # Kurzer Timeout statt 30s: gilt in urllib2/urllib.request fuer die
-                # gesamte Socket-Lebensdauer, nicht nur den Verbindungsaufbau -
-                # jeder read()-Call unten respektiert ihn also auch. Ohne das kann
-                # ein einzelner read()-Call bei einer traegen Quelle minutenlang
-                # blockieren, wodurch cancel() (nur ein kooperatives Flag, geprueft
-                # zwischen zwei read()-Aufrufen) entsprechend lange nicht greift.
-                resp = opener.open(req, timeout=5)
+                def _open_mp4(offset):
+                    req = Request(self.url)
+                    req.add_header("User-Agent", _ORF_USER_AGENT)
+                    req.add_header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                    req.add_header("Accept-Language", "de-DE,de;q=0.9,en-AT;q=0.8,en;q=0.7")
+                    if offset:
+                        req.add_header("Range", "bytes=%d-" % offset)
+                    # Kurzer Timeout statt 30s: gilt in urllib2/urllib.request fuer die
+                    # gesamte Socket-Lebensdauer, nicht nur den Verbindungsaufbau -
+                    # jeder read()-Call unten respektiert ihn also auch. Ohne das kann
+                    # ein einzelner read()-Call bei einer traegen Quelle minutenlang
+                    # blockieren, wodurch cancel() (nur ein kooperatives Flag, geprueft
+                    # zwischen zwei read()-Aufrufen) entsprechend lange nicht greift.
+                    return opener.open(req, timeout=5)
+
+                resp = _open_mp4(0)
 
                 total = 0
                 try:
@@ -740,6 +744,8 @@ class Downloader(object):
 
                 downloaded = 0
                 consecutive_timeouts = 0
+                reconnects = 0
+                MAX_RECONNECTS = 3
                 with open(self.filepath, "wb") as f:
                     while not self._cancelled:
                         try:
@@ -751,17 +757,41 @@ class Downloader(object):
                             # hier ueber die Meldung statt die exakte Klasse pruefen.
                             if "timed out" in str(e).lower():
                                 consecutive_timeouts += 1
-                                # Ohne Obergrenze haengt ein Download bei einer
-                                # tot abgebrochenen Verbindung fuer immer bei
-                                # z.B. 98% fest: jeder read()-Versuch laeuft
-                                # sofort wieder auf demselben toten Socket in
-                                # denselben Timeout, ohne Fortschritt, ohne
-                                # Fehler, ohne Log-Eintrag - live reproduziert
-                                # (netstat zeigte gar keine Verbindung mehr zum
-                                # CDN-Host). Nach 6 Versuchen (~30s bei
-                                # timeout=5) aufgeben statt endlos haengen.
-                                if consecutive_timeouts >= 6:
+                                # Nach 6 Versuchen (~30s bei timeout=5) ist die Verbindung
+                                # sicher tot - weitere read()-Versuche auf demselben Socket
+                                # bringen nichts (live reproduziert: netstat zeigte gar
+                                # keine Verbindung mehr zum CDN-Host). Statt komplett
+                                # aufzugeben, neu verbinden und per Range-Header ab der
+                                # bereits geladenen Position weiterladen (bis zu
+                                # MAX_RECONNECTS mal) - deutlich schonender als ein vom
+                                # User manuell neu gestarteter kompletter Download.
+                                if consecutive_timeouts < 6:
+                                    continue
+                                if reconnects >= MAX_RECONNECTS:
                                     raise Exception("Verbindung abgebrochen (keine Daten mehr empfangen)")
+                                reconnects += 1
+                                consecutive_timeouts = 0
+                                try:
+                                    resp.close()
+                                except Exception:
+                                    pass
+                                _log("Download-Reconnect %d/%d ab Byte %d: %s" % (reconnects, MAX_RECONNECTS, downloaded, self.title))
+                                time.sleep(2)
+                                if self._cancelled:
+                                    break
+                                try:
+                                    new_resp = _open_mp4(downloaded)
+                                except Exception:
+                                    continue  # naechster Loop-Durchlauf zaehlt den naechsten Reconnect
+                                if new_resp.getcode() == 206:
+                                    resp = new_resp
+                                else:
+                                    # Server ignoriert Range und liefert die Datei komplett
+                                    # von vorne - Datei entsprechend zuruecksetzen.
+                                    resp = new_resp
+                                    f.seek(0)
+                                    f.truncate()
+                                    downloaded = 0
                                 continue
                             raise
                         consecutive_timeouts = 0
