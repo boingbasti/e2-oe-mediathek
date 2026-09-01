@@ -1,0 +1,43 @@
+name: Python 3 Port IPK
+
+# Laeuft NACH einem manuell erstellten Release (IPK selbst gebaut, auf echten
+# Boxen getestet, "gh release create" von Hand) - baut zusaetzlich die
+# Python-3-Variante (siehe py3_port.py) und haengt sie als weiteres Asset an
+# das bereits bestehende Release an. Bewusst kein eigener Tag/Release und
+# kein push:tags-Trigger: schlaegt dieser Job fehl, fehlt hoechstens das
+# zusaetzliche Asset - das eigentliche (Python-2/VTi-)Release ist davon nie
+# betroffen, da es zu dem Zeitpunkt schon veroeffentlicht ist.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-py3-ipk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Python-3-Port generieren
+        run: python3 py3_port.py
+
+      - name: Syntax pruefen (echte Quelle und Python-3-Port)
+        run: |
+          python3 -m py_compile OeMediathek/*.py
+          python3 -m py_compile py3_build/OeMediathek/*.py
+
+      - name: Python-3-IPK bauen
+        run: python3 build_ipk.py --py3
+
+      - name: IPK an das Release anhaengen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" enigma2-plugin-extensions-oemediathek_py3_*.ipk --clobber
