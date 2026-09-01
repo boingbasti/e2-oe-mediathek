@@ -20,7 +20,7 @@ from Screens.ChoiceBox import ChoiceBox
 from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Components.ScrollLabel import ScrollLabel
-from enigma import eTimer, ePoint, getDesktop
+from enigma import eTimer, ePoint, getDesktop, eServiceReference
 
 try:
     from Components.Pixmap import Pixmap as _Pixmap
@@ -93,6 +93,7 @@ LOGO_DIR = os.path.join(os.path.dirname(__file__), "logos")
 
 
 _notify_title_timers = []
+_restore_live_timers = []
 _TMP_DIR = "/tmp/OeMediathek"
 LOG_FILE = _TMP_DIR + "/oemediathek.log"
 PAGE_SIZE = 100
@@ -1299,14 +1300,17 @@ class OeMediathekMainScreen(Screen):
         self._sort_grabbed = None    # Index der angefassten Kachel (None = noch nichts gegriffen)
         self._sort_order_backup = None  # Backup der Reihenfolge fuer Reset
 
-        self._paused_live_ref = None
+        # Als String gemerkt (nicht als eServiceReference-Objekt): der String ist
+        # unveraenderlich und uebersteht Screen-/GC-Zyklen ohne Risiko einer stillen
+        # Inkonsistenz des zugrundeliegenden SWIG/C++-Objekts, siehe __on_plugin_close.
+        self._paused_live_ref_str = None
         if not get_live_tv_background():
             try:
                 ref = session.nav.getCurrentlyPlayingServiceReference()
                 if ref is not None:
-                    self._paused_live_ref = ref
+                    self._paused_live_ref_str = ref.toString()
             except Exception:
-                self._paused_live_ref = None
+                self._paused_live_ref_str = None
 
         self["title_label"]  = Label(_b("\xc3\x96R Mediathek"))
         self["selector"]     = Label("")
@@ -1348,14 +1352,39 @@ class OeMediathekMainScreen(Screen):
         _log("MainScreen init OK")
 
     def __on_plugin_close(self):
-        global _plugin_open
+        global _plugin_open, _restore_live_timers
         _plugin_open = False
-        if getattr(self, "_paused_live_ref", None) is not None:
+        if getattr(self, "_paused_live_ref_str", None):
+            ref_str = self._paused_live_ref_str
+            session = self.session
+            # Gemerkten Live-TV-Service wiederherstellen. Der schwarze Platzhalter-Clip
+            # (black_background.mp4, Typ 4097/GStreamer) belegt bis zum Teardown noch den
+            # DVB-Hardware-Decoder (Typ 1 fuer Live-TV) - stopService() gibt ihn explizit
+            # frei, die eTimer-Verzoegerung gibt dem asynchronen C++-Teardown zusaetzlich
+            # etwas Zeit. eTimer statt reactor.callLater: Twisted-Reactor feuerte auf dem
+            # OpenATV/Python-3.13-Testsystem beobachtbar nie (kein Fehler, Callback lief
+            # einfach nicht) - eTimer laeuft ueber den eApp-Mainloop, der garantiert
+            # weiterlaeuft. Referenz als String statt als eServiceReference-Objekt gemerkt
+            # und hier frisch rekonstruiert, um jede Abhaengigkeit von der Lebensdauer des
+            # urspruenglichen SWIG-Objekts auszuschliessen.
             try:
-                self.session.nav.playService(self._paused_live_ref)
+                session.nav.stopService()
             except Exception:
                 pass
-            self._paused_live_ref = None
+
+            def _restore():
+                global _restore_live_timers
+                _restore_live_timers = []
+                try:
+                    session.nav.playService(eServiceReference(ref_str))
+                except Exception:
+                    _log("__on_plugin_close: verzoegerter playService Fehler: " + _fmt_exc())
+
+            t = eTimer()
+            t.callback.append(_restore)
+            t.start(300, True)
+            _restore_live_timers.append(t)
+            self._paused_live_ref_str = None
         if getattr(self, "_dl_poll_timer", None):
             try:
                 self._dl_poll_timer.stop()
