@@ -759,8 +759,8 @@ class Downloader(object):
                                 consecutive_timeouts += 1
                                 # Nach 6 Versuchen (~30s bei timeout=5) ist die Verbindung
                                 # sicher tot - weitere read()-Versuche auf demselben Socket
-                                # bringen nichts (live reproduziert: netstat zeigte gar
-                                # keine Verbindung mehr zum CDN-Host). Statt komplett
+                                # bringen nichts (die TCP-Verbindung zum CDN-Host besteht zu
+                                # diesem Zeitpunkt schon nicht mehr). Statt komplett
                                 # aufzugeben, neu verbinden und per Range-Header ab der
                                 # bereits geladenen Position weiterladen (bis zu
                                 # MAX_RECONNECTS mal) - deutlich schonender als ein vom

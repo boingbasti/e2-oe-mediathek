@@ -1361,8 +1361,8 @@ class OeMediathekMainScreen(Screen):
             # (black_background.mp4, Typ 4097/GStreamer) belegt bis zum Teardown noch den
             # DVB-Hardware-Decoder (Typ 1 fuer Live-TV) - stopService() gibt ihn explizit
             # frei, die eTimer-Verzoegerung gibt dem asynchronen C++-Teardown zusaetzlich
-            # etwas Zeit. eTimer statt reactor.callLater: Twisted-Reactor feuerte auf dem
-            # OpenATV/Python-3.13-Testsystem beobachtbar nie (kein Fehler, Callback lief
+            # etwas Zeit. eTimer statt reactor.callLater: Twisted-Reactor feuerte unter
+            # OpenATV/Python 3.13 nicht zuverlaessig (kein Fehler, Callback lief teils
             # einfach nicht) - eTimer laeuft ueber den eApp-Mainloop, der garantiert
             # weiterlaeuft. Referenz als String statt als eServiceReference-Objekt gemerkt
             # und hier frisch rekonstruiert, um jede Abhaengigkeit von der Lebensdauer des
