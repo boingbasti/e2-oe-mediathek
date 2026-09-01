@@ -30,11 +30,11 @@ _B_NEW = '''def _b(val):
     return str(val)'''
 
 # download_manager.py hat eine EIGENE, von plugin.py._b() unabhaengige
-# Kopie dieses Helpers (andere Signatur: s statt val, kein Docstring) - wurde
-# live auf .13 uebersehen: Download-Manager-Screen blieb komplett leer ohne
+# Kopie dieses Helpers (andere Signatur: s statt val, kein Docstring) - leicht
+# zu uebersehen: Download-Manager-Screen bleibt sonst komplett leer ohne
 # jede Fehlermeldung im Log, weil Label(_b("...")) dort bytes an
-# eLabel.setText() gab (Python-3-SWIG-Binding erwartet str, siehe _B_NEW),
-# was lautlos zu keinem gerenderten Text fuehrte statt einer Exception.
+# eLabel.setText() gibt (Python-3-SWIG-Binding erwartet str, siehe _B_NEW),
+# was lautlos zu keinem gerenderten Text fuehrt statt einer Exception.
 _DM_B_OLD = '''def _b(s):
     if isinstance(s, bytes):
         return s
@@ -78,9 +78,9 @@ def _patch(path, old, new):
 # Implizite Top-Level-Imports der Geschwister-Module -> explizite relative
 # Imports. Unter Python 2/VTi funktionierte "from mediathek import X", weil
 # Enigma2s Plugin-Loader den Plugin-Ordner selbst in sys.path haengt. Unter
-# Python 3 (OpenATV) schlaegt das mit "No module named 'mediathek'" fehl -
-# live auf .13 verifiziert. oe-alliance-plugins loest das exakt so
-# (bestaetigt per Diff-Vergleich ihrer plugin.py).
+# Python 3 (OpenATV) schlaegt das mit "No module named 'mediathek'" fehl.
+# oe-alliance-plugins loest das exakt so (bestaetigt per Diff-Vergleich ihrer
+# plugin.py).
 _RELATIVE_IMPORT_FIXES = {
     "download_manager.py": [
         ("from downloader import format_size", "from .downloader import format_size"),
@@ -109,7 +109,7 @@ _RELATIVE_IMPORT_FIXES = {
 # Mediathek" fuer "ÖR Mediathek". Unter Python 2 sind das rohe UTF-8-Bytes
 # in einem Byte-String - korrekt. Unter Python 3 werden dieselben \xNN-
 # Escapes stattdessen als einzelne Unicode-Codepoints interpretiert, nicht
-# als UTF-8-Bytes -> Mojibake ("Ã–R Mediathek"), live auf .13 verifiziert.
+# als UTF-8-Bytes -> Mojibake ("Ã–R Mediathek").
 # Fix: jede Sequenz aufeinanderfolgender \xNN-Escapes als UTF-8-Bytes lesen
 # und durch das echte Zeichen ersetzen. Nicht-UTF8-Sequenzen (kommen in
 # diesem Code nicht vor, siehe Stichprobenpruefung) bleiben unangetastet.
@@ -122,19 +122,18 @@ _HEX_ESCAPE_RUN = re.compile(r"(?:\\x[0-9a-fA-F]{2})+")
 # non-greedy (*?) bis zum naechsten schliessenden """/''' matchen. Ohne das
 # haelt die Single-Quote-Alternative das oeffnende """ faelschlich fuer zwei
 # leere Strings ("" + Rest-Quote startet einen neuen, unbegrenzten Match) und
-# verschluckt den kompletten Docstring-Koerper als ein einziges Fake-Literal -
-# live reproduziert: dadurch wurde ein echtes b"..."-Byte-Literal direkt nach
-# einem Docstring in player.py nicht mehr als eigenstaendiger Treffer erkannt
-# und blieb faelschlich unveraendert (siehe _strip_byte_prefix).
+# verschluckt den kompletten Docstring-Koerper als ein einziges Fake-Literal:
+# dadurch wurde ein echtes b"..."-Byte-Literal direkt nach einem Docstring in
+# player.py nicht mehr als eigenstaendiger Treffer erkannt und blieb
+# faelschlich unveraendert (siehe _strip_byte_prefix).
 #
 # Die eigene comment-Gruppe ist ebenso zwingend: ein einzelnes Apostroph in
-# einem #-Kommentar (z.B. "# ...thread's results...", player.py Zeile 94)
-# wird sonst als oeffnendes '...'-Literal gelesen und verschluckt als
-# Fake-Match ALLES bis zum naechsten zufaelligen Anfuehrungszeichen -
-# live reproduziert: das hat mehrere hundert Zeilen Code inkl. eines
-# b"(Offline)"-Literals unsichtbar gemacht, weit ueber die Kommentarzeile
-# hinaus. Kommentare muessen daher als eigene, unangetastete Alternative VOR
-# den String-Alternativen erkannt werden.
+# einem #-Kommentar (z.B. "# ...thread's results...", player.py) wird sonst
+# als oeffnendes '...'-Literal gelesen und verschluckt als Fake-Match ALLES
+# bis zum naechsten zufaelligen Anfuehrungszeichen: das hat mehrere hundert
+# Zeilen Code inkl. eines b"(Offline)"-Literals unsichtbar gemacht, weit
+# ueber die Kommentarzeile hinaus. Kommentare muessen daher als eigene,
+# unangetastete Alternative VOR den String-Alternativen erkannt werden.
 _STRING_LITERAL = re.compile(
     r"(?P<comment>#[^\n]*)"
     r"|(?P<prefix>[a-zA-Z]?)(?P<str>'''.*?'''|\"\"\".*?\"\"\"|'(?:[^'\\]|\\.)*'|\"(?:[^\"\\]|\\.)*\")",
@@ -179,8 +178,8 @@ def _fix_byte_escapes(path):
 # Reine b"..."/b'...'-Literale (ohne \xNN, sonst schon durch die Mojibake-
 # Korrektur oben erfasst) werden dadurch inkonsistent, sobald sie mit einem
 # str per + verkettet werden - z.B. "self.source_name + b\" | \" + group_str"
-# -> TypeError: can only concatenate str (not "bytes") to str, live auf .13
-# reproduziert. Stichprobe aller verbleibenden b"..."-Literale (83x) zeigt
+# -> TypeError: can only concatenate str (not "bytes") to str. Stichprobe
+# aller verbleibenden b"..."-Literale (83x) zeigt
 # ausschliesslich Text (Wochentage, Labels, Trennzeichen) - keine echten
 # Binaerdaten. Fix: b-Prefix bei allen einfachen (nicht triple-quoted)
 # Byte-Literalen entfernen. \b verhindert Treffer in rb"..."/br"...".
@@ -189,13 +188,13 @@ def _strip_byte_prefix(path):
     _fix_byte_escapes() statt eines eigenen b"..."-Regex: ein naives, blind
     ueber den Rohtext scannendes Muster (\\bb["']...) traf faelschlich auch
     auf ein 'b' am Wortende direkt vor einem FREMDEN Anfuehrungszeichen
-    innerhalb eines anderen String-Literals - live reproduziert in
-    mediathek.py: 'abGroup: "gruppe-b", userSegment: ""' (Teil eines
-    einfach gequoteten GraphQL-Query-Strings) wurde zu "gruppe-",
-    das 'b' lautlos verschluckt. Ursache erst gefunden, nachdem die ZDF-
-    GraphQL-Abfrage auf dem py3-Testgeraet .13 deterministisch 0 statt 26
-    Collections lieferte - der veraenderte abGroup-Wert landete in einer
-    nicht existenten ZDF-A/B-Testgruppe. _STRING_LITERAL matcht dagegen
+    innerhalb eines anderen String-Literals - konkret in mediathek.py:
+    'abGroup: "gruppe-b", userSegment: ""' (Teil eines einfach gequoteten
+    GraphQL-Query-Strings) wurde zu "gruppe-", das 'b' lautlos verschluckt.
+    Ursache erst gefunden, nachdem die ZDF-GraphQL-Abfrage unter Python 3
+    deterministisch 0 statt 26 Collections lieferte - der veraenderte
+    abGroup-Wert landete in einer nicht existenten ZDF-A/B-Testgruppe.
+    _STRING_LITERAL matcht dagegen
     immer das VOLLSTAENDIGE aeussere Literal zuerst (Alternierung auf '...'
     vs "..." ab der öffnenden Anfuehrung), respektiert also echte
     Literalgrenzen statt beliebiger b"-Fundstellen irgendwo im Text.
@@ -206,9 +205,9 @@ def _strip_byte_prefix(path):
     ist es ein GANZ NORMALES String-Literal, in dem \\xNN unter Python 3 als
     einzelner Unicode-Codepoint gelesen wird, nicht als UTF-8-Byte -> Mojibake
     ("gruppe-b" waere hier kein Beispiel, aber b">> Demn\\xc3\\xa4chst" in
-    plugin.py wurde so zu "DemnÃ¤chst", live auf .13 in der ARD-Themenliste
-    reproduziert. Deshalb hier dieselbe _hex_repl-Dekodierung wie in
-    _fix_byte_escapes() anwenden, nicht nur das 'b' wegschneiden."""
+    plugin.py wurde so zu "DemnÃ¤chst" in der ARD-Themenliste. Deshalb hier
+    dieselbe _hex_repl-Dekodierung wie in _fix_byte_escapes() anwenden,
+    nicht nur das 'b' wegschneiden."""
     with open(path, "r", encoding="utf-8") as f:
         content = f.read()
 
@@ -228,13 +227,12 @@ def _strip_byte_prefix(path):
         f.write(content)
 
 
-# Nur fuer die Diagnose auf .13: _apply() in play_stream_async() faengt
-# Exceptions aus play_resolved_stream() nicht ab, die verschwinden dadurch
-# im Twisted-Reactor ohne jede sichtbare Spur (weder Crash noch eigenes Log).
-# Live reproduziert: Qualitaetsauswahl-Fenster schliesst sich, Player oeffnet
-# nie, kein Fehler in oemediathek.log. Temporaerer Diagnose-Patch, NICHT Teil
-# des eigentlichen Py2->3-Ports - nur um die tatsaechliche Fehlermeldung zu
-# sehen.
+# _apply() in play_stream_async() faengt Exceptions aus play_resolved_stream()
+# nicht ab, die verschwinden dadurch im Twisted-Reactor ohne jede sichtbare
+# Spur (weder Crash noch eigenes Log) - Symptom: Qualitaetsauswahl-Fenster
+# schliesst sich, Player oeffnet nie, kein Fehler in oemediathek.log. Fuer den
+# Python-3-Port bewusst mit Logging ergaenzt, damit ein Fehler an dieser
+# Stelle sichtbar wird statt lautlos zu verschwinden.
 _APPLY_OLD = '''            def _apply():
                 global _active_play_thread_running
                 _active_play_thread_running = False
@@ -255,9 +253,8 @@ _APPLY_NEW = '''            def _apply():
 # - NICHT bytes, anders als unter Python 2. _resolve_stream() erzeugt aber
 # bewusst bytes (fuers VTi-Original so vorgesehen), was zu
 # "TypeError: in method 'new_eServiceReference', argument 3 of type
-# 'std::string const &'" fuehrt, live auf .13 reproduziert (Traceback erst
-# durch den eigenen Diagnose-Patch unten sichtbar geworden, vorher lautlos
-# verschluckt vom Twisted-Reactor).
+# 'std::string const &'" fuehrt (Traceback erst durch den Logging-Patch oben
+# sichtbar geworden, vorher lautlos verschluckt vom Twisted-Reactor).
 _URL_ENCODE_OLD = '''    if isinstance(stream_url_str, bytes):
         stream_url_bytes = stream_url_str
     else:
@@ -298,9 +295,9 @@ _BLACK_BG_OLD = '''    path = _BLACK_BACKGROUND_VIDEO.encode("utf-8") if isinsta
 _BLACK_BG_NEW = '''    path = _BLACK_BACKGROUND_VIDEO
     return eServiceReference(4097, 0, path)'''
 
-# Live-Stream-Blocker (per strace auf .13 bestaetigt): das native ServiceApp
-# auf diesem OpenATV-Build oeffnet vor dem eigentlichen exteplayer3-Start
-# selbst kurz eine Probe-Verbindung zu unserem lokalen Playlist-Proxy. Der
+# Live-Stream-Blocker (per strace bestaetigt): das native ServiceApp
+# oeffnet vor dem eigentlichen exteplayer3-Start selbst kurz eine
+# Probe-Verbindung zum lokalen Playlist-Proxy. Der
 # alte Server bediente per handle_request() aber nur GENAU EINEN Request und
 # schloss danach - die Probe-Verbindung verbrauchte den einzigen Slot, die
 # echte Anfrage von exteplayer3 (Sekunden spaeter) lief ins Leere
@@ -334,8 +331,8 @@ _HTTP_SERVER_NEW = '''        server.timeout = 20.0
 # vermeidet Locale-Encoding-Probleme bei os-Funktionen). plugin.py's
 # _bg_download_done() ruft darauf aber fp.lower().endswith(".mp4") auf - ein
 # str-Literal-Vergleich, den Python 3 bei bytes mit "endswith first arg must
-# be bytes or a tuple of bytes, not str" ablehnt. Live auf .13 reproduziert:
-# Download selbst lief durch ("Fertig: ..." im Log), aber die anschliessende
+# be bytes or a tuple of bytes, not str" ablehnt. Symptom: Download selbst
+# lief durch ("Fertig: ..." im Log), aber die anschliessende
 # MP4->TS-Konvertierung wurde nie angestossen, weil genau diese Pruefung in
 # _bg_download_done() abstuerzte (durch den except in Downloader._run()
 # lautlos als "Fehler: ..." nach dem "Fertig" geloggt statt sichtbar zu
@@ -359,8 +356,8 @@ _FILEPATH_NEW = '''        candidate = os.path.join(save_dir, filename)
 # Gruppennamen aus _build_groups()/mediathek.py, die dort ebenfalls bytes
 # sind). Unter Python 3 sind nach dem _s()-Fix alle ANDEREN Gruppennamen
 # jedoch bereits str - nur dieses eine hartcodierte Label bleibt bytes und
-# ist damit unter Python 3 der einzige verbleibende Ausreisser. Live auf .13
-# reproduziert: Suche -> "Direkte Treffer" ausgewaehlt (mode war zusaetzlich
+# ist damit unter Python 3 der einzige verbleibende Ausreisser. Symptom:
+# Suche -> "Direkte Treffer" ausgewaehlt (mode war zusaetzlich
 # durch den do_search()-mode-Bug verdeckt, siehe echte Quelle) ->
 # _start_episode_fetch() crasht lautlos (vom eigenen on_ok-try/except
 # verschluckt) bei "title_text = self.source_name + " | " + group_str" mit
@@ -374,12 +371,12 @@ _DIRECT_HITS_NEW = '''    label = ">> Direkte Treffer (%d)" % len(direct)'''
 
 # WICHTIG: do_search() nicht in der echten Quelle geaendert, siehe unten -
 # das hier ist eine reine Python-3-Vorsichtsmassnahme fuer den Port, KEIN
-# Fix eines bestaetigten VTi-Bugs. Live auf .13 (Python 3) reproduziert:
-# nach Suche aus einer Episodenliste heraus blieb self.mode faelschlich auf
+# Fix eines bestaetigten VTi-Bugs. Unter Python 3 reproduziert: nach Suche
+# aus einer Episodenliste heraus blieb self.mode faelschlich auf
 # MODE_EPISODES, obwohl _show_groups() (aufgerufen von _on_fetch_done() nach
 # erfolgreichem Fetch) self.mode als ALLERERSTE Anweisung auf MODE_GROUPS
-# setzt - strukturell sollte das also nicht passieren koennen. Auf der
-# echten VTi-Box .11 mit identischen Reproduktionsschritten (mehrfach
+# setzt - strukturell sollte das also nicht passieren koennen. Mit
+# identischen Reproduktionsschritten auf der echten VTi-Quelle (mehrfach
 # getestet, inkl. Logging von on_ok mode=...) tritt der Fehler NICHT auf -
 # vermutlich eine Python-3/Timing-spezifische Race Condition (z.B. ein
 # verzoegerter Poll-Timer der vorherigen Episodenliste, der self.mode nach
@@ -400,7 +397,7 @@ _DO_SEARCH_MODE_NEW = '''                    self.current_search = term
 # write_info_txt() oeffnet die .txt-Begleitdatei bewusst im Text-Modus ("w")
 # und schreibt trotzdem per .encode("utf-8") bytes hinein - unter Python 2
 # ist das folgenlos (str IST bytes dort, "w" vs "wb" macht auf POSIX keinen
-# Unterschied), live auf .11 mit der echten v1.9.2 bestaetigt: .txt-Datei
+# Unterschied), auf VTi mit der echten v1.9.2 bestaetigt: .txt-Datei
 # wird dort einwandfrei geschrieben, kein Bug. Unter Python 3 lehnt ein im
 # Text-Modus geoeffnetes File-Objekt einen bytes-Schreibaufruf dagegen mit
 # TypeError ab - dort aber vom eigenen except Exception: pass lautlos
