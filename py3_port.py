@@ -3,7 +3,7 @@
 # eine Kopie angewendet. Schreibt nur nach py3_build/ (gitignored, wird bei
 # jedem Lauf frisch erzeugt), ruehrt OeMediathek/ selbst nicht an. Wird vom
 # --py3-Flag in build_ipk.py sowie der GitHub Action bei Release-Erstellung
-# genutzt, siehe CLAUDE.md.
+# genutzt.
 
 import os
 import re
