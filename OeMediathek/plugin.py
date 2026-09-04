@@ -1104,6 +1104,16 @@ def _cancel_all_downloads():
         _active_downloader.cancel()
 
 
+def _cancel_queued_download(url):
+    """Entfernt einen einzelnen, noch nicht gestarteten Eintrag aus der
+    Warteschlange (per URL). Gibt True zurueck, wenn ein Eintrag entfernt
+    wurde."""
+    global _download_queue
+    before = len(_download_queue)
+    _download_queue = [e for e in _download_queue if e.get("url") != url]
+    return len(_download_queue) != before
+
+
 def _queue_next():
     """Startet den nächsten Download aus der Queue, oder meldet alle fertig."""
     global _active_downloader, _download_queue, _bg_download_result, _user_cancelled_all
@@ -4202,6 +4212,8 @@ class OeMediathekScreen(Screen):
                 self["list_label_%d" % i].hide()
                 self["list_dot_%d"   % i].hide()
                 self["list_dl_%d"    % i].hide()
+        if self.mode == MODE_EPISODES:
+            self._update_red_hint()
         self._sync_dl_poll()
 
     def _sync_dl_poll(self):
@@ -4252,6 +4264,11 @@ class OeMediathekScreen(Screen):
                 self["list_sel_%d" % old_row].hide()
             if 0 <= new_row < _LIST_ROWS:
                 self["list_sel_%d" % new_row].show()
+        # hint_red haengt vom Pending-Status der jeweils markierten Folge ab
+        # (siehe on_download/_cancel_pending_download) - ohne diesen Aufruf
+        # bleibt "Download abbrechen" beim Weiterblaettern faelschlich stehen.
+        if self.mode == MODE_EPISODES:
+            self._update_red_hint()
 
     def _enqueue_single_episode(self, item, callback):
         """Loest die Stream-URL einer Episode auf und reiht sie in die
@@ -4318,6 +4335,18 @@ class OeMediathekScreen(Screen):
             return
         item = self.cur_episodes[idx]
 
+        # Laeuft dieser Download bereits (aktiv oder in der Warteschlange)?
+        # Dann bricht Rot ihn stattdessen ab, statt einen Duplikat-Hinweis zu
+        # zeigen. Nur fuer den Normalfall, nicht bei ZDF UHD (force_uhd) -
+        # dort ist die tatsaechlich eingereihte URL erst nach der
+        # asynchronen Document-API-Aufloesung bekannt, ein Pending-Check
+        # vorher ist nicht zuverlaessig moeglich.
+        if not self.force_uhd:
+            url = _episode_stream_url(item, prefer_720p=(get_download_quality() == "720p"))
+            if url and _is_download_pending(url):
+                self._cancel_pending_download(url)
+                return
+
         def _done(state):
             if state == "duplicate":
                 self._show_toast("Bereits in der Warteschlange")
@@ -4328,9 +4357,38 @@ class OeMediathekScreen(Screen):
             else:
                 self["status_label"].setText(_b("Kein Stream verf\xc3\xbcgbar"))
                 return
+            self._update_red_hint()
             self._render_list()
 
         self._enqueue_single_episode(item, _done)
+
+    def _cancel_pending_download(self, url):
+        """Bricht einen bereits laufenden oder wartenden Download ab (per
+        URL) - Gegenstueck zum Enqueue in on_download()."""
+        active_thread = _active_downloader._thread if _active_downloader else None
+        was_active = (_active_downloader is not None and _active_downloader.url == url
+                      and active_thread is not None and active_thread.is_alive())
+        if was_active:
+            _cancel_current_download()
+            self._show_toast("Download wird abgebrochen", added=False)
+        elif _cancel_queued_download(url):
+            self._show_toast("Aus Warteschlange entfernt", added=False)
+        else:
+            self._show_toast("Bereits abgeschlossen")
+        self._update_red_hint()
+        self._render_list()
+        if was_active:
+            # cancel() setzt nur ein Signal - der Downloader-Thread braucht
+            # noch einen Moment, bis er es bemerkt und wirklich stoppt.
+            # _render_list() direkt danach sieht ihn daher oft noch als
+            # aktiv, "Download abbrechen" bliebe faelschlich stehen (der
+            # 2s-Poll in _sync_dl_poll() haette sich zu diesem Zeitpunkt
+            # bereits selbst abgeschaltet). Ein einmaliger Nachtrigger holt
+            # den korrekten Zustand zuverlaessig nach.
+            t = eTimer()
+            t.callback.append(self._render_list)
+            t.start(1000, True)
+            self._cancel_recheck_timer = t
 
     def on_download_menu(self):
         """MENU in der Episodenansicht: Auswahlmenu fuer Sammel-Downloads
@@ -4881,6 +4939,16 @@ class OeMediathekScreen(Screen):
 
     def _update_red_hint(self):
         if self.mode == MODE_EPISODES:
+            try:
+                idx = self._get_list_index()
+                if idx is not None and idx < len(self.cur_episodes) and not self.force_uhd:
+                    item = self.cur_episodes[idx]
+                    url = _episode_stream_url(item, prefer_720p=(get_download_quality() == "720p"))
+                    if url and _is_download_pending(url):
+                        self["hint_red"].setText(_b("Download abbrechen"))
+                        return
+            except Exception:
+                pass
             self["hint_red"].setText(_b("Download"))
         elif self.source_name == "Meine Favoriten":
             if self._fav_sort_mode:
