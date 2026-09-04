@@ -16,7 +16,6 @@ except ImportError:
 from Plugins.Plugin import PluginDescriptor
 from Screens.Screen import Screen
 from Screens.VirtualKeyBoard import VirtualKeyBoard
-from Screens.ChoiceBox import ChoiceBox
 from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Components.ScrollLabel import ScrollLabel
@@ -615,6 +614,36 @@ _SV_ENTRY  = b">> Sendung verpasst?"
 _SN_ENTRY  = b">> Demn\xc3\xa4chst"
 
 
+def _parse_season_episode(title):
+    """Erkennt (Staffel, Folge) aus einem '(SXX/EYY)'-Tag im Titeltext.
+    Gibt (None, None) zurueck, falls kein solches Tag vorhanden ist."""
+    import re
+    m = re.search(r'\(S(\d+)/E(\d+)\)', title)
+    if m:
+        return int(m.group(1)), int(m.group(2))
+    return None, None
+
+
+def _effective_season(item):
+    """Liefert die Staffelnummer eines Episoden-Dicts, egal ob sie bereits als
+    Zahl vorliegt (z.B. ZDF UHD ueber die ZDF Document API, siehe
+    [[project_zdf_uhd]]) oder erst per Regex aus dem Titeltext erkannt werden
+    muss. None, falls keine Staffel erkennbar ist."""
+    s = item.get("season")
+    if s is not None:
+        try:
+            return int(s)
+        except Exception:
+            pass
+    title = item.get("title", b"")
+    try:
+        title = title.decode("utf-8", "replace") if isinstance(title, bytes) else title
+    except Exception:
+        title = str(title)
+    season, _episode = _parse_season_episode(title)
+    return season
+
+
 def _episode_label(title_bytes, topic_bytes=None, watched=False, season=None, episode=None):
     """
     Gibt einen Listeneintrag zurueck. Falls der Titel (SXX/EYY) enthaelt,
@@ -634,10 +663,8 @@ def _episode_label(title_bytes, topic_bytes=None, watched=False, season=None, ep
     if season is not None and episode is not None:
         label = "S%02dE%02d  %s" % (int(season), int(episode), title.strip())
     else:
-        m = re.search(r'\(S(\d+)/E(\d+)\)', title)
-        if m:
-            s  = int(m.group(1))
-            e = int(m.group(2))
+        s, e = _parse_season_episode(title)
+        if s is not None:
             clean   = re.sub(r'\s*\(S\d+/E\d+\)', '', title).strip()
             label   = "S%02dE%02d  %s" % (s, e, clean)
         else:
@@ -3238,6 +3265,20 @@ class OeMediathekScreen(Screen):
             },
             -1,
         )
+        # Eigene ActionMap fuer MenuActions: KEY_MENU ist in diesem Screen
+        # bisher ungenutzt, "menu" (Make-Flag) ist auf VTi UND OpenATV im
+        # selben Kontext definiert, kein Kollisionsrisiko mit den obigen
+        # Kontexten. Bewusst nicht per Lang-Druck einer Farbtaste geloest
+        # (siehe Commit-Historie) - Break/Long-Events feuern plattform-
+        # abhaengig in unterschiedlicher Reihenfolge/zusaetzlich, MENU als
+        # eigene Taste mit reinem Make-Event ist deutlich robuster.
+        self["actions_menu"] = ActionMap(
+            ["MenuActions"],
+            {
+                "menu": self.on_download_menu,
+            },
+            -1,
+        )
         self.onShow.append(self.__on_show)
 
         self._start_timer = eTimer()
@@ -4205,19 +4246,18 @@ class OeMediathekScreen(Screen):
             if 0 <= new_row < _LIST_ROWS:
                 self["list_sel_%d" % new_row].show()
 
-    def on_download(self):
-        if self.mode != MODE_EPISODES:
-            return
+    def _enqueue_single_episode(self, item, callback):
+        """Loest die Stream-URL einer Episode auf und reiht sie in die
+        Download-Queue ein. Ruft callback(state) GENAU EINMAL auf, state ist
+        "started"/"queued"/"duplicate"/"failed" - bei ZDF UHD (force_uhd)
+        asynchron per Hintergrund-Thread + reactor.callFromThread, sonst
+        synchron. Gemeinsame Basis fuer Einzel- (on_download) und
+        Sammel-Downloads (_do_bulk_download)."""
         try:
-            idx = self._get_list_index()
-            if idx is None or idx >= len(self.cur_episodes):
-                return
-            item = self.cur_episodes[idx]
-
             if self.force_uhd:
                 base = _episode_stream_url(item)
                 if not base:
-                    self["status_label"].setText(_b("Kein Stream verf\xc3\xbcgbar"))
+                    callback("failed")
                     return
                 desc     = item.get("description", b"")
                 dur      = item.get("duration", b"")
@@ -4232,9 +4272,8 @@ class OeMediathekScreen(Screen):
                         _title = _tstr.encode("utf-8") if was_bytes else _tstr
                     except Exception:
                         pass
-                _self    = self
                 _web = item.get("url_website", b"")
-                def _enqueue_uhd(_u=base, _tl=_title, _dt=dl_topic, _d=desc, _dr=dur, _w=_web):
+                def _enqueue_uhd(_u=base, _tl=_title, _dt=dl_topic, _d=desc, _dr=dur, _w=_web, _cb=callback):
                     from twisted.internet import reactor
                     try:
                         final = (resolve_uhd_url_via_document_api(_w) if _w else None) or resolve_uhd_url(_u)
@@ -4242,13 +4281,7 @@ class OeMediathekScreen(Screen):
                         final = _u
                     def _do():
                         state = _enqueue_download(_tl, final, _dt, _d, _dr)
-                        if state == "duplicate":
-                            _self._show_toast("Bereits in der Warteschlange")
-                        elif state == "queued":
-                            _self._show_toast("Zur Warteschlange hinzugef\xc3\xbcgt", added=True)
-                        else:
-                            _self._show_toast("Download gestartet", added=True)
-                        _self._render_list()
+                        _cb(state)
                     reactor.callFromThread(_do)
                 t = threading.Thread(target=_enqueue_uhd)
                 t.daemon = True
@@ -4257,7 +4290,7 @@ class OeMediathekScreen(Screen):
 
             url = _episode_stream_url(item, prefer_720p=(get_download_quality() == "720p"))
             if not url:
-                self["status_label"].setText(_b("Kein Stream verfügbar"))
+                callback("failed")
                 return
 
             desc = item.get("description", b"")
@@ -4265,16 +4298,95 @@ class OeMediathekScreen(Screen):
             dl_topic = item.get("group") or self.cur_group_name if self.cur_group_name.startswith(b">> Direkte Treffer") else self.cur_group_name
 
             state = _enqueue_download(item["title"], url, dl_topic, desc, dur)
+            callback(state)
+        except Exception:
+            _log("_enqueue_single_episode Fehler: " + _fmt_exc())
+            callback("failed")
+
+    def on_download(self):
+        if self.mode != MODE_EPISODES:
+            return
+        idx = self._get_list_index()
+        if idx is None or idx >= len(self.cur_episodes):
+            return
+        item = self.cur_episodes[idx]
+
+        def _done(state):
             if state == "duplicate":
                 self._show_toast("Bereits in der Warteschlange")
             elif state == "queued":
                 self._show_toast("Zur Warteschlange hinzugef\xc3\xbcgt", added=True)
-            else:
+            elif state == "started":
                 self._show_toast("Download gestartet", added=True)
+            else:
+                self["status_label"].setText(_b("Kein Stream verf\xc3\xbcgbar"))
+                return
             self._render_list()
-        except Exception:
-            _log("on_download Fehler: " + _fmt_exc())
 
+        self._enqueue_single_episode(item, _done)
+
+    def on_download_menu(self):
+        """MENU in der Episodenansicht: Auswahlmenu fuer Sammel-Downloads
+        (ganze Seite, oder eine auf der aktuellen Seite erkannte Staffel).
+        VTis Keymap bindet KEY_MENU mit "mr" (Make+Repeat) statt nur "m" wie
+        bei OpenATV - bei laengerem Halten koennte das mehrfach feuern und
+        mehrere Picker-Fenster stapeln, daher die Sperre unten."""
+        if self.mode != MODE_EPISODES or not self.cur_episodes:
+            return
+        if getattr(self, "_download_menu_open", False):
+            return
+        seasons_found = []
+        seen = set()
+        for it in self.cur_episodes:
+            s = _effective_season(it)
+            if s is not None and s not in seen:
+                seen.add(s)
+                seasons_found.append(s)
+        seasons_found.sort()
+
+        choices = [(_b("Alle Eintr\xc3\xa4ge dieser Seite downloaden (%d)" % len(self.cur_episodes)), ("page", None))]
+        for s in seasons_found:
+            cnt = sum(1 for it in self.cur_episodes if _effective_season(it) == s)
+            choices.append((_b("Staffel %d downloaden (%d Folgen)" % (s, cnt)), ("season", s)))
+
+        def _cb(res):
+            self._download_menu_open = False
+            if not res:
+                return
+            kind, val = res
+            if kind == "page":
+                self._do_bulk_download(list(self.cur_episodes))
+            elif kind == "season":
+                matching = [it for it in self.cur_episodes if _effective_season(it) == val]
+                self._do_bulk_download(matching)
+
+        self._download_menu_open = True
+        self.session.openWithCallback(_cb, OeMediathekPickerScreen, _b("Download-Optionen"), choices)
+
+    def _do_bulk_download(self, items):
+        if not items:
+            return
+        counts = {"started": 0, "queued": 0, "duplicate": 0, "failed": 0}
+        remaining = [len(items)]
+
+        def _one_done(state):
+            counts[state] = counts.get(state, 0) + 1
+            remaining[0] -= 1
+            if remaining[0] <= 0:
+                added = counts["started"] + counts["queued"]
+                msg = "%d Folgen zur Warteschlange hinzugef\xc3\xbcgt" % added
+                extra = []
+                if counts["duplicate"]:
+                    extra.append("%d bereits vorhanden" % counts["duplicate"])
+                if counts["failed"]:
+                    extra.append("%d ohne Stream" % counts["failed"])
+                if extra:
+                    msg += " (" + ", ".join(extra) + ")"
+                self._show_toast(msg, added=bool(added))
+                self._render_list()
+
+        for it in items:
+            self._enqueue_single_episode(it, _one_done)
 
     def on_ok(self):
         try:
