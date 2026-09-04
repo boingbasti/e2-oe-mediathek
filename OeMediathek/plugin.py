@@ -616,11 +616,18 @@ _SN_ENTRY  = b">> Demn\xc3\xa4chst"
 
 def _parse_season_episode(title):
     """Erkennt (Staffel, Folge) aus einem '(SXX/EYY)'-Tag im Titeltext.
-    Gibt (None, None) zurueck, falls kein solches Tag vorhanden ist."""
+    Gibt (None, None) zurueck, falls kein solches Tag vorhanden ist - oder
+    falls die erkannte "Staffel" tatsaechlich eine Jahreszahl ist: manche
+    ZDF-Sondersendungen ohne echte Staffelstruktur (z.B. "Terra X"-Jahres-
+    rueckblicke) nutzen "(S2025/E07)" mit dem Jahr statt einer Staffelnummer.
+    Echte Staffeln erreichen praktisch nie vierstellige Werte."""
     import re
     m = re.search(r'\(S(\d+)/E(\d+)\)', title)
     if m:
-        return int(m.group(1)), int(m.group(2))
+        season = int(m.group(1))
+        if season >= 1000:
+            return None, None
+        return season, int(m.group(2))
     return None, None
 
 
