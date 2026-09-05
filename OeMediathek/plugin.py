@@ -527,16 +527,18 @@ class _CustomListMixin(object):
             return None
         return self._list_items[self._list_sel]
 
-    def _list_focus(self, idx):
+    def _list_focus(self, idx, scroll=None):
         if not self._list_items:
             return
         rows = self._CL_ROWS
         self._list_sel = max(0, min(idx, len(self._list_items) - 1))
+        if scroll is not None:
+            self._list_scroll = max(0, scroll)
         if self._list_sel < self._list_scroll:
             self._list_scroll = self._list_sel
         elif self._list_sel >= self._list_scroll + rows:
             self._list_scroll = self._list_sel - rows + 1
-        self._list_scroll = max(0, min(self._list_scroll, max(0, len(self._list_items) - rows)))
+        self._list_scroll = max(0, self._list_scroll)
         self._render_list()
 
     def _render_list(self):
@@ -614,11 +616,25 @@ class _CustomListMixin(object):
     def _list_page(self, direction):
         if not self._list_items:
             return
-        new_idx = max(0, min(
-            self._list_sel + direction * self._CL_ROWS,
-            len(self._list_items) - 1
-        ))
-        self._list_focus(new_idx)
+        rows = self._CL_ROWS
+        total = len(self._list_items)
+        cur_page = self._list_scroll // rows
+        if direction > 0:
+            next_scroll = (cur_page + 1) * rows
+            if next_scroll < total:
+                new_scroll = next_scroll
+                new_sel = new_scroll
+            else:
+                new_scroll = self._list_scroll
+                new_sel = total - 1
+        else:
+            if self._list_scroll > 0:
+                new_scroll = max(0, (cur_page - 1) * rows)
+                new_sel = new_scroll
+            else:
+                new_scroll = 0
+                new_sel = 0
+        self._list_focus(new_sel, scroll=new_scroll)
 
 
 def _update_scrollbar_widget(screen, sb_x, sb_y0, sb_rh, rows):
@@ -4280,12 +4296,12 @@ class OeMediathekScreen(Screen):
             return
         self._list_sel = max(0, min(idx, len(self._list_items) - 1))
         if scroll is not None:
-            self._list_scroll = max(0, min(scroll, max(0, len(self._list_items) - _LIST_ROWS)))
+            self._list_scroll = max(0, scroll)
         if self._list_sel < self._list_scroll:
             self._list_scroll = self._list_sel
         elif self._list_sel >= self._list_scroll + _LIST_ROWS:
             self._list_scroll = self._list_sel - _LIST_ROWS + 1
-        self._list_scroll = max(0, min(self._list_scroll, max(0, len(self._list_items) - _LIST_ROWS)))
+        self._list_scroll = max(0, self._list_scroll)
         self._render_list()
 
     def _render_list(self):
@@ -4866,7 +4882,14 @@ class OeMediathekScreen(Screen):
             return
         if not self._list_items:
             return
-        self._list_focus(max(0, self._list_sel - _LIST_ROWS))
+        cur_page = self._list_scroll // _LIST_ROWS
+        if self._list_scroll > 0:
+            new_scroll = max(0, (cur_page - 1) * _LIST_ROWS)
+            new_sel = new_scroll
+        else:
+            new_scroll = 0
+            new_sel = 0
+        self._list_focus(new_sel, scroll=new_scroll)
 
     def on_page_down(self):
         if self._fav_sort_mode and self._fav_grabbed is not None:
@@ -4875,7 +4898,16 @@ class OeMediathekScreen(Screen):
             return
         if not self._list_items:
             return
-        self._list_focus(min(len(self._list_items) - 1, self._list_sel + _LIST_ROWS))
+        total = len(self._list_items)
+        cur_page = self._list_scroll // _LIST_ROWS
+        next_scroll = (cur_page + 1) * _LIST_ROWS
+        if next_scroll < total:
+            new_scroll = next_scroll
+            new_sel = new_scroll
+        else:
+            new_scroll = self._list_scroll
+            new_sel = total - 1
+        self._list_focus(new_sel, scroll=new_scroll)
 
     def open_alpha_picker(self):
         try:
