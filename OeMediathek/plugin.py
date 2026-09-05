@@ -19,7 +19,7 @@ from Screens.VirtualKeyBoard import VirtualKeyBoard
 from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Components.ScrollLabel import ScrollLabel
-from enigma import eTimer, ePoint, getDesktop, eServiceReference
+from enigma import eTimer, ePoint, eSize, getDesktop, eServiceReference
 
 try:
     from Components.Pixmap import Pixmap as _Pixmap
@@ -508,6 +508,10 @@ class _CustomListMixin(object):
             self["list_label_%d" % i] = Label(_b(""))
             self["list_sel_%d"   % i].hide()
             self["list_label_%d" % i].hide()
+        self["scrollbar_track"] = Label(_b(""))
+        self["scrollbar_thumb"] = Label(_b(""))
+        self["scrollbar_track"].hide()
+        self["scrollbar_thumb"].hide()
 
     def _set_list(self, items):
         self._list_items  = list(items)
@@ -568,6 +572,13 @@ class _CustomListMixin(object):
             else:
                 self["list_sel_%d"   % i].hide()
                 self["list_label_%d" % i].hide()
+        _update_scrollbar_widget(
+            self,
+            getattr(self, "_sb_x", 1118 if IS_FHD else 748),
+            getattr(self, "_sb_y0", 150 if IS_FHD else 97),
+            getattr(self, "_sb_rh", 58 if IS_FHD else 38),
+            rows,
+        )
 
     def _list_step(self, step):
         total = len(self._list_items)
@@ -608,6 +619,38 @@ class _CustomListMixin(object):
             len(self._list_items) - 1
         ))
         self._list_focus(new_idx)
+
+
+def _update_scrollbar_widget(screen, sb_x, sb_y0, sb_rh, rows):
+    """Positioniert/skaliert scrollbar_track+scrollbar_thumb (zwei Widgets,
+    die der jeweilige Screen selbst im Skin anlegen muss) passend zur
+    aktuellen Scroll-Position. Bei Listen <= rows Eintraegen wird die
+    Scrollbar komplett ausgeblendet. Modulweite Funktion statt Mixin-Methode,
+    da OeMediathekScreen dieselbe Logik braucht, aber _CustomListMixin nicht
+    nutzt (eigene, unabhaengige List-Implementierung)."""
+    total = len(screen._list_items)
+    if total <= rows:
+        try:
+            screen["scrollbar_track"].hide()
+            screen["scrollbar_thumb"].hide()
+        except Exception:
+            pass
+        return
+    try:
+        screen["scrollbar_track"].show()
+        screen["scrollbar_thumb"].show()
+        track_h    = rows * sb_rh
+        thumb_w    = 6 if IS_FHD else 4
+        min_h      = 30 if IS_FHD else 20
+        thumb_h    = max(min_h, int(round(track_h * float(rows) / total)))
+        max_scroll = max(1, total - rows)
+        scroll_pos = max(0, min(screen._list_scroll, max_scroll))
+        thumb_y    = sb_y0 + int(round((track_h - thumb_h) * (float(scroll_pos) / max_scroll)))
+        screen["scrollbar_thumb"].instance.resize(eSize(thumb_w, thumb_h))
+        screen["scrollbar_thumb"].instance.move(ePoint(sb_x, thumb_y))
+    except Exception:
+        pass
+
 
 # Sondereinträge am Anfang der Gruppenansicht
 _SV_ENTRY  = b">> Sendung verpasst?"
@@ -1233,10 +1276,18 @@ def _notify_downloads_done():
 # ------------------------------------------------------------------
 class OeMediathekMainScreen(Screen):
 
+    _MAX_PAGE_DOTS = 8  # grosszuegiger Puffer, aktuell 3 Seiten (29 Sender / 12 pro Seite)
+
     @staticmethod
     def _make_skin():
         tiles_bg = ""
         logos    = ""
+        page_dots = ""
+        for i in range(OeMediathekMainScreen._MAX_PAGE_DOTS):
+            # Position/Groesse wird bei jedem Seitenwechsel per _update_page_dots()
+            # neu berechnet (Anzahl+Reihenfolge haengt von SOURCES/TILES_PER_PAGE ab),
+            # hier nur als verstecktes Platzhalter-Widget angelegt.
+            page_dots += '<widget name="page_dot_%d" position="0,0" size="1,1" backgroundColor="#44FFFFFF" zPosition="1" transparent="0" />\n' % i
         for r in range(TILE_ROWS):
             for c in range(TILE_COLS):
                 i   = r * TILE_COLS + c
@@ -1280,7 +1331,7 @@ class OeMediathekMainScreen(Screen):
             <eLabel position="%d,%d" size="%d,%d" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
             <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#00253850" zPosition="-3" />
-            %s%s
+            %s%s%s
             <eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5" />
             <eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2" />
             <widget name="hint_red"    position="68,960"   size="244,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
@@ -1299,7 +1350,7 @@ class OeMediathekMainScreen(Screen):
                 margin, hdr_y, sw - 2 * margin, hdr_h,
                 margin, hdr_y, sw - 2 * margin, hdr_h, font_title,
                 _TX[0], _TY[0], TILE_W, TILE_H,
-                tiles_bg, logos,
+                tiles_bg, logos, page_dots,
             )
         else:
             return """
@@ -1308,7 +1359,7 @@ class OeMediathekMainScreen(Screen):
             <eLabel position="%d,%d" size="%d,%d" backgroundColor="#33000000" zPosition="-5" />
             <widget name="title_label" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1" />
             <widget name="selector" position="%d,%d" size="%d,%d" backgroundColor="#00253850" zPosition="-3" />
-            %s%s
+            %s%s%s
             <eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5" />
             <eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2" />
             <widget name="hint_red"    position="42,634"  size="162,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1" />
@@ -1327,7 +1378,7 @@ class OeMediathekMainScreen(Screen):
                 margin, hdr_y, sw - 2 * margin, hdr_h,
                 margin, hdr_y, sw - 2 * margin, hdr_h, font_title,
                 _TX[0], _TY[0], TILE_W, TILE_H,
-                tiles_bg, logos,
+                tiles_bg, logos, page_dots,
             )
 
     def __init__(self, session):
@@ -1373,6 +1424,10 @@ class OeMediathekMainScreen(Screen):
             except Exception:
                 self["logo_%d" % i] = Label("")
             self["tile_bg_%d" % i] = Label("")
+
+        for i in range(self._MAX_PAGE_DOTS):
+            self["page_dot_%d" % i] = Label(_b(""))
+            self["page_dot_%d" % i].hide()
 
         self["actions"] = ActionMap(
             ["OkCancelActions", "DirectionActions", "WizardActions",
@@ -1514,7 +1569,54 @@ class OeMediathekMainScreen(Screen):
         self["page_label"].setText("%d / %d" % (self.main_page + 1, total_pages))
 
         self._move_selector()
+        self._update_page_dots(total_pages)
         self._load_logos_page(self.main_page)
+
+    def _update_page_dots(self, total_pages):
+        """Zentrierte Pillen-Anzeige zwischen Kacheln und Fussleiste - wachsen
+        dynamisch (schmaler Punkt -> breite Pille bei der aktiven Seite) bei
+        konstantem Abstand. Positionen werden aus der tatsaechlichen Seiten-
+        zahl berechnet, damit die Gruppe immer zentriert bleibt, auch wenn
+        SOURCES irgendwann mehr/weniger Seiten ergibt."""
+        total_pages = max(1, min(total_pages, self._MAX_PAGE_DOTS))
+        sw      = 1920 if IS_FHD else 1280
+        w_act   = 32 if IS_FHD else 21
+        w_inact = 10 if IS_FHD else 7
+        gap     = 12 if IS_FHD else 8
+        h       = 6 if IS_FHD else 4
+        y       = 889 if IS_FHD else 583
+
+        if total_pages <= 1:
+            for i in range(self._MAX_PAGE_DOTS):
+                self["page_dot_%d" % i].hide()
+            return
+
+        from enigma import gRGB
+        # Alpha bei Enigma2 invertiert: 0x00 = voll deckend, 0xFF = voll
+        # transparent (siehe _set_selector_color) - deshalb 0x00 fuer die
+        # opake aktive Pille, 0x44 fuer die dezent-transluzenten Punkte.
+        col_active   = gRGB(0x25, 0x38, 0x50, 0x00)  # wie der Auswahlbalken (selector)
+        col_inactive = gRGB(0xFF, 0xFF, 0xFF, 0x44)
+
+        total_w = w_act + (total_pages - 1) * (w_inact + gap)
+        x = (sw - total_w) // 2
+
+        for i in range(self._MAX_PAGE_DOTS):
+            widget = self["page_dot_%d" % i]
+            if i >= total_pages:
+                widget.hide()
+                continue
+            is_active = (i == self.main_page)
+            w = w_act if is_active else w_inact
+            try:
+                widget.instance.resize(eSize(w, h))
+                widget.instance.move(ePoint(x, y))
+                widget.instance.setBackgroundColor(col_active if is_active else col_inactive)
+                widget.instance.invalidate()
+                widget.show()
+            except Exception:
+                pass
+            x += w + gap
 
     def _load_logos_page(self, page):
         if not _LoadPixmap:
@@ -1866,6 +1968,8 @@ class OeMediathekSearchHistoryScreen(_CustomListMixin, Screen):
                 '<widget name="title_label" position="600,230" size="720,60" font="Regular;38" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="600,306" size="720,2" backgroundColor="#33FFFFFF" zPosition="-4"/>'
                 + list_xml +
+                '<widget name="scrollbar_track" position="1330,320" size="6,392" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+                '<widget name="scrollbar_thumb" position="1330,320" size="6,56" backgroundColor="#00253850" zPosition="2"/>'
                 '<eLabel position="560,770" size="800,110" backgroundColor="#1A000000" zPosition="-4"/>'
                 '<eLabel position="580,790" size="8,60" backgroundColor="#1AEE0000" zPosition="2"/>'
                 '<widget name="hint_red"   position="598,770" size="260,110" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
@@ -1881,6 +1985,8 @@ class OeMediathekSearchHistoryScreen(_CustomListMixin, Screen):
                 '<widget name="title_label" position="400,153" size="480,40" font="Regular;25" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="400,204" size="480,1" backgroundColor="#33FFFFFF" zPosition="-4"/>'
                 + list_xml +
+                '<widget name="scrollbar_track" position="890,213" size="4,259" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+                '<widget name="scrollbar_thumb" position="890,213" size="4,37" backgroundColor="#00253850" zPosition="2"/>'
                 '<eLabel position="373,513" size="534,73" backgroundColor="#1A000000" zPosition="-4"/>'
                 '<eLabel position="387,527" size="5,40" backgroundColor="#1AEE0000" zPosition="2"/>'
                 '<widget name="hint_red"   position="399,513" size="170,73" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
@@ -1892,6 +1998,9 @@ class OeMediathekSearchHistoryScreen(_CustomListMixin, Screen):
     def __init__(self, session):
         self.skin = self._make_skin()
         Screen.__init__(self, session)
+        self._sb_x  = 1330 if IS_FHD else 890
+        self._sb_y0 = 320 if IS_FHD else 213
+        self._sb_rh = 56 if IS_FHD else 37
         self._cl_init()
 
         self["title_label"] = Label(_b("Letzte Suchen"))
@@ -2047,6 +2156,9 @@ class OeMediathekPickerScreen(_CustomListMixin, Screen):
                 'foregroundColor="#CCCCCC" backgroundColor="#33000000" transparent="1" noWrap="1"/>'
             ).format(i=i, x=lx, y=y, w=lw, lbx=lx+12, lbw=lw-12, rh=rh, rf=rf)
 
+        sb_x = (1330 if IS_FHD else 890)
+        sb_w = (6 if IS_FHD else 4)
+
         return (
             '<screen name="OeMediathekPickerScreen" position="0,0" size="{sz}" flags="wfNoBorder">'
             '<eLabel position="0,0" size="{sz}" backgroundColor="#66000000" zPosition="-6"/>'
@@ -2054,6 +2166,9 @@ class OeMediathekPickerScreen(_CustomListMixin, Screen):
             '<widget name="title_label" position="{lx},{ty}" size="{lw},{rh}" font="Regular;{tf}" halign="left" valign="center" foregroundColor="#E0E0E0" backgroundColor="#33000000" transparent="1"/>'
             '<eLabel position="{lx},{sy}" size="{lw},{sh}" backgroundColor="#33FFFFFF" zPosition="-4"/>'
         ).format(sz=sz, px=px, py=py, pw=pw, ph=ph, lx=lx, ty=title_y, lw=lw, rh=rh, tf=tf, sy=sep_y, sh=sep_h) + list_xml + (
+            '<widget name="scrollbar_track" position="{sbx},{ly0}" size="{sbw},{sbh}" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+            '<widget name="scrollbar_thumb" position="{sbx},{ly0}" size="{sbw},{rh}" backgroundColor="#00253850" zPosition="2"/>'
+        ).format(sbx=sb_x, ly0=list_y0, sbw=sb_w, sbh=rows * rh, rh=rh) + (
             '<eLabel position="{px},{hy}" size="{pw},{hh}" backgroundColor="#1A000000" zPosition="-4"/>'
             '<widget name="hint_ok"    position="{lx},{hy}" size="360,{hh}" font="Regular;{hf}" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
             '<widget name="hint_label" position="{px},{hy}" size="{hw},{hh}" font="Regular;{hf}" halign="right" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
@@ -2066,6 +2181,15 @@ class OeMediathekPickerScreen(_CustomListMixin, Screen):
         self._CL_ROWS = rows
         self.skin = OeMediathekPickerScreen._build_skin(rows)
         Screen.__init__(self, session)
+        if IS_FHD:
+            rh, ph = 56, rows * 56 + 258
+            py = max(80, (1080 - ph) // 2)
+            self._sb_y0, self._sb_rh = py + 114, rh
+        else:
+            rh, ph = 37, rows * 37 + 174
+            py = max(53, (720 - ph) // 2)
+            self._sb_y0, self._sb_rh = py + 77, rh
+        self._sb_x = 1330 if IS_FHD else 890
         self._cl_init()
         self._choices = choices
 
@@ -2298,6 +2422,8 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
                 '<widget name="status_label" position="1140,30" size="690,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="30,140" size="1100,780" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
+                '<widget name="scrollbar_track" position="1142,150" size="6,754" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+                '<widget name="scrollbar_thumb" position="1142,150" size="6,58" backgroundColor="#00253850" zPosition="2"/>'
                 '<eLabel position="1160,140" size="730,780" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="description_text" position="1190,160" size="670,740" font="Regular;34" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
                 '<eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5"/>'
@@ -2320,6 +2446,8 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
                 '<widget name="status_label" position="760,20" size="460,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="30,90" size="733,524" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
+                '<widget name="scrollbar_track" position="766,97" size="4,494" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+                '<widget name="scrollbar_thumb" position="766,97" size="4,38" backgroundColor="#00253850" zPosition="2"/>'
                 '<eLabel position="773,90" size="477,524" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="description_text" position="790,103" size="443,504" font="Regular;22" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
                 '<eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5"/>'
@@ -2336,6 +2464,9 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
     def __init__(self, session, streams=None, title=None):
         self.skin = self._make_skin()
         Screen.__init__(self, session)
+        self._sb_x  = 1142 if IS_FHD else 766
+        self._sb_y0 = 150 if IS_FHD else 97
+        self._sb_rh = 58 if IS_FHD else 38
         self._cl_init()
         self.session          = session
         self._streams         = streams
@@ -2665,6 +2796,8 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
                 '<widget name="sort_label" position="910,30" size="220,80" font="Regular;28" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="30,130" size="1100,810" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
+                '<widget name="scrollbar_track" position="1142,140" size="6,754" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+                '<widget name="scrollbar_thumb" position="1142,140" size="6,58" backgroundColor="#00253850" zPosition="2"/>'
                 '<eLabel position="1160,130" size="730,810" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="info_text" position="1190,150" size="670,780" font="Regular;30" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
                 '<eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5"/>'
@@ -2687,6 +2820,8 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
                 '<widget name="sort_label" position="610,20" size="147,53" font="Regular;18" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="30,83" size="733,540" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
+                '<widget name="scrollbar_track" position="766,90" size="4,494" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+                '<widget name="scrollbar_thumb" position="766,90" size="4,38" backgroundColor="#00253850" zPosition="2"/>'
                 '<eLabel position="773,83" size="477,540" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="info_text" position="790,93" size="443,504" font="Regular;20" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
                 '<eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5"/>'
@@ -2704,6 +2839,9 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
     def __init__(self, session, streams=None, title=None):
         self.skin = self._make_skin()
         Screen.__init__(self, session)
+        self._sb_x  = 1142 if IS_FHD else 766
+        self._sb_y0 = 140 if IS_FHD else 90
+        self._sb_rh = 58 if IS_FHD else 38
         self._cl_init()
         self.session  = session
         self._streams = streams
@@ -3109,6 +3247,8 @@ class OeMediathekScreen(Screen):
                 '<widget name="status_label" position="1140,30" size="690,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="30,140" size="1100,780" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
+                '<widget name="scrollbar_track" position="1142,150" size="6,754" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+                '<widget name="scrollbar_thumb" position="1142,150" size="6,58" backgroundColor="#00253850" zPosition="2"/>'
                 '<eLabel position="1160,140" size="730,780" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="description_text" position="1190,160" size="670,740" font="Regular;34" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
                 '<eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5"/>'
@@ -3134,6 +3274,8 @@ class OeMediathekScreen(Screen):
                 '<widget name="status_label" position="760,20" size="460,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="30,90" size="733,524" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
+                '<widget name="scrollbar_track" position="766,97" size="4,494" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+                '<widget name="scrollbar_thumb" position="766,97" size="4,38" backgroundColor="#00253850" zPosition="2"/>'
                 '<eLabel position="773,90" size="477,524" backgroundColor="#33000000" zPosition="-5"/>'
                 '<widget name="description_text" position="790,103" size="443,504" font="Regular;22" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
                 '<eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5"/>'
@@ -3234,6 +3376,10 @@ class OeMediathekScreen(Screen):
             self["list_label_%d" % i].hide()
             self["list_dot_%d"   % i].hide()
             self["list_dl_%d"    % i].hide()
+        self["scrollbar_track"] = Label(_b(""))
+        self["scrollbar_thumb"] = Label(_b(""))
+        self["scrollbar_track"].hide()
+        self["scrollbar_thumb"].hide()
 
         self["sort_label"]   = Label("")
         self["hint_red"]     = Label("")
@@ -4214,6 +4360,13 @@ class OeMediathekScreen(Screen):
                 self["list_dl_%d"    % i].hide()
         if self.mode == MODE_EPISODES:
             self._update_red_hint()
+        _update_scrollbar_widget(
+            self,
+            1142 if IS_FHD else 766,
+            150 if IS_FHD else 97,
+            58 if IS_FHD else 38,
+            _LIST_ROWS,
+        )
         self._sync_dl_poll()
 
     def _sync_dl_poll(self):
@@ -5373,6 +5526,8 @@ class OeMediathekDirBrowser(_CustomListMixin, Screen):
                 '<widget name="title_label" position="40,20" size="1320,60" font="Regular;38" halign="center" foregroundColor="#FFFFFF" transparent="1"/>'
                 '<widget name="path_label" position="40,90" size="1320,50" font="Regular;32" foregroundColor="#AAAAAA" transparent="1"/>'
                 + list_xml +
+                '<widget name="scrollbar_track" position="1370,150" size="6,522" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+                '<widget name="scrollbar_thumb" position="1370,150" size="6,58" backgroundColor="#00253850" zPosition="2"/>'
                 '<widget name="hint_label" position="40,730" size="1320,50" font="Regular;32" halign="center" foregroundColor="#AAAAAA" transparent="1"/>'
                 '</screen>'
             )
@@ -5383,6 +5538,8 @@ class OeMediathekDirBrowser(_CustomListMixin, Screen):
                 '<widget name="title_label" position="27,13" size="880,40" font="Regular;25" halign="center" foregroundColor="#FFFFFF" transparent="1"/>'
                 '<widget name="path_label" position="27,60" size="880,33" font="Regular;21" foregroundColor="#AAAAAA" transparent="1"/>'
                 + list_xml +
+                '<widget name="scrollbar_track" position="915,100" size="4,342" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+                '<widget name="scrollbar_thumb" position="915,100" size="4,38" backgroundColor="#00253850" zPosition="2"/>'
                 '<widget name="hint_label" position="27,487" size="880,33" font="Regular;21" halign="center" foregroundColor="#AAAAAA" transparent="1"/>'
                 '</screen>'
             )
@@ -5390,6 +5547,9 @@ class OeMediathekDirBrowser(_CustomListMixin, Screen):
     def __init__(self, session, start_dir=None):
         self.skin = self._make_skin()
         Screen.__init__(self, session)
+        self._sb_x  = 1370 if IS_FHD else 915
+        self._sb_y0 = 150 if IS_FHD else 100
+        self._sb_rh = 58 if IS_FHD else 38
         self._cl_init()
         self._cur = start_dir or "/"
 
@@ -5536,11 +5696,11 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
     @staticmethod
     def _make_skin():
         if IS_FHD:
-            lx, ly0, lw, rh, rf = 40, 150, 1840, 58, 34
+            lx, ly0, lw, rh, rf = 40, 150, 1820, 58, 34
             label_off = 80
             dw, dh, dx_off, dy_off = 28, 24, 12, 17
         else:
-            lx, ly0, lw, rh, rf = 36, 97, 1208, 38, 22
+            lx, ly0, lw, rh, rf = 36, 97, 1194, 38, 22
             label_off = 54
             dw, dh, dx_off, dy_off = 18, 16, 8, 11
         list_xml = ""
@@ -5567,6 +5727,8 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
                 '<widget name="status_label" position="910,30" size="920,80" font="Regular;28" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="30,140" size="1860,790" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
+                '<widget name="scrollbar_track" position="1866,150" size="6,754" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+                '<widget name="scrollbar_thumb" position="1866,150" size="6,58" backgroundColor="#00253850" zPosition="2"/>'
                 '<eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5"/>'
                 '<eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2"/>'
                 '<widget name="hint_red" position="68,960" size="330,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
@@ -5586,6 +5748,8 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
                 '<widget name="status_label" position="610,20" size="610,53" font="Regular;18" halign="right" valign="center" foregroundColor="#888888" backgroundColor="#33000000" transparent="1"/>'
                 '<eLabel position="30,90" size="1220,525" backgroundColor="#33000000" zPosition="-5"/>'
                 + list_xml +
+                '<widget name="scrollbar_track" position="1234,97" size="4,494" backgroundColor="#1AFFFFFF" zPosition="1"/>'
+                '<widget name="scrollbar_thumb" position="1234,97" size="4,38" backgroundColor="#00253850" zPosition="2"/>'
                 '<eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5"/>'
                 '<eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2"/>'
                 '<widget name="hint_red" position="42,634" size="220,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
@@ -5600,6 +5764,9 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
     def __init__(self, session):
         self.skin = self._make_skin()
         Screen.__init__(self, session)
+        self._sb_x  = 1866 if IS_FHD else 1234
+        self._sb_y0 = 150 if IS_FHD else 97
+        self._sb_rh = 58 if IS_FHD else 38
         self._cl_init()
         self.session = session
         self._shows  = []
