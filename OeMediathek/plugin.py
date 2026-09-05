@@ -639,15 +639,17 @@ def _update_scrollbar_widget(screen, sb_x, sb_y0, sb_rh, rows):
     try:
         screen["scrollbar_track"].show()
         screen["scrollbar_thumb"].show()
+        track_w    = 6 if IS_FHD else 4
+        overhang   = 4 if IS_FHD else 2  # Schieber je Seite etwas breiter als die Schiene
+        thumb_w    = track_w + 2 * overhang
         track_h    = rows * sb_rh
-        thumb_w    = 6 if IS_FHD else 4
         min_h      = 30 if IS_FHD else 20
         thumb_h    = max(min_h, int(round(track_h * float(rows) / total)))
         max_scroll = max(1, total - rows)
         scroll_pos = max(0, min(screen._list_scroll, max_scroll))
         thumb_y    = sb_y0 + int(round((track_h - thumb_h) * (float(scroll_pos) / max_scroll)))
         screen["scrollbar_thumb"].instance.resize(eSize(thumb_w, thumb_h))
-        screen["scrollbar_thumb"].instance.move(ePoint(sb_x, thumb_y))
+        screen["scrollbar_thumb"].instance.move(ePoint(sb_x - overhang, thumb_y))
     except Exception:
         pass
 
