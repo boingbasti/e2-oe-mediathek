@@ -3349,6 +3349,7 @@ class OeMediathekScreen(Screen):
 
         self.last_index = -1
         self.cur_group_idx = -1
+        self.cur_group_scroll = 0
         self.alpha_letter  = None
 
         self["title_label"]  = Label(source_name)
@@ -3809,7 +3810,8 @@ class OeMediathekScreen(Screen):
         self["hint_info"].setText(_b(""))
         self._update_page_hint()
         pos = self.cur_group_idx if restore_pos and self.cur_group_idx is not None else 0
-        self._list_focus(pos)
+        scroll = self.cur_group_scroll if restore_pos and self.cur_group_idx is not None else None
+        self._list_focus(pos, scroll=scroll)
         self.last_index = -2
         # Einmaliger Timer: nach 300ms nochmals erzwingen, damit VTi das Widget
         # tatsaechlich neu zeichnet (setText direkt nach setList wird ignoriert).
@@ -4078,6 +4080,7 @@ class OeMediathekScreen(Screen):
         self.mode = MODE_EPISODES
         self.last_index = -1
         self.cur_group_idx = group_idx + self._sv_sn_offset()
+        self.cur_group_scroll = self._list_scroll
         self.ep_page = 0
         self.ep_total = 0
         self.ep_has_more = False
@@ -4270,10 +4273,12 @@ class OeMediathekScreen(Screen):
             return None
         return self._list_sel
 
-    def _list_focus(self, idx):
+    def _list_focus(self, idx, scroll=None):
         if not self._list_items:
             return
         self._list_sel = max(0, min(idx, len(self._list_items) - 1))
+        if scroll is not None:
+            self._list_scroll = max(0, min(scroll, max(0, len(self._list_items) - _LIST_ROWS)))
         if self._list_sel < self._list_scroll:
             self._list_scroll = self._list_sel
         elif self._list_sel >= self._list_scroll + _LIST_ROWS:
