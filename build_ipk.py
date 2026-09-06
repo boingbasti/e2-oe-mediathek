@@ -8,7 +8,7 @@ import struct
 import io
 
 PLUGIN_NAME = "enigma2-plugin-extensions-oemediathek"
-VERSION = "1.9.3"
+VERSION = "1.9.4"
 ARCHITECTURE = "all"
 MAINTAINER = "saufsoldat"
 HOMEPAGE = "https://github.com/boingbasti/e2-oe-mediathek"
