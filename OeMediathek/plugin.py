@@ -3434,7 +3434,7 @@ class OeMediathekScreen(Screen):
                 '</screen>'
             )
 
-    def __init__(self, session, source_name, loader, force_uhd=False):
+    def __init__(self, session, source_name, loader, force_uhd=False, zdf_uhd_static=False):
         self.skin = self._make_skin()
         _log("ContentScreen init: " + source_name)
         Screen.__init__(self, session)
@@ -3442,6 +3442,7 @@ class OeMediathekScreen(Screen):
         self.source_name   = source_name
         self.loader        = loader
         self.force_uhd     = force_uhd
+        self.zdf_uhd_static = zdf_uhd_static
 
         self.page            = 0
         self.mode            = MODE_GROUPS
@@ -4921,7 +4922,7 @@ class OeMediathekScreen(Screen):
 
     def on_red(self):
         if self.mode == MODE_EPISODES:
-            if self._fav_show_episodes:
+            if self._ep_fav_sort_mode:
                 self._ep_fav_toggle_sort_mode()
                 return
             self.on_download()
@@ -4964,6 +4965,7 @@ class OeMediathekScreen(Screen):
                 self["hint_page"].setText(_b("OK = Ablegen"))
         else:
             self._update_red_hint()
+            self["hint_green"].setText(_b(""))
             if self._fav_show_episodes:
                 self["hint_yellow"].setText(_b("Folgen > Gruppen"))
             else:
@@ -5207,6 +5209,11 @@ class OeMediathekScreen(Screen):
     def _update_ep_sort_hint(self):
         if self.mode != MODE_EPISODES:
             return
+        if self.source_name == "Meine Favoriten" and self._fav_show_episodes:
+            return
+        if self.force_uhd and self.zdf_uhd_static:
+            self["hint_green"].setText(_b(""))
+            return
         if self._sv_mode or self._sn_mode:
             if self._ep_sort_mode == "timestamp":
                 self["hint_green"].setText(_b("nach Uhrzeit > A-Z"))
@@ -5299,6 +5306,13 @@ class OeMediathekScreen(Screen):
             pass
 
     def _update_red_hint(self):
+        if self._ep_fav_sort_mode:
+            # Waehrend des Episoden-Favoriten-Sortiermodus verwaltet
+            # _ep_fav_update_hints() Rot ("Fertig") selbst - _render_list()
+            # ruft diese Funktion aber unconditional bei MODE_EPISODES auf,
+            # ohne diesen Guard wuerde sie "Fertig" sofort wieder auf
+            # "Download" zuruecksetzen.
+            return
         if self.mode == MODE_EPISODES:
             try:
                 idx = self._get_list_index()
@@ -5477,8 +5491,20 @@ class OeMediathekScreen(Screen):
             _log("cycle_sort: " + _fmt_exc())
 
     def on_green(self):
-        if self._ep_fav_sort_mode:
+        if self._ep_fav_sort_mode or self._fav_sort_mode:
             self.cycle_sort()
+        elif self.source_name == "Meine Favoriten":
+            # "Meine Favoriten" ist eine lokal zusammengestellte Liste, kein
+            # per API nachladbares Thema - cycle_ep_sort()/cycle_sort() wuerden
+            # hier faelschlich ein zufaelliges Thema live nachladen. In der
+            # Episodenansicht uebernimmt Gruen stattdessen den Sortiermodus
+            # (frueher auf Rot), in der Gruppenansicht gibt es hier nichts zu tun.
+            if self._fav_show_episodes:
+                self._ep_fav_toggle_sort_mode()
+        elif self.mode == MODE_EPISODES and self.force_uhd and self.zdf_uhd_static:
+            # Statische ZDF-UHD-Liste kennt keine Sortierung (get_zdf_uhd_static_episodes
+            # hat keinen sort_by-Parameter) - Gruen bleibt hier ohne Wirkung.
+            pass
         elif self.mode == MODE_EPISODES:
             self.cycle_ep_sort()
         else:
@@ -5589,9 +5615,8 @@ class OeMediathekScreen(Screen):
             else:
                 self["hint_page"].setText(_b("OK = Ablegen"))
         else:
-            self["hint_red"].setText(_b("Sortieren"))
-            self._set_hint_menu("")
-            self["hint_green"].setText(_b(""))
+            self._update_red_hint()
+            self["hint_green"].setText(_b("Sortieren"))
             self["hint_yellow"].setText(_b("Folgen > Gruppen"))
             self["hint_blue"].setText(_b("Favorit l\xc3\xb6schen"))
             self["hint_info"].setText(_b("INFO / EPG\nMarkieren"))
@@ -6149,13 +6174,14 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
         title = show.get("title", "")
         # Statische Liste bevorzugen (verifizierte UHD-Folgen); MVW nur wenn keine statischen Einträge
         _, _, static_count = get_zdf_uhd_static_episodes(title)
-        if static_count > 0 or show.get("static"):
+        is_static = static_count > 0 or show.get("static")
+        if is_static:
             def _loader(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp", _t=title):
                 return get_zdf_uhd_static_episodes(_t, search_term)
         else:
             def _loader(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp", _t=title):
                 return get_zdf_uhd_topic_episodes(_t, offset, size, search_term, min_duration, sort_by)
-        self.session.open(OeMediathekScreen, b"ZDF UHD", _loader, force_uhd=True)
+        self.session.open(OeMediathekScreen, b"ZDF UHD", _loader, force_uhd=True, zdf_uhd_static=bool(is_static))
 
     def key_refresh(self):
         if self._updating:
