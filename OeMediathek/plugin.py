@@ -3393,7 +3393,8 @@ class OeMediathekScreen(Screen):
                 '<widget name="description_text" position="1190,160" size="670,740" font="Regular;34" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
                 '<eLabel position="30,960" size="1860,100" backgroundColor="#1A000000" zPosition="-5"/>'
                 '<eLabel position="50,980" size="8,60" backgroundColor="#1AEE0000" zPosition="2"/>'
-                '<widget name="hint_red" position="68,960" size="350,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_red" position="68,965" size="350,45" font="Regular;30" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_menu" position="68,1010" size="350,40" font="Regular;22" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
                 '<eLabel position="450,980" size="8,60" backgroundColor="#1A00AA00" zPosition="2"/>'
                 '<widget name="hint_green" position="468,960" size="300,100" font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
                 '<eLabel position="808,980" size="8,60" backgroundColor="#1AAAAA00" zPosition="2"/>'
@@ -3420,7 +3421,8 @@ class OeMediathekScreen(Screen):
                 '<widget name="description_text" position="790,103" size="443,504" font="Regular;22" foregroundColor="#CCCCCC" backgroundColor="#33000000" valign="top" halign="left" transparent="1"/>'
                 '<eLabel position="30,634" size="1220,60" backgroundColor="#1A000000" zPosition="-5"/>'
                 '<eLabel position="33,649" size="5,30" backgroundColor="#1AEE0000" zPosition="2"/>'
-                '<widget name="hint_red" position="42,634" size="233,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_red" position="42,636" size="233,28" font="Regular;20" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
+                '<widget name="hint_menu" position="42,664" size="233,26" font="Regular;15" halign="left" valign="center" foregroundColor="#888888" backgroundColor="#1A000000" transparent="1"/>'
                 '<eLabel position="300,649" size="5,30" backgroundColor="#1A00AA00" zPosition="2"/>'
                 '<widget name="hint_green" position="309,634" size="200,60" font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" backgroundColor="#1A000000" transparent="1"/>'
                 '<eLabel position="539,649" size="5,30" backgroundColor="#1AAAAA00" zPosition="2"/>'
@@ -3524,6 +3526,7 @@ class OeMediathekScreen(Screen):
 
         self["sort_label"]   = Label("")
         self["hint_red"]     = Label("")
+        self["hint_menu"]    = Label("")
         self["hint_green"]   = Label("")
         self["hint_yellow"]  = Label("")
         self["hint_blue"]    = Label("")
@@ -4179,6 +4182,7 @@ class OeMediathekScreen(Screen):
         self["status_label"].setText(_b("%d Sendungen" % len(items)))
         self["sort_label"].setText(_b("A-Z" if self._ep_sort_mode == "title" else "nach Uhrzeit"))
         self["hint_red"].setText(_b("Download"))
+        self._set_hint_menu("MENU = Sammel-Download")
         self["hint_yellow"].setText(_b("Suche (Server)"))
         self["hint_blue"].setText(_b("Favorit"))
         self["hint_page"].setText(_b(""))
@@ -4383,6 +4387,7 @@ class OeMediathekScreen(Screen):
         self["sort_label"].setText(_b(_ep_sort_lbl))
 
         self["hint_red"].setText(_b("Download"))
+        self._set_hint_menu("MENU = Sammel-Download")
         if self.source_name != "Meine Favoriten":
             self["hint_yellow"].setText("Suche (Server)")
         else:
@@ -4949,6 +4954,7 @@ class OeMediathekScreen(Screen):
     def _fav_update_hints(self):
         if self._fav_sort_mode:
             self["hint_red"].setText(_b("Fertig"))
+            self._set_hint_menu("")
             self["hint_green"].setText(_b("R\xc3\xbcckg\xc3\xa4ngig"))
             self["hint_yellow"].setText(_b(""))
             self["hint_blue"].setText(_b("Favorit l\xc3\xb6schen"))
@@ -5192,11 +5198,11 @@ class OeMediathekScreen(Screen):
                 item = self.cur_episodes[idx]
                 url = item.get("stream_url_hd") or item.get("stream_url_sd") or b""
                 if url and is_watched(url):
-                    self["hint_info"].setText(_b("INFO/EPG = Markierung l\xc3\xb6schen"))
+                    self["hint_info"].setText(_b("INFO / EPG\nDemarkieren"))
                     return
         except Exception:
             pass
-        self["hint_info"].setText(_b("INFO/EPG = Markieren"))
+        self["hint_info"].setText(_b("INFO / EPG\nMarkieren"))
 
     def _update_ep_sort_hint(self):
         if self.mode != MODE_EPISODES:
@@ -5267,6 +5273,31 @@ class OeMediathekScreen(Screen):
             pass
         self["hint_blue"].setText(_b("Favorit"))
 
+    def _set_hint_menu(self, text):
+        """Setzt hint_menu und passt die Groesse/Position von hint_red an -
+        zweizeilig (Status oben, MENU-Hinweis darunter) wenn text gesetzt
+        ist, sonst wieder die volle Zeilenhoehe wie die anderen Farbtasten
+        (z.B. "ABC-Auswahl", "Sortieren"), damit der Text dort nicht nach
+        oben verschoben wirkt."""
+        self["hint_menu"].setText(_b(text))
+        try:
+            if text:
+                if IS_FHD:
+                    self["hint_red"].instance.resize(eSize(350, 45))
+                    self["hint_red"].instance.move(ePoint(68, 965))
+                else:
+                    self["hint_red"].instance.resize(eSize(233, 28))
+                    self["hint_red"].instance.move(ePoint(42, 636))
+            else:
+                if IS_FHD:
+                    self["hint_red"].instance.resize(eSize(350, 100))
+                    self["hint_red"].instance.move(ePoint(68, 960))
+                else:
+                    self["hint_red"].instance.resize(eSize(233, 60))
+                    self["hint_red"].instance.move(ePoint(42, 634))
+        except Exception:
+            pass
+
     def _update_red_hint(self):
         if self.mode == MODE_EPISODES:
             try:
@@ -5276,16 +5307,20 @@ class OeMediathekScreen(Screen):
                     url = _episode_stream_url(item, prefer_720p=(get_download_quality() == "720p"))
                     if url and _is_download_pending(url):
                         self["hint_red"].setText(_b("Download abbrechen"))
+                        self._set_hint_menu("MENU = Sammel-Download")
                         return
             except Exception:
                 pass
             self["hint_red"].setText(_b("Download"))
+            self._set_hint_menu("MENU = Sammel-Download")
         elif self.source_name == "Meine Favoriten":
+            self._set_hint_menu("")
             if self._fav_sort_mode:
                 self["hint_red"].setText(_b("Fertig"))
             else:
                 self["hint_red"].setText(_b("Sortieren"))
         else:
+            self._set_hint_menu("")
             self["hint_red"].setText("ABC-Auswahl")
 
     def next_page(self):
@@ -5545,6 +5580,7 @@ class OeMediathekScreen(Screen):
     def _ep_fav_update_hints(self):
         if self._ep_fav_sort_mode:
             self["hint_red"].setText(_b("Fertig"))
+            self._set_hint_menu("")
             self["hint_green"].setText(_b("R\xc3\xbcckg\xc3\xa4ngig"))
             self["hint_yellow"].setText(_b(""))
             self["hint_blue"].setText(_b("Favorit l\xc3\xb6schen"))
@@ -5554,10 +5590,11 @@ class OeMediathekScreen(Screen):
                 self["hint_page"].setText(_b("OK = Ablegen"))
         else:
             self["hint_red"].setText(_b("Sortieren"))
+            self._set_hint_menu("")
             self["hint_green"].setText(_b(""))
             self["hint_yellow"].setText(_b("Folgen > Gruppen"))
             self["hint_blue"].setText(_b("Favorit l\xc3\xb6schen"))
-            self["hint_info"].setText(_b("INFO/EPG = Markieren"))
+            self["hint_info"].setText(_b("INFO / EPG\nMarkieren"))
             self["hint_page"].setText(_b(""))
 
     def _ep_fav_toggle_sort_mode(self):
