@@ -4,6 +4,7 @@
 import io
 import os
 import threading
+import time
 
 try:
     import traceback
@@ -760,6 +761,19 @@ def _episode_label(title_bytes, topic_bytes=None, watched=False, season=None, ep
         return str(label)
 
 
+def _sanitize_folder_name(value):
+    """Macht aus einem Sendungsnamen einen dateisystemtauglichen Ordnernamen
+    (fuer Sammel-Downloads, siehe _do_bulk_download)."""
+    if isinstance(value, bytes):
+        name = value.decode("utf-8", "replace")
+    else:
+        name = value
+    for ch in u'\\/:*?"<>|':
+        name = name.replace(ch, u'_')
+    name = u' '.join(name.split()).strip(u' .')
+    return name[:120] or u'OeMediathek-Download'
+
+
 def _episode_stream_url(item, prefer_720p=False):
     """Liefert die bevorzugte Stream-URL eines Episoden-Dicts als dekodierten str.
     prefer_720p=True: 720p (stream_url_sd) bevorzugen, Fallback auf 1080p."""
@@ -1152,13 +1166,47 @@ def _bg_convert_done():
     _queue_next()
 
 
+# Retry-Status fuer automatische Wiederholungsversuche nach einem
+# fehlgeschlagenen Download (siehe _queue_error) - wird vom
+# Download-Manager zur Anzeige abgefragt (_oem_download_status).
+_oem_retry_state = {"waiting": False, "until": 0, "attempt": 0, "message": "", "token": 0}
+
+
+def _oem_download_status():
+    return dict(_oem_retry_state)
+
+
+def _oem_retry_now():
+    """Startet einen wartenden automatischen Retry sofort und genau einmal."""
+    if not _oem_retry_state.get("waiting"):
+        return
+    _oem_retry_state["token"] += 1
+    _oem_retry_state["waiting"] = False
+    _oem_retry_state["until"] = 0
+    _oem_retry_state["message"] = "Erneuter Versuch wird gestartet ..."
+    _queue_next()
+
+
 def _cancel_current_download():
+    if _oem_retry_state.get("waiting"):
+        _oem_retry_state["token"] += 1
+        _oem_retry_state["waiting"] = False
+        _oem_retry_state["until"] = 0
+        _oem_retry_state["message"] = "Retry vom Benutzer abgebrochen."
+        if _download_queue:
+            _download_queue.pop(0)
+        _queue_next()
+        return
     if _active_downloader:
         _active_downloader.cancel()
 
 
 def _cancel_all_downloads():
     global _download_queue, _user_cancelled_all
+    _oem_retry_state["token"] += 1
+    _oem_retry_state["waiting"] = False
+    _oem_retry_state["until"] = 0
+    _oem_retry_state["message"] = "Downloads vom Benutzer abgebrochen."
     _download_queue = []
     if _active_downloader:
         _user_cancelled_all = True
@@ -1178,8 +1226,12 @@ def _cancel_queued_download(url):
 def _queue_next():
     """Startet den nächsten Download aus der Queue, oder meldet alle fertig."""
     global _active_downloader, _download_queue, _bg_download_result, _user_cancelled_all
+    if _oem_retry_state.get("waiting"):
+        return
     if not _download_queue:
         _active_downloader  = None
+        _oem_retry_state["message"] = ""
+        _oem_retry_state["attempt"] = 0
         if _user_cancelled_all:
             _bg_download_result = "cancelled"
             _user_cancelled_all = False
@@ -1195,24 +1247,88 @@ def _queue_next():
             topic=item.get("topic"),
             description=item.get("description"),
             duration=item.get("duration"),
+            target_dir=item.get("target_dir"),
             on_done=_bg_download_done,
             on_error=lambda msg: _queue_error(msg),
         )
         dl.on_progress = lambda *a: None
+        dl._oem_queue_item = item
         _active_downloader = dl
         dl.start()
+        # Statusmeldung eines vorherigen Fehlers/Abbruchs nicht stehen lassen,
+        # sobald ein neuer Download tatsaechlich anlaeuft - sonst zeigt der
+        # Download-Manager z.B. "abgebrochen" noch an, waehrend laengst
+        # weitere Downloads erfolgreich laufen.
+        _oem_retry_state["message"] = ""
+        _oem_retry_state["attempt"] = 0
     except Exception:
+        _log("_queue_next Fehler: " + _fmt_exc())
         _queue_next()
 
 
 def _queue_error(msg):
-    global _active_downloader, _bg_download_result
-    _active_downloader  = None
-    _bg_download_result = "err:" + str(msg)
+    """on_error-Callback des Downloaders: Bei einem vermutlich temporaeren
+    Fehler (nicht vom Benutzer abgebrochen, kein 404) wird der Eintrag statt
+    endgueltig aufzugeben mit steigendem Backoff (15/30/60/120s) automatisch
+    erneut versucht. _bg_download_result bleibt dabei bewusst unveraendert,
+    da die Queue noch nicht wirklich fertig/gescheitert ist."""
+    global _active_downloader, _download_queue, _bg_download_result, _user_cancelled_all
+    text = str(msg)
+    active = _active_downloader
+    item = getattr(active, "_oem_queue_item", None) if active else None
+    _active_downloader = None
+    low = text.lower()
+    cancelled = _user_cancelled_all or "abgebrochen" in low or "cancel" in low
+    permanent = "404" in low
+    if item is not None and not cancelled and not permanent:
+        retry = int(item.get("_oem_retry_count", 0)) + 1
+        item["_oem_retry_count"] = retry
+        delay = min(120, 15 * (2 ** min(retry - 1, 3)))
+        _download_queue.insert(0, item)
+        _oem_retry_state["token"] += 1
+        token = _oem_retry_state["token"]
+        _oem_retry_state["waiting"] = True
+        _oem_retry_state["until"]   = time.time() + delay
+        _oem_retry_state["attempt"] = retry
+        _oem_retry_state["message"] = "Download fehlgeschlagen, neuer Versuch in %d Sekunden." % delay
+
+        def _retry_later():
+            if _oem_retry_state.get("waiting") and _oem_retry_state.get("token") == token:
+                _oem_retry_state["waiting"] = False
+                _oem_retry_state["until"] = 0
+                _oem_retry_state["message"] = "Automatischer Retry wird gestartet ..."
+                _queue_next()
+        timer = threading.Timer(delay, _retry_later)
+        timer.daemon = True
+        timer.start()
+        return
+    _bg_download_result = "err:" + text
+    _oem_retry_state["waiting"] = False
+    _oem_retry_state["until"] = 0
+    _oem_retry_state["message"] = "Download fehlgeschlagen: %s" % text
     _queue_next()
 
 
-def _enqueue_download(title, url, topic, description, duration):
+def _oem_queue_size_probe(item):
+    """Ermittelt die Dateigroesse eines Queue-Eintrags per HEAD-Request im
+    Hintergrund, ohne GUI oder Downloadthread zu blockieren. HLS-Playlists
+    (.m3u8) haben keine sinnvolle Content-Length und werden ausgelassen."""
+    def worker():
+        size = 0
+        try:
+            url = item.get("url", "")
+            if not url.split("?", 1)[0].lower().endswith((".m3u8", ".m3u")):
+                size = int(get_content_length(url) or 0)
+        except Exception:
+            pass
+        item["_oem_size"] = size
+        item["_oem_size_ready"] = True
+    t = threading.Thread(target=worker)
+    t.daemon = True
+    t.start()
+
+
+def _enqueue_download(title, url, topic, description, duration, target_dir=None):
     """Reiht einen Download ein und startet ihn sofort, falls gerade nichts
     laeuft. Gibt "queued", "started" oder "duplicate" zurueck."""
     global _active_downloader, _download_queue
@@ -1224,7 +1340,11 @@ def _enqueue_download(title, url, topic, description, duration):
         "topic":       topic,
         "description": description,
         "duration":    duration,
+        "target_dir":  target_dir,
+        "_oem_size":       0,
+        "_oem_size_ready": False,
     }
+    _oem_queue_size_probe(entry)
     active_thread = _active_downloader._thread if _active_downloader else None
     if active_thread is not None and active_thread.is_alive():
         _download_queue.append(entry)
@@ -1559,6 +1679,8 @@ class OeMediathekMainScreen(Screen):
             lambda: _download_queue,
             _cancel_all_downloads,
             _cancel_current_download,
+            _oem_download_status,
+            _oem_retry_now,
         )
 
     def _refresh_page(self):
@@ -4446,13 +4568,14 @@ class OeMediathekScreen(Screen):
         if self.mode == MODE_EPISODES:
             self._update_red_hint()
 
-    def _enqueue_single_episode(self, item, callback):
+    def _enqueue_single_episode(self, item, callback, target_dir=None):
         """Loest die Stream-URL einer Episode auf und reiht sie in die
         Download-Queue ein. Ruft callback(state) GENAU EINMAL auf, state ist
         "started"/"queued"/"duplicate"/"failed" - bei ZDF UHD (force_uhd)
         asynchron per Hintergrund-Thread + reactor.callFromThread, sonst
         synchron. Gemeinsame Basis fuer Einzel- (on_download) und
-        Sammel-Downloads (_do_bulk_download)."""
+        Sammel-Downloads (_do_bulk_download). target_dir wird nur bei
+        Sammel-Downloads gesetzt (eigener Unterordner je Seite/Staffel)."""
         try:
             if self.force_uhd:
                 base = _episode_stream_url(item)
@@ -4473,14 +4596,14 @@ class OeMediathekScreen(Screen):
                     except Exception:
                         pass
                 _web = item.get("url_website", b"")
-                def _enqueue_uhd(_u=base, _tl=_title, _dt=dl_topic, _d=desc, _dr=dur, _w=_web, _cb=callback):
+                def _enqueue_uhd(_u=base, _tl=_title, _dt=dl_topic, _d=desc, _dr=dur, _w=_web, _cb=callback, _td=target_dir):
                     from twisted.internet import reactor
                     try:
                         final = (resolve_uhd_url_via_document_api(_w) if _w else None) or resolve_uhd_url(_u)
                     except Exception:
                         final = _u
                     def _do():
-                        state = _enqueue_download(_tl, final, _dt, _d, _dr)
+                        state = _enqueue_download(_tl, final, _dt, _d, _dr, target_dir=_td)
                         _cb(state)
                     reactor.callFromThread(_do)
                 t = threading.Thread(target=_enqueue_uhd)
@@ -4497,7 +4620,7 @@ class OeMediathekScreen(Screen):
             dur  = item.get("duration", b"")
             dl_topic = item.get("group") or self.cur_group_name if self.cur_group_name.startswith(b">> Direkte Treffer") else self.cur_group_name
 
-            state = _enqueue_download(item["title"], url, dl_topic, desc, dur)
+            state = _enqueue_download(item["title"], url, dl_topic, desc, dur, target_dir=target_dir)
             callback(state)
         except Exception:
             _log("_enqueue_single_episode Fehler: " + _fmt_exc())
@@ -4607,6 +4730,18 @@ class OeMediathekScreen(Screen):
     def _do_bulk_download(self, items):
         if not items:
             return
+        folder = _sanitize_folder_name(self.cur_group_name)
+        base = get_save_dir()
+        if isinstance(base, bytes):
+            base = base.decode("utf-8", "replace")
+        target_dir = os.path.join(base, folder)
+        try:
+            target_dir_enc = target_dir.encode("utf-8")
+            if not os.path.isdir(target_dir_enc):
+                os.makedirs(target_dir_enc)
+        except Exception:
+            target_dir = None
+
         counts = {"started": 0, "queued": 0, "duplicate": 0, "failed": 0}
         remaining = [len(items)]
 
@@ -4615,7 +4750,10 @@ class OeMediathekScreen(Screen):
             remaining[0] -= 1
             if remaining[0] <= 0:
                 added = counts["started"] + counts["queued"]
-                msg = "%d Folgen zur Warteschlange hinzugef\xc3\xbcgt" % added
+                if target_dir:
+                    msg = "%d Folgen in Ordner \"%s\" hinzugef\xc3\xbcgt" % (added, folder)
+                else:
+                    msg = "%d Folgen zur Warteschlange hinzugef\xc3\xbcgt" % added
                 extra = []
                 if counts["duplicate"]:
                     extra.append("%d bereits vorhanden" % counts["duplicate"])
@@ -4627,7 +4765,7 @@ class OeMediathekScreen(Screen):
                 self._render_list()
 
         for it in items:
-            self._enqueue_single_episode(it, _one_done)
+            self._enqueue_single_episode(it, _one_done, target_dir=target_dir)
 
     def on_ok(self):
         try:

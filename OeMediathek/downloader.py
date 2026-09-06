@@ -442,7 +442,7 @@ class _KeepAliveFetcher(object):
 class Downloader(object):
     CHUNK_SIZE = 256 * 1024
 
-    def __init__(self, url, title, topic=None, description=None, duration=None, on_progress=None, on_done=None, on_error=None):
+    def __init__(self, url, title, topic=None, description=None, duration=None, target_dir=None, on_progress=None, on_done=None, on_error=None):
         # ORF _episodes: Q-Varianten gesperrt, QXA funktioniert
         if "apasfiis.sf.apa.at" in url and "_episodes" in url:
             url = re.sub(r'_Q[^./]+\.mp4', '_QXA.mp4', url)
@@ -460,9 +460,12 @@ class Downloader(object):
         self._downloaded = 0
         self._total      = 0
 
-        save_dir = get_save_dir()
+        save_dir = target_dir or get_save_dir()
         if isinstance(save_dir, bytes):
             save_dir = save_dir.decode("utf-8", "replace")
+        save_dir_enc = save_dir.encode("utf-8")
+        if not os.path.isdir(save_dir_enc):
+            os.makedirs(save_dir_enc)
         filename = _make_filename(title, url, topic=topic)
         if isinstance(filename, bytes):
             filename = filename.decode("utf-8", "replace")

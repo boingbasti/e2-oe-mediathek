@@ -5,6 +5,8 @@ Zeigt den laufenden Download und die Warteschlange an.
 Wird aus plugin.py geoeffnet; greift auf die globalen Queue-Variablen zu.
 """
 
+import time
+
 from Screens.Screen import Screen
 from Components.Label import Label
 from Components.ActionMap import ActionMap
@@ -36,11 +38,13 @@ class OeMediathekDownloadManagerScreen(Screen):
             <eLabel position="40,345" size="1120,2" backgroundColor="#44FFFFFF" zPosition="1" />
             <widget name="queue_head"    position="40,363" size="1120,40"  font="Regular;28" halign="left"   foregroundColor="#AAAAAA" transparent="1" />
             <widget name="queue_label"   position="40,410" size="1120,240" font="Regular;28" halign="left" valign="top" foregroundColor="#CCCCCC" transparent="1" />
-            <eLabel position="40,667" size="8,40" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow"   position="56,660"  size="360,50"  font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
-            <eLabel position="460,667" size="8,40" backgroundColor="#CC0000" zPosition="2" />
-            <widget name="hint_red"      position="476,660" size="360,50"  font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
-            <widget name="hint_exit"     position="880,660" size="280,50"  font="Regular;32" halign="right" valign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <eLabel position="40,667" size="8,40" backgroundColor="#CC0000" zPosition="2" />
+            <widget name="hint_red"      position="56,660"  size="280,50" font="Regular;30" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
+            <eLabel position="340,667" size="8,40" backgroundColor="#00A000" zPosition="2" />
+            <widget name="hint_green"    position="356,660" size="300,50"  font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
+            <eLabel position="670,667" size="8,40" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow"   position="686,660" size="300,50"  font="Regular;32" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
+            <widget name="hint_exit"     position="1000,660" size="160,50" font="Regular;22" halign="right" valign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
     else:
         skin = """
@@ -54,14 +58,17 @@ class OeMediathekDownloadManagerScreen(Screen):
             <eLabel position="27,230" size="746,2" backgroundColor="#44FFFFFF" zPosition="1" />
             <widget name="queue_head"    position="27,240" size="746,28"  font="Regular;19" halign="left"   foregroundColor="#AAAAAA" transparent="1" />
             <widget name="queue_label"   position="27,273" size="746,160" font="Regular;19" halign="left" valign="top" foregroundColor="#CCCCCC" transparent="1" />
-            <eLabel position="27,455" size="5,27" backgroundColor="#FFD700" zPosition="2" />
-            <widget name="hint_yellow"   position="38,452"  size="240,33"  font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
-            <eLabel position="307,455" size="5,27" backgroundColor="#CC0000" zPosition="2" />
-            <widget name="hint_red"      position="318,452" size="240,33"  font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
-            <widget name="hint_exit"     position="587,452" size="186,33"  font="Regular;21" halign="right" valign="center" foregroundColor="#AAAAAA" transparent="1" />
+            <eLabel position="27,455" size="5,27" backgroundColor="#CC0000" zPosition="2" />
+            <widget name="hint_red"      position="38,452"  size="190,33" font="Regular;18" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
+            <eLabel position="225,455" size="5,27" backgroundColor="#00A000" zPosition="2" />
+            <widget name="hint_green"    position="236,452" size="210,33"  font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
+            <eLabel position="450,455" size="5,27" backgroundColor="#FFD700" zPosition="2" />
+            <widget name="hint_yellow"   position="461,452" size="190,33"  font="Regular;21" halign="left" valign="center" foregroundColor="#CCCCCC" transparent="1" />
+            <widget name="hint_exit"     position="660,452" size="113,33" font="Regular;14" halign="right" valign="center" foregroundColor="#AAAAAA" transparent="1" />
         </screen>"""
 
-    def __init__(self, session, active_downloader_ref, queue_ref, cancel_all_fn, cancel_current_fn):
+    def __init__(self, session, active_downloader_ref, queue_ref, cancel_all_fn, cancel_current_fn,
+                 status_fn=None, retry_now_fn=None):
         Screen.__init__(self, session)
 
         # Referenzen auf die globalen Objekte/Funktionen aus plugin.py
@@ -69,6 +76,8 @@ class OeMediathekDownloadManagerScreen(Screen):
         self._get_queue      = queue_ref
         self._cancel_all_fn     = cancel_all_fn
         self._cancel_current_fn = cancel_current_fn
+        self._status_fn      = status_fn
+        self._retry_now_fn   = retry_now_fn
 
         self["title_label"]    = Label(_b("Download-Manager"))
         self["active_head"]    = Label(_b("Laufender Download:"))
@@ -76,8 +85,9 @@ class OeMediathekDownloadManagerScreen(Screen):
         self["progress_label"] = Label(_b(""))
         self["queue_head"]     = Label(_b("Warteschlange:"))
         self["queue_label"]    = Label(_b(""))
-        self["hint_yellow"]    = Label(_b("Alles abbrechen"))
         self["hint_red"]       = Label(_b("Aktuellen abbrechen"))
+        self["hint_green"]     = Label(_b("Alles abbrechen"))
+        self["hint_yellow"]    = Label(_b(""))
         self["hint_exit"]      = Label(_b("EXIT = Schliessen"))
 
         self["actions"] = ActionMap(
@@ -85,11 +95,16 @@ class OeMediathekDownloadManagerScreen(Screen):
             {
                 "cancel": self.close,
                 "ok":     self.close,
-                "yellow": self._cancel_all,
                 "red":    self._cancel_current,
+                "green":  self._cancel_all,
+                "yellow": self._retry_now,
             },
             -1,
         )
+
+        self._oem_rate_bytes = None
+        self._oem_rate_time  = None
+        self._oem_rate_bps   = 0.0
 
         self._poll_timer = eTimer()
         self._poll_timer.callback.append(self._poll)
@@ -104,10 +119,69 @@ class OeMediathekDownloadManagerScreen(Screen):
         except Exception:
             pass
 
+    def _oem_rate(self, downloaded):
+        """Schaetzt die aktuelle Downloadgeschwindigkeit aus der Differenz
+        zweier Poll-Zeitpunkte (min. 0.75s Abstand, um Rauschen durch den
+        500ms-Poll-Takt zu glaetten)."""
+        now = time.time()
+        if self._oem_rate_bytes is None:
+            self._oem_rate_bytes, self._oem_rate_time = downloaded, now
+        else:
+            elapsed = now - self._oem_rate_time
+            delta = downloaded - self._oem_rate_bytes
+            if elapsed >= 0.75:
+                if delta >= 0:
+                    self._oem_rate_bps = float(delta) / elapsed
+                self._oem_rate_bytes, self._oem_rate_time = downloaded, now
+        if self._oem_rate_bps >= 1024 * 1024:
+            return "  |  %.2f MB/s" % (self._oem_rate_bps / (1024.0 * 1024.0))
+        if self._oem_rate_bps >= 1024:
+            return "  |  %.0f KB/s" % (self._oem_rate_bps / 1024.0)
+        return "  |  %.0f B/s" % self._oem_rate_bps
+
+    def _oem_queue_summary(self, queue):
+        """Baut die Kopfzeile der Warteschlange: Anzahl + Gesamtgroesse aller
+        Eintraege, deren Groesse bereits ermittelt wurde (siehe
+        _oem_queue_size_probe in plugin.py); unbekannte Groessen (v.a.
+        HLS/m3u8) werden separat ausgewiesen statt geschaetzt."""
+        known_total = 0
+        unknown = 0
+        for item in queue:
+            if not item.get("_oem_size_ready", False):
+                unknown += 1
+                continue
+            size = int(item.get("_oem_size", 0) or 0)
+            if size > 0:
+                known_total += size
+            else:
+                unknown += 1
+        if known_total > 0:
+            total_text = format_size(known_total)
+        elif unknown:
+            total_text = "unbekannt"
+        else:
+            total_text = "0 MB"
+        if unknown:
+            total_text += " + %d unbekannt" % unknown
+        return "%d Datei(en) | Gesamt: %s" % (len(queue), total_text)
+
     def _poll(self):
         try:
             active = self._get_active()
             queue  = self._get_queue()
+            status = self._status_fn() if self._status_fn else {}
+
+            queue_summary = self._oem_queue_summary(queue)
+            if status.get("waiting"):
+                remaining = max(0, int(status.get("until", 0) - time.time() + 0.999))
+                self["queue_head"].setText(_b("Warteschlange:  |  %s  |  Retry in %d Sek. (Versuch %d)" %
+                                               (queue_summary, remaining, status.get("attempt", 0))))
+                self["hint_yellow"].setText(_b("Jetzt erneut versuchen"))
+            else:
+                message = status.get("message", "")
+                suffix = ("  |  " + message) if message else ""
+                self["queue_head"].setText(_b("Warteschlange:  |  %s%s" % (queue_summary, suffix)))
+                self["hint_yellow"].setText(_b(""))
 
             if active is None:
                 self["active_label"].setText(_b("Kein aktiver Download"))
@@ -131,14 +205,15 @@ class OeMediathekDownloadManagerScreen(Screen):
                         total      = active._total      if hasattr(active, "_total")      else 0
                         segs_done  = getattr(active, "_segs_done", 0)
                         total_segs = getattr(active, "_total_segs", 0)
+                        rate       = self._oem_rate(dl_bytes)
                         if total_segs > 0:
                             pct = int(segs_done * 100 / total_segs)
-                            self["progress_label"].setText(_b("%d%% (%s)" % (pct, format_size(dl_bytes))))
+                            self["progress_label"].setText(_b("%d%% (%s)%s" % (pct, format_size(dl_bytes), rate)))
                         elif total > 0:
                             pct = int(dl_bytes * 100 / total)
-                            self["progress_label"].setText(_b("%d%% von %s" % (pct, format_size(total))))
+                            self["progress_label"].setText(_b("%d%% von %s%s" % (pct, format_size(total), rate)))
                         elif dl_bytes > 0:
-                            self["progress_label"].setText(_b("%s heruntergeladen" % format_size(dl_bytes)))
+                            self["progress_label"].setText(_b("%s heruntergeladen%s" % (format_size(dl_bytes), rate)))
                         else:
                             self["progress_label"].setText(_b("Starte ..."))
                 except Exception:
@@ -152,8 +227,20 @@ class OeMediathekDownloadManagerScreen(Screen):
                     t = item.get("title", b"")
                     if isinstance(t, bytes):
                         t = t.decode("utf-8", "replace")
-                    lines.append("%d. %s" % (i + 1, t))
+                    if not item.get("_oem_size_ready", False):
+                        size_text = "Groesse wird ermittelt ..."
+                    else:
+                        size = int(item.get("_oem_size", 0) or 0)
+                        size_text = format_size(size) if size > 0 else "Groesse unbekannt"
+                    lines.append("%d. %s (%s)" % (i + 1, t, size_text))
                 self["queue_label"].setText(_b("\n".join(lines)))
+        except Exception:
+            pass
+
+    def _retry_now(self):
+        try:
+            if self._retry_now_fn:
+                self._retry_now_fn()
         except Exception:
             pass
 
