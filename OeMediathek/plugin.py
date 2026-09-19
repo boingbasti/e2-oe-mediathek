@@ -693,6 +693,26 @@ def _parse_season_episode(title):
     return None, None
 
 
+def _download_title(title, season=None, episode=None):
+    """Titel fuer den Download-Dateinamen: wie in der Episodenliste steht
+    'SxxEyy' vorn statt als '(Sxx/Eyy)'-Tag hinten, damit die Dateien im
+    Dateisystem nach Staffel/Folge sortiert sind. Gibt den Titel im selben
+    Typ (bytes/str) zurueck, unveraendert falls keine Nummer erkennbar."""
+    import re
+    was_bytes = isinstance(title, bytes)
+    try:
+        text = title.decode("utf-8", "replace") if was_bytes else title
+        if season is None or episode is None:
+            season, episode = _parse_season_episode(text)
+        if season is None or episode is None:
+            return title
+        clean = re.sub(r'\s*\(S\d+/E\d+\)', '', text).strip()
+        result = "S%02dE%02d %s" % (int(season), int(episode), clean)
+        return result.encode("utf-8") if was_bytes else result
+    except Exception:
+        return title
+
+
 def _effective_season(item):
     """Liefert die Staffelnummer eines Episoden-Dicts, egal ob sie bereits als
     Zahl vorliegt (z.B. ZDF UHD ueber die ZDF Document API, siehe
@@ -4591,16 +4611,7 @@ class OeMediathekScreen(Screen):
                 desc     = item.get("description", b"")
                 dur      = item.get("duration", b"")
                 dl_topic = item.get("group") or self.cur_group_name if self.cur_group_name.startswith(b">> Direkte Treffer") else self.cur_group_name
-                _title   = item["title"]
-                _season, _episode = item.get("season"), item.get("episode")
-                if _season is not None and _episode is not None:
-                    try:
-                        was_bytes = isinstance(_title, bytes)
-                        _tstr = _title.decode("utf-8", "replace") if was_bytes else _title
-                        _tstr = "S%02dE%02d %s" % (int(_season), int(_episode), _tstr)
-                        _title = _tstr.encode("utf-8") if was_bytes else _tstr
-                    except Exception:
-                        pass
+                _title   = _download_title(item["title"], item.get("season"), item.get("episode"))
                 _web = item.get("url_website", b"")
                 def _enqueue_uhd(_u=base, _tl=_title, _dt=dl_topic, _d=desc, _dr=dur, _w=_web, _cb=callback, _td=target_dir):
                     from twisted.internet import reactor
@@ -4626,7 +4637,7 @@ class OeMediathekScreen(Screen):
             dur  = item.get("duration", b"")
             dl_topic = item.get("group") or self.cur_group_name if self.cur_group_name.startswith(b">> Direkte Treffer") else self.cur_group_name
 
-            state = _enqueue_download(item["title"], url, dl_topic, desc, dur, target_dir=target_dir)
+            state = _enqueue_download(_download_title(item["title"], item.get("season"), item.get("episode")), url, dl_topic, desc, dur, target_dir=target_dir)
             callback(state)
         except Exception:
             _log("_enqueue_single_episode Fehler: " + _fmt_exc())
