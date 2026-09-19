@@ -85,7 +85,7 @@ from mediathek import (
     resolve_uhd_url_via_document_api,
 )
 from player import play_stream_async, black_background_ref, _self_heal_all_serviceapp_backups
-from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_force_exteplayer, set_force_exteplayer, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label, get_download_extra_info, set_download_extra_info, get_download_extra_info_label, get_live_tv_background, set_live_tv_background
+from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_force_exteplayer, set_force_exteplayer, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label, get_download_extra_info, set_download_extra_info, get_download_extra_info_label, get_live_tv_background, set_live_tv_background, get_download_subfolder, set_download_subfolder
 from download_manager import OeMediathekDownloadManagerScreen
 from Screens.MessageBox import MessageBox as _MessageBox  # für Download-Notification
 
@@ -792,6 +792,24 @@ def _sanitize_folder_name(value):
         name = name.replace(ch, u'_')
     name = u' '.join(name.split()).strip(u' .')
     return name[:120] or u'OeMediathek-Download'
+
+
+def _show_target_dir(name):
+    """Zielordner <Downloadordner>/<Sendungsname>. Der Ordner wird bei Bedarf
+    angelegt, ein vorhandener wird weiterverwendet. Gibt (Pfad, Ordnername)
+    zurueck, Pfad ist None wenn der Ordner nicht angelegt werden konnte."""
+    folder = _sanitize_folder_name(name)
+    base = get_save_dir()
+    if isinstance(base, bytes):
+        base = base.decode("utf-8", "replace")
+    target_dir = os.path.join(base, folder)
+    try:
+        target_dir_enc = target_dir.encode("utf-8")
+        if not os.path.isdir(target_dir_enc):
+            os.makedirs(target_dir_enc)
+    except Exception:
+        target_dir = None
+    return target_dir, folder
 
 
 def _episode_stream_url(item, prefer_720p=False):
@@ -4676,7 +4694,12 @@ class OeMediathekScreen(Screen):
             self._update_red_hint()
             self._render_list()
 
-        self._enqueue_single_episode(item, _done)
+        target_dir = None
+        if get_download_subfolder():
+            show = item.get("group") or self.cur_group_name
+            if show and not show.startswith(b">> "):
+                target_dir = _show_target_dir(show)[0]
+        self._enqueue_single_episode(item, _done, target_dir=target_dir)
 
     def _cancel_pending_download(self, url):
         """Bricht einen bereits laufenden oder wartenden Download ab (per
@@ -4747,17 +4770,7 @@ class OeMediathekScreen(Screen):
     def _do_bulk_download(self, items):
         if not items:
             return
-        folder = _sanitize_folder_name(self.cur_group_name)
-        base = get_save_dir()
-        if isinstance(base, bytes):
-            base = base.decode("utf-8", "replace")
-        target_dir = os.path.join(base, folder)
-        try:
-            target_dir_enc = target_dir.encode("utf-8")
-            if not os.path.isdir(target_dir_enc):
-                os.makedirs(target_dir_enc)
-        except Exception:
-            target_dir = None
+        target_dir, folder = _show_target_dir(self.cur_group_name)
 
         counts = {"started": 0, "queued": 0, "duplicate": 0, "failed": 0}
         remaining = [len(items)]
@@ -6266,6 +6279,8 @@ class OeMediathekSettingsScreen(Screen):
     _ENTRIES = [
         ("Download-Ordner",               0, None,
          "Speicherort f\xc3\xbcr heruntergeladene Sendungen auf der Box ausw\xc3\xa4hlen."),
+        ("Unterordner pro Sendung:",       11, get_download_subfolder,
+         "Einzel-Downloads in einem Unterordner mit dem Sendungsnamen speichern (Sammel-Downloads immer)."),
         ("MP4 -> TS Konvertierung:",       1, get_auto_convert,
          "Heruntergeladene MP4-Dateien nach dem Download automatisch in TS umwandeln."),
         ("Download-Qualit\xc3\xa4t:",      6, get_download_quality_label,
@@ -6418,6 +6433,8 @@ class OeMediathekSettingsScreen(Screen):
             self._toggle_force_exteplayer()
         elif action_id == 10:
             self._toggle_live_tv_background()
+        elif action_id == 11:
+            self._toggle_download_subfolder()
         elif action_id == 2:
             self._reset_order()
 
@@ -6519,6 +6536,10 @@ class OeMediathekSettingsScreen(Screen):
 
     def _toggle_live_tv_background(self):
         set_live_tv_background(not get_live_tv_background())
+        self._refresh()
+
+    def _toggle_download_subfolder(self):
+        set_download_subfolder(not get_download_subfolder())
         self._refresh()
 
     def _reset_order(self):

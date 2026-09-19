@@ -182,6 +182,14 @@ def set_live_tv_background(enabled):
     s["live_tv_background"] = bool(enabled)
     save_settings(s)
 
+def get_download_subfolder():
+    return load_settings().get("download_subfolder", False)
+
+def set_download_subfolder(enabled):
+    s = load_settings()
+    s["download_subfolder"] = bool(enabled)
+    save_settings(s)
+
 def write_info_txt(filepath, title, description=None, duration=None, topic=None):
     """Schreibt eine .txt Datei mit Sendungsinfos neben die Download-Datei."""
     try:
