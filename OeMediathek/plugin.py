@@ -5517,14 +5517,15 @@ class OeMediathekScreen(Screen):
     def on_green(self):
         if self._ep_fav_sort_mode or self._fav_sort_mode:
             self.cycle_sort()
-        elif self.source_name == "Meine Favoriten":
-            # "Meine Favoriten" ist eine lokal zusammengestellte Liste, kein
-            # per API nachladbares Thema - cycle_ep_sort()/cycle_sort() wuerden
-            # hier faelschlich ein zufaelliges Thema live nachladen. In der
-            # Episodenansicht uebernimmt Gruen stattdessen den Sortiermodus
-            # (frueher auf Rot), in der Gruppenansicht gibt es hier nichts zu tun.
-            if self._fav_show_episodes:
-                self._ep_fav_toggle_sort_mode()
+        elif self.source_name == "Meine Favoriten" and self.mode == MODE_GROUPS:
+            # Die Favoriten-Gruppenliste ist lokal zusammengestellt, kein per
+            # API nachladbares Thema - cycle_sort() wuerde hier faelschlich
+            # ein zufaelliges Thema live nachladen. Sortieren laeuft dort ueber Rot.
+            pass
+        elif self.source_name == "Meine Favoriten" and self._fav_show_episodes:
+            # Flache Einzelfolgen-Favoriten (ebenfalls lokal): Gruen startet den
+            # manuellen Sortiermodus (frueher auf Rot).
+            self._ep_fav_toggle_sort_mode()
         elif self.mode == MODE_EPISODES and self.force_uhd and self.zdf_uhd_static:
             # Statische ZDF-UHD-Liste kennt keine Sortierung (get_zdf_uhd_static_episodes
             # hat keinen sort_by-Parameter) - Gruen bleibt hier ohne Wirkung.
