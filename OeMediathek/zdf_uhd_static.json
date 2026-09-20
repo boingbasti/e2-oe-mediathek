@@ -74,37 +74,46 @@
     },
     {
       "topic": "Die Bergretter",
-      "title": "Grüner Mond (S14/E06)",
-      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/gruener-mond-100",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/04/230413_2015_sendung_dbw/1/230413_2015_sendung_dbw_a1a2_4692k_p72v16.mp4",
-      "timestamp": 1758816900,
+      "title": "Ein letzter Augenblick (S16/E02)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/ein-letzter-augenblick-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/10/241031_1001_sendung_dbw/1/241031_1001_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1730361600,
       "season": null,
       "episode": null
     },
     {
       "topic": "Die Bergretter",
-      "title": "Giftiges Erbe (S14/E05)",
-      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/giftiges-erbe-100",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/23/04/230406_2015_sendung_dbw/1/230406_2015_sendung_dbw_a1a2_4692k_p72v16.mp4",
-      "timestamp": 1758212100,
+      "title": "Abschiedsschmerz (S16/E03)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/abschiedsschmerz-110",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/10/241031_1002_sendung_dbw/1/241031_1002_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1730361600,
       "season": null,
       "episode": null
     },
     {
-      "topic": "Eine Wingwoman verliebt sich nicht",
-      "title": "Eine Wingwoman verliebt sich nicht",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260830_2015_sendung_sof/1/260830_2015_sendung_sof_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
+      "topic": "Die Bergretter",
+      "title": "Letzte Worte (S16/E04)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/letzte-worte-120",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/10/241031_1003_sendung_dbw/1/241031_1003_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1730361600,
       "season": null,
       "episode": null
     },
     {
-      "topic": "Bloß nicht Liebe",
-      "title": "Bloß nicht Liebe",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/09/260913_2015_sendung_sof/1/260913_2015_sendung_sof_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
+      "topic": "Die Bergretter",
+      "title": "Seelenfrieden (S16/E05)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/seelenfrieden-100",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/10/241031_1004_sendung_dbw/1/241031_1004_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1730361600,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "Die Bergretter",
+      "title": "Gipfelrausch - Neue Folgen (S16/E01)",
+      "web_url": "https://www.zdf.de/video/serien/die-bergretter-104/gipfelrausch-102",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/10/241031_1000_sendung_dbw/1/241031_1000_sendung_dbw_a1a2_4692k_p72v16.mp4",
+      "timestamp": 1730361600,
       "season": null,
       "episode": null
     },
@@ -181,229 +190,256 @@
       "episode": null
     },
     {
-      "topic": "Ehrlich Brothers - Road to Las Vegas",
-      "title": "New Game - Im Schatten des Todesengels",
+      "topic": "Serial Cleaner",
+      "title": "Kein Zurück",
       "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/11/251129_folge1_ebv/1/251129_folge1_ebv_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 1
-    },
-    {
-      "topic": "Ehrlich Brothers - Road to Las Vegas",
-      "title": "Under Pressure - Feuer in Washington, D.C.",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/12/251206_folge2_ebv/1/251206_folge2_ebv_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 2
-    },
-    {
-      "topic": "Ehrlich Brothers - Road to Las Vegas",
-      "title": "Viva Las Vegas - All in?!",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/12/251213_folge3_ebv/1/251213_folge3_ebv_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 3
-    },
-    {
-      "topic": "PUSH",
-      "title": "Jedem Anfang",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240310_2015_sendung_pus/2/240310_2015_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 1
-    },
-    {
-      "topic": "PUSH",
-      "title": "Männer",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240310_2055_sendung_pus/1/240310_2055_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 2
-    },
-    {
-      "topic": "PUSH",
-      "title": "This is where the magic happens",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240317_2015_sendung_pus/1/240317_2015_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 3
-    },
-    {
-      "topic": "PUSH",
-      "title": "I judge, you judge, we judge",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240317_2100_sendung_pus/3/240317_2100_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 4
-    },
-    {
-      "topic": "PUSH",
-      "title": "Stille",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240324_2015_sendung_pus/2/240324_2015_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 5
-    },
-    {
-      "topic": "PUSH",
-      "title": "Weitermachen. Irgendwie",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240324_2100_sendung_pus/1/240324_2100_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 6
-    },
-    {
-      "topic": "PUSH",
-      "title": "Beziehungsweise",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260527_2145_sendung_pus/1/260527_2145_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 2,
-      "episode": 1
-    },
-    {
-      "topic": "PUSH",
-      "title": "Urvertrauen",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260527_2215_sendung_pus/1/260527_2215_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 2,
-      "episode": 2
-    },
-    {
-      "topic": "PUSH",
-      "title": "Akzeptanz",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260527_2250_sendung_pus/1/260527_2250_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 2,
-      "episode": 3
-    },
-    {
-      "topic": "PUSH",
-      "title": "Entscheidungen",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260603_2145_sendung_pus/1/260603_2145_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 2,
-      "episode": 4
-    },
-    {
-      "topic": "PUSH",
-      "title": "Schicht",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260603_2215_sendung_pus/1/260603_2215_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 2,
-      "episode": 5
-    },
-    {
-      "topic": "PUSH",
-      "title": "Eine Frage der Perspektive",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260603_2245_sendung_pus/1/260603_2245_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 2,
-      "episode": 6
-    },
-    {
-      "topic": "PUSH",
-      "title": "Trust the process",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2145_sendung_pus/1/260610_2145_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 2,
-      "episode": 7
-    },
-    {
-      "topic": "PUSH",
-      "title": "Geheimnisse",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2215_sendung_pus/1/260610_2215_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 2,
-      "episode": 8
-    },
-    {
-      "topic": "PUSH",
-      "title": "Ein Mal ist kein Mal",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2245_sendung_pus/1/260610_2245_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 2,
-      "episode": 9
-    },
-    {
-      "topic": "PUSH",
-      "title": "Und dann kamst du",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2315_sendung_pus/1/260610_2315_sendung_pus_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 2,
-      "episode": 10
-    },
-    {
-      "topic": "Frankfurt Bahnhofsviertel",
-      "title": "Der Kampf gegen Drogen",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0856_sendung_fbv/1/260612_0856_sendung_fbv_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 1
-    },
-    {
-      "topic": "Frankfurt Bahnhofsviertel",
-      "title": "Rettung mit dem Nachtbus",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0857_sendung_fbv/1/260612_0857_sendung_fbv_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 2
-    },
-    {
-      "topic": "Frankfurt Bahnhofsviertel",
-      "title": "Das harte Leben auf der Straße",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0858_sendung_fbv/1/260612_0858_sendung_fbv_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 3
-    },
-    {
-      "topic": "Frankfurt Bahnhofsviertel",
-      "title": "Strippen für den Lebenstraum",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0859_sendung_fbv/1/260612_0859_sendung_fbv_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 4
-    },
-    {
-      "topic": "Frankfurt Bahnhofsviertel",
-      "title": "Jagd auf skrupellose Freier",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0900_sendung_fbv/1/260612_0900_sendung_fbv_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 5
-    },
-    {
-      "topic": "Die Abräumer",
-      "title": "Die Abräumer",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/07/260713_1000_sendung_fis/1/260713_1000_sendung_fis_a1a2_2892k_p71v16.mp4",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/09/260930_2145_sendung_scl/1/260930_2145_sendung_scl_a1a2_2892k_p71v16.mp4",
       "timestamp": 0,
       "season": null,
       "episode": null
+    },
+    {
+      "topic": "Serial Cleaner",
+      "title": "Die Mission ",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/09/260930_2225_sendung_scl/1/260930_2225_sendung_scl_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "Serial Cleaner",
+      "title": "Doppeltes Spiel",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/10/261007_2145_sendung_scl/1/261007_2145_sendung_scl_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "Serial Cleaner",
+      "title": "Absolute Stille ",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/10/261007_2230_sendung_scl/1/261007_2230_sendung_scl_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "Serial Cleaner",
+      "title": "Kollisionskurs ",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/10/261014_2145_sendung_scl/1/261014_2145_sendung_scl_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "Serial Cleaner",
+      "title": "Kettenreaktion",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/10/261014_2230_sendung_scl/1/261014_2230_sendung_scl_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "The Assassin",
+      "title": "Ein praktischer Finger",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/09/260914_1000_sendung_asn/1/260914_1000_sendung_asn_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "The Assassin",
+      "title": "Eine feurige Pizza",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/09/260914_1001_sendung_asn/1/260914_1001_sendung_asn_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "The Assassin",
+      "title": "Ein kotzgrüner Laptop",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/09/260914_1002_sendung_asn/1/260914_1002_sendung_asn_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "The Assassin",
+      "title": "Eine vergiftete Wahrheit",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/09/260914_1003_sendung_asn/1/260914_1003_sendung_asn_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Der Mord ",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2215_sendung_cia/1/241020_2215_sendung_cia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Der Verdacht",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2300_sendung_cia/1/241020_2300_sendung_cia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 2
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Die Faceless ",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2340_sendung_cia/1/241020_2340_sendung_cia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 3
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Geheimnisse",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2215_sendung_cia/1/241021_2215_sendung_cia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 4
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Auf der Jagd",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2300_sendung_cia/1/241021_2300_sendung_cia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 5
+    },
+    {
+      "topic": "Concordia - Tödliche Utopie",
+      "title": "Kein Weg zurück",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2340_sendung_cia/1/241021_2340_sendung_cia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 6
+    },
+    {
+      "topic": "München Beats",
+      "title": "Folge 1",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260826_2015_sendung_mub/1/260826_2015_sendung_mub_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "topic": "München Beats",
+      "title": "Folge 2",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260826_2100_sendung_mub/1/260826_2100_sendung_mub_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 2
+    },
+    {
+      "topic": "München Beats",
+      "title": "Folge 3",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260827_2015_sendung_mub/1/260827_2015_sendung_mub_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 3
+    },
+    {
+      "topic": "München Beats",
+      "title": "Folge 4",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260827_2105_sendung_mub/1/260827_2105_sendung_mub_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 4
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Überstürzter Rückzug",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260727_2215_sendung_kbl/1/260727_2215_sendung_kbl_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Ein riskanter Plan",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260727_2305_sendung_kbl/1/260727_2305_sendung_kbl_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 2
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Verhandlungssache",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260728_2315_sendung_kbl/1/260728_2315_sendung_kbl_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 3
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Ungewöhnliche Weggefährten",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_0005_sendung_kbl/1/260729_0005_sendung_kbl_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 4
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Alarmstufe Rot",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_2245_sendung_kbl/1/260729_2245_sendung_kbl_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 5
+    },
+    {
+      "topic": "Kabul - Flucht aus der Hölle",
+      "title": "Ungewisse Zukunft",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_2335_sendung_kbl/1/260729_2335_sendung_kbl_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 6
+    },
+    {
+      "topic": "The Chinese Dream - 24h junges China",
+      "title": "The Chinese Dream - 24h junges China: Ein Tag mit Paintboxern, Influencern und Millionären",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/01/250107_chinesedream1_ajo/1/250107_chinesedream1_ajo_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "topic": "The Chinese Dream - 24h junges China",
+      "title": "The Chinese Dream - 24h junges China: Eine Nacht mit Rockstars, Rebellen und Prinzessinnen",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/01/250108_chinesedream2_ajo/4/250108_chinesedream2_ajo_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 2
     },
     {
       "topic": "Der Schwarm",
@@ -476,6 +512,114 @@
       "timestamp": 0,
       "season": 1,
       "episode": 8
+    },
+    {
+      "topic": "Eine Wingwoman verliebt sich nicht",
+      "title": "Eine Wingwoman verliebt sich nicht",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260830_2015_sendung_sof/1/260830_2015_sendung_sof_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "Frankfurt Bahnhofsviertel",
+      "title": "Der Kampf gegen Drogen",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0856_sendung_fbv/1/260612_0856_sendung_fbv_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "topic": "Frankfurt Bahnhofsviertel",
+      "title": "Rettung mit dem Nachtbus",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0857_sendung_fbv/1/260612_0857_sendung_fbv_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 2
+    },
+    {
+      "topic": "Frankfurt Bahnhofsviertel",
+      "title": "Das harte Leben auf der Straße",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0858_sendung_fbv/1/260612_0858_sendung_fbv_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 3
+    },
+    {
+      "topic": "Frankfurt Bahnhofsviertel",
+      "title": "Strippen für den Lebenstraum",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0859_sendung_fbv/1/260612_0859_sendung_fbv_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 4
+    },
+    {
+      "topic": "Frankfurt Bahnhofsviertel",
+      "title": "Jagd auf skrupellose Freier",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260612_0900_sendung_fbv/1/260612_0900_sendung_fbv_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 5
+    },
+    {
+      "topic": "Der Palast",
+      "title": "Aufbruch ins Ungewisse",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250106_2015_sendung_dpa/1/250106_2015_sendung_dpa_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 2,
+      "episode": 1
+    },
+    {
+      "topic": "Der Palast",
+      "title": "Mehr als eine Überraschung",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250106_2100_sendung_dpa/1/250106_2100_sendung_dpa_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 2,
+      "episode": 2
+    },
+    {
+      "topic": "Der Palast",
+      "title": "Rivalitäten und Geheimnisse",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250107_2015_sendung_dpa/4/250107_2015_sendung_dpa_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 2,
+      "episode": 3
+    },
+    {
+      "topic": "Der Palast",
+      "title": "Die Show muss weitergehen ",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250107_2100_sendung_dpa/1/250107_2100_sendung_dpa_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 2,
+      "episode": 4
+    },
+    {
+      "topic": "Der Palast",
+      "title": "Flucht nach vorn",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250108_2015_sendung_dpa/3/250108_2015_sendung_dpa_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 2,
+      "episode": 5
+    },
+    {
+      "topic": "Der Palast",
+      "title": "Ein gemeinsamer Traum",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250108_2100_sendung_dpa/1/250108_2100_sendung_dpa_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 2,
+      "episode": 6
     },
     {
       "topic": "Crystal Wall",
@@ -694,114 +838,6 @@
       "episode": 24
     },
     {
-      "topic": "FC Hollywood",
-      "title": "Das Duell",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/12/241213_fchollywood_folge1_hol/5/241213_fchollywood_folge1_hol_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 1
-    },
-    {
-      "topic": "FC Hollywood",
-      "title": "Die Jagd",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250108_fchollywood_folge2_hol/1/250108_fchollywood_folge2_hol_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 2
-    },
-    {
-      "topic": "FC Hollywood",
-      "title": "Der Verrat",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/12/241213_fchollywood_folge3_hol/1/241213_fchollywood_folge3_hol_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 3
-    },
-    {
-      "topic": "FC Hollywood",
-      "title": "Die Wutrede",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/12/241213_fchollywood_folge4_hol/5/241213_fchollywood_folge4_hol_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 4
-    },
-    {
-      "topic": "FC Hollywood",
-      "title": "Das Endspiel",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250102_fchollywood_folge5_hol/1/250102_fchollywood_folge5_hol_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 5
-    },
-    {
-      "topic": "My Ex",
-      "title": "Paul",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260506_2145_sendung_myx/1/260506_2145_sendung_myx_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 1
-    },
-    {
-      "topic": "My Ex",
-      "title": "Nico",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260506_2230_sendung_myx/1/260506_2230_sendung_myx_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 2
-    },
-    {
-      "topic": "My Ex",
-      "title": "Tony und Eric",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260513_2225_sendung_myx/1/260513_2225_sendung_myx_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 4
-    },
-    {
-      "topic": "My Ex",
-      "title": "Maruan",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260520_2145_sendung_myx/1/260520_2145_sendung_myx_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 5
-    },
-    {
-      "topic": "My Ex",
-      "title": "Die Liebenden",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260520_2230_sendung_myx/1/260520_2230_sendung_myx_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 6
-    },
-    {
-      "topic": "Schatzinseln im Pazifik – Leben mit dem Ozean",
-      "title": "Schatzinseln im Pazifik (1/2)",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/12/241228_schatzinseln_im_pazifik1/1/241228_schatzinseln_im_pazifik1_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 1
-    },
-    {
-      "topic": "Schatzinseln im Pazifik – Leben mit dem Ozean",
-      "title": "Schatzinseln im Pazifik (2/2)",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/12/241228_schatzinseln_im_pazifik2/3/241228_schatzinseln_im_pazifik2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 2
-    },
-    {
       "topic": "Take the Money and Run",
       "title": "One Dream",
       "web_url": "",
@@ -854,6 +890,132 @@
       "timestamp": 0,
       "season": 1,
       "episode": 6
+    },
+    {
+      "topic": "Anthropozän",
+      "title": "Erde",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/20/03/200308_anthropozaen_erde_tex/4/200308_anthropozaen_erde_tex_4328k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "topic": "Anthropozän",
+      "title": "Luft",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/20/03/200315_anthropozaen_luft_tex/6/200315_anthropozaen_luft_tex_4328k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 2
+    },
+    {
+      "topic": "Anthropozän",
+      "title": "Wasser",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/20/03/200322_anthropozaen_wasser_tex/4/200322_anthropozaen_wasser_tex_4328k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 3
+    },
+    {
+      "topic": "Die Abräumer",
+      "title": "Die Abräumer",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/07/260713_1000_sendung_fis/1/260713_1000_sendung_fis_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Im Tau von Lethes Flut",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220822_2215_sendung_dia/2/220822_2215_sendung_dia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "topic": "The Tourist",
+      "title": "Waiting for the Sun",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220822_2310_sendung_dia/1/220822_2310_sendung_dia_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 2
+    },
+    {
+      "topic": "Bloß nicht Liebe",
+      "title": "Bloß nicht Liebe",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/09/260913_2015_sendung_sof/1/260913_2015_sendung_sof_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "Ehrlich Brothers - Road to Las Vegas",
+      "title": "New Game - Im Schatten des Todesengels",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/11/251129_folge1_ebv/1/251129_folge1_ebv_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "topic": "Ehrlich Brothers - Road to Las Vegas",
+      "title": "Under Pressure - Feuer in Washington, D.C.",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/12/251206_folge2_ebv/1/251206_folge2_ebv_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 2
+    },
+    {
+      "topic": "Ehrlich Brothers - Road to Las Vegas",
+      "title": "Viva Las Vegas - All in?!",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/12/251213_folge3_ebv/1/251213_folge3_ebv_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 3
+    },
+    {
+      "topic": "Merz gegen Merz - Geständnisse",
+      "title": "Merz gegen Merz - Geständnisse",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260521_2015_sendung_fis/4/260521_2015_sendung_fis_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
+    },
+    {
+      "topic": "Schatzinseln im Pazifik – Leben mit dem Ozean",
+      "title": "Schatzinseln im Pazifik (1/2)",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/12/241228_schatzinseln_im_pazifik1/1/241228_schatzinseln_im_pazifik1_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "topic": "Schatzinseln im Pazifik – Leben mit dem Ozean",
+      "title": "Schatzinseln im Pazifik (2/2)",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/12/241228_schatzinseln_im_pazifik2/3/241228_schatzinseln_im_pazifik2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 2
+    },
+    {
+      "topic": "Plötzlich Schwester",
+      "title": "Plötzlich Schwester",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260806_2015_sendung_fis/1/260806_2015_sendung_fis_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": null,
+      "episode": null
     },
     {
       "topic": "Back Up - Auf Streife mit der Ex ",
@@ -910,159 +1072,6 @@
       "episode": null
     },
     {
-      "topic": "The Tourist",
-      "title": "Im Tau von Lethes Flut",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220822_2215_sendung_dia/2/220822_2215_sendung_dia_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 1
-    },
-    {
-      "topic": "The Tourist",
-      "title": "Waiting for the Sun",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/de/zdf/22/08/220822_2310_sendung_dia/1/220822_2310_sendung_dia_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 2
-    },
-    {
-      "topic": "The Chinese Dream - 24h junges China",
-      "title": "The Chinese Dream - 24h junges China: Ein Tag mit Paintboxern, Influencern und Millionären",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/01/250107_chinesedream1_ajo/1/250107_chinesedream1_ajo_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 1
-    },
-    {
-      "topic": "The Chinese Dream - 24h junges China",
-      "title": "The Chinese Dream - 24h junges China: Eine Nacht mit Rockstars, Rebellen und Prinzessinnen",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/25/01/250108_chinesedream2_ajo/4/250108_chinesedream2_ajo_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 2
-    },
-    {
-      "topic": "Kabul - Flucht aus der Hölle",
-      "title": "Überstürzter Rückzug",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260727_2215_sendung_kbl/1/260727_2215_sendung_kbl_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 1
-    },
-    {
-      "topic": "Kabul - Flucht aus der Hölle",
-      "title": "Ein riskanter Plan",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260727_2305_sendung_kbl/1/260727_2305_sendung_kbl_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 2
-    },
-    {
-      "topic": "Kabul - Flucht aus der Hölle",
-      "title": "Verhandlungssache",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260728_2315_sendung_kbl/1/260728_2315_sendung_kbl_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 3
-    },
-    {
-      "topic": "Kabul - Flucht aus der Hölle",
-      "title": "Ungewöhnliche Weggefährten",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_0005_sendung_kbl/1/260729_0005_sendung_kbl_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 4
-    },
-    {
-      "topic": "Kabul - Flucht aus der Hölle",
-      "title": "Alarmstufe Rot",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_2245_sendung_kbl/1/260729_2245_sendung_kbl_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 5
-    },
-    {
-      "topic": "Kabul - Flucht aus der Hölle",
-      "title": "Ungewisse Zukunft",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/26/07/260729_2335_sendung_kbl/1/260729_2335_sendung_kbl_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 6
-    },
-    {
-      "topic": "Concordia - Tödliche Utopie",
-      "title": "Der Mord ",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2215_sendung_cia/1/241020_2215_sendung_cia_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 1
-    },
-    {
-      "topic": "Concordia - Tödliche Utopie",
-      "title": "Der Verdacht",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2300_sendung_cia/1/241020_2300_sendung_cia_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 2
-    },
-    {
-      "topic": "Concordia - Tödliche Utopie",
-      "title": "Die Faceless ",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241020_2340_sendung_cia/1/241020_2340_sendung_cia_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 3
-    },
-    {
-      "topic": "Concordia - Tödliche Utopie",
-      "title": "Geheimnisse",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2215_sendung_cia/1/241021_2215_sendung_cia_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 4
-    },
-    {
-      "topic": "Concordia - Tödliche Utopie",
-      "title": "Auf der Jagd",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2300_sendung_cia/1/241021_2300_sendung_cia_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 5
-    },
-    {
-      "topic": "Concordia - Tödliche Utopie",
-      "title": "Kein Weg zurück",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/10/241021_2340_sendung_cia/1/241021_2340_sendung_cia_a1a2_4692k_p72v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 6
-    },
-    {
-      "topic": "Merz gegen Merz - Geständnisse",
-      "title": "Merz gegen Merz - Geständnisse",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260521_2015_sendung_fis/4/260521_2015_sendung_fis_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": null,
-      "episode": null
-    },
-    {
       "topic": "Weiss und Morales",
       "title": "Ein Plan für die Zukunft",
       "web_url": "",
@@ -1099,129 +1108,237 @@
       "episode": 4
     },
     {
-      "topic": "Plötzlich Schwester",
-      "title": "Plötzlich Schwester",
+      "topic": "FC Hollywood",
+      "title": "Das Duell",
       "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260806_2015_sendung_fis/1/260806_2015_sendung_fis_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": null,
-      "episode": null
-    },
-    {
-      "topic": "Anthropozän",
-      "title": "Erde",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/20/03/200308_anthropozaen_erde_tex/4/200308_anthropozaen_erde_tex_4328k_p72v16.mp4",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/12/241213_fchollywood_folge1_hol/5/241213_fchollywood_folge1_hol_a1a2_4692k_p72v16.mp4",
       "timestamp": 0,
       "season": 1,
       "episode": 1
     },
     {
-      "topic": "Anthropozän",
-      "title": "Luft",
+      "topic": "FC Hollywood",
+      "title": "Die Jagd",
       "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/20/03/200315_anthropozaen_luft_tex/6/200315_anthropozaen_luft_tex_4328k_p72v16.mp4",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250108_fchollywood_folge2_hol/1/250108_fchollywood_folge2_hol_a1a2_4692k_p72v16.mp4",
       "timestamp": 0,
       "season": 1,
       "episode": 2
     },
     {
-      "topic": "Anthropozän",
-      "title": "Wasser",
+      "topic": "FC Hollywood",
+      "title": "Der Verrat",
       "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/20/03/200322_anthropozaen_wasser_tex/4/200322_anthropozaen_wasser_tex_4328k_p72v16.mp4",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/12/241213_fchollywood_folge3_hol/1/241213_fchollywood_folge3_hol_a1a2_4692k_p72v16.mp4",
       "timestamp": 0,
       "season": 1,
       "episode": 3
     },
     {
-      "topic": "München Beats",
-      "title": "Folge 1",
+      "topic": "FC Hollywood",
+      "title": "Die Wutrede",
       "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260826_2015_sendung_mub/1/260826_2015_sendung_mub_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 1
-    },
-    {
-      "topic": "München Beats",
-      "title": "Folge 2",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260826_2100_sendung_mub/1/260826_2100_sendung_mub_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 2
-    },
-    {
-      "topic": "München Beats",
-      "title": "Folge 3",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260827_2015_sendung_mub/1/260827_2015_sendung_mub_a1a2_2892k_p71v16.mp4",
-      "timestamp": 0,
-      "season": 1,
-      "episode": 3
-    },
-    {
-      "topic": "München Beats",
-      "title": "Folge 4",
-      "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/08/260827_2105_sendung_mub/1/260827_2105_sendung_mub_a1a2_2892k_p71v16.mp4",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/24/12/241213_fchollywood_folge4_hol/5/241213_fchollywood_folge4_hol_a1a2_4692k_p72v16.mp4",
       "timestamp": 0,
       "season": 1,
       "episode": 4
     },
     {
-      "topic": "Der Palast",
-      "title": "Aufbruch ins Ungewisse",
+      "topic": "FC Hollywood",
+      "title": "Das Endspiel",
       "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250106_2015_sendung_dpa/1/250106_2015_sendung_dpa_a1a2_2892k_p71v16.mp4",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250102_fchollywood_folge5_hol/1/250102_fchollywood_folge5_hol_a1a2_4692k_p72v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 5
+    },
+    {
+      "topic": "PUSH",
+      "title": "Jedem Anfang",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240310_2015_sendung_pus/2/240310_2015_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "topic": "PUSH",
+      "title": "Männer",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240310_2055_sendung_pus/1/240310_2055_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 2
+    },
+    {
+      "topic": "PUSH",
+      "title": "This is where the magic happens",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240317_2015_sendung_pus/1/240317_2015_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 3
+    },
+    {
+      "topic": "PUSH",
+      "title": "I judge, you judge, we judge",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240317_2100_sendung_pus/3/240317_2100_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 4
+    },
+    {
+      "topic": "PUSH",
+      "title": "Stille",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240324_2015_sendung_pus/2/240324_2015_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 5
+    },
+    {
+      "topic": "PUSH",
+      "title": "Weitermachen. Irgendwie",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/24/03/240324_2100_sendung_pus/1/240324_2100_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 6
+    },
+    {
+      "topic": "PUSH",
+      "title": "Beziehungsweise",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260527_2145_sendung_pus/1/260527_2145_sendung_pus_a1a2_2892k_p71v16.mp4",
       "timestamp": 0,
       "season": 2,
       "episode": 1
     },
     {
-      "topic": "Der Palast",
-      "title": "Mehr als eine Überraschung",
+      "topic": "PUSH",
+      "title": "Urvertrauen",
       "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250106_2100_sendung_dpa/1/250106_2100_sendung_dpa_a1a2_2892k_p71v16.mp4",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260527_2215_sendung_pus/1/260527_2215_sendung_pus_a1a2_2892k_p71v16.mp4",
       "timestamp": 0,
       "season": 2,
       "episode": 2
     },
     {
-      "topic": "Der Palast",
-      "title": "Rivalitäten und Geheimnisse",
+      "topic": "PUSH",
+      "title": "Akzeptanz",
       "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250107_2015_sendung_dpa/4/250107_2015_sendung_dpa_a1a2_2892k_p71v16.mp4",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260527_2250_sendung_pus/1/260527_2250_sendung_pus_a1a2_2892k_p71v16.mp4",
       "timestamp": 0,
       "season": 2,
       "episode": 3
     },
     {
-      "topic": "Der Palast",
-      "title": "Die Show muss weitergehen ",
+      "topic": "PUSH",
+      "title": "Entscheidungen",
       "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250107_2100_sendung_dpa/1/250107_2100_sendung_dpa_a1a2_2892k_p71v16.mp4",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260603_2145_sendung_pus/1/260603_2145_sendung_pus_a1a2_2892k_p71v16.mp4",
       "timestamp": 0,
       "season": 2,
       "episode": 4
     },
     {
-      "topic": "Der Palast",
-      "title": "Flucht nach vorn",
+      "topic": "PUSH",
+      "title": "Schicht",
       "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250108_2015_sendung_dpa/3/250108_2015_sendung_dpa_a1a2_2892k_p71v16.mp4",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260603_2215_sendung_pus/1/260603_2215_sendung_pus_a1a2_2892k_p71v16.mp4",
       "timestamp": 0,
       "season": 2,
       "episode": 5
     },
     {
-      "topic": "Der Palast",
-      "title": "Ein gemeinsamer Traum",
+      "topic": "PUSH",
+      "title": "Eine Frage der Perspektive",
       "web_url": "",
-      "uhd_url": "https://nrodlzdf-a.akamaihd.net/dach/zdf/25/01/250108_2100_sendung_dpa/1/250108_2100_sendung_dpa_a1a2_2892k_p71v16.mp4",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260603_2245_sendung_pus/1/260603_2245_sendung_pus_a1a2_2892k_p71v16.mp4",
       "timestamp": 0,
       "season": 2,
+      "episode": 6
+    },
+    {
+      "topic": "PUSH",
+      "title": "Trust the process",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2145_sendung_pus/1/260610_2145_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 2,
+      "episode": 7
+    },
+    {
+      "topic": "PUSH",
+      "title": "Geheimnisse",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2215_sendung_pus/1/260610_2215_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 2,
+      "episode": 8
+    },
+    {
+      "topic": "PUSH",
+      "title": "Ein Mal ist kein Mal",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2245_sendung_pus/1/260610_2245_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 2,
+      "episode": 9
+    },
+    {
+      "topic": "PUSH",
+      "title": "Und dann kamst du",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/06/260610_2315_sendung_pus/1/260610_2315_sendung_pus_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 2,
+      "episode": 10
+    },
+    {
+      "topic": "My Ex",
+      "title": "Paul",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260506_2145_sendung_myx/1/260506_2145_sendung_myx_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "topic": "My Ex",
+      "title": "Nico",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260506_2230_sendung_myx/1/260506_2230_sendung_myx_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 2
+    },
+    {
+      "topic": "My Ex",
+      "title": "Tony und Eric",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260513_2225_sendung_myx/1/260513_2225_sendung_myx_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 4
+    },
+    {
+      "topic": "My Ex",
+      "title": "Maruan",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260520_2145_sendung_myx/1/260520_2145_sendung_myx_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
+      "episode": 5
+    },
+    {
+      "topic": "My Ex",
+      "title": "Die Liebenden",
+      "web_url": "",
+      "uhd_url": "https://nrodlzdf-a.akamaihd.net/none/zdf/26/05/260520_2230_sendung_myx/1/260520_2230_sendung_myx_a1a2_2892k_p71v16.mp4",
+      "timestamp": 0,
+      "season": 1,
       "episode": 6
     },
     {
