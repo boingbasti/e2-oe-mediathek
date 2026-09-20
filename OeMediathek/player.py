@@ -224,7 +224,12 @@ def _detect_new_exteplayer3():
 
         def _read():
             try:
-                chunks.append(proc.stdout.read())
+                data = proc.stdout.read()
+                # Sofort zu Text dekodieren: py3_port.py macht aus b""-Literalen
+                # Strings, ein spaeteres b"".join() waere unter Python 3 ein TypeError.
+                if isinstance(data, bytes):
+                    data = data.decode("utf-8", "replace")
+                chunks.append(data)
             except Exception:
                 pass
         # Harte Zeitgrenze im Lese-Thread statt communicate(): ein haengender
@@ -239,8 +244,8 @@ def _detect_new_exteplayer3():
                 proc.kill()
             except Exception:
                 pass
-        out = b"".join(chunks)
-        m = re.search(b'"EPLAYER3_EXTENDED"\\s*:\\s*\\{\\s*"version"\\s*:\\s*(\\d+)', out or b"")
+        out = "".join(chunks)
+        m = re.search(r'"EPLAYER3_EXTENDED"\s*:\s*\{\s*"version"\s*:\s*(\d+)', out or "")
         return bool(m and int(m.group(1)) >= 181)
     except Exception:
         return False
