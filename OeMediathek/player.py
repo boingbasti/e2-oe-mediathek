@@ -207,9 +207,53 @@ def _has_serviceapp():
     return os.path.exists("/usr/lib/enigma2/python/Plugins/SystemPlugins/ServiceApp")
 
 
+_NEW_EXTEPLAYER3 = None
+
+
+def _detect_new_exteplayer3():
+    if os.path.isdir("/usr/lib/exteplayer3_deps"):
+        return True
+    # Nicht jedes Image bringt den Ordner mit (z.B. andere Feeds/Architekturen).
+    # exteplayer3 ab v181 meldet sich beim Start ohne Argumente mit einer
+    # Versionszeile {"EPLAYER3_EXTENDED":{"version":181}} und beendet sich
+    # danach sofort mit der Usage-Ausgabe.
+    try:
+        import subprocess
+        proc = subprocess.Popen(["exteplayer3"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        chunks = []
+
+        def _read():
+            try:
+                chunks.append(proc.stdout.read())
+            except Exception:
+                pass
+        # Harte Zeitgrenze im Lese-Thread statt communicate(): ein haengender
+        # Prozess (oder Kindprozess, der die Pipe offen haelt) darf die
+        # Erkennung nie laenger als 2s blockieren.
+        reader = threading.Thread(target=_read)
+        reader.daemon = True
+        reader.start()
+        reader.join(2.0)
+        if reader.is_alive():
+            try:
+                proc.kill()
+            except Exception:
+                pass
+        out = b"".join(chunks)
+        m = re.search(b'"EPLAYER3_EXTENDED"\\s*:\\s*\\{\\s*"version"\\s*:\\s*(\\d+)', out or b"")
+        return bool(m and int(m.group(1)) >= 181)
+    except Exception:
+        return False
+
+
 def _has_new_exteplayer3():
-    """exteplayer3 >= v181 (feedplus) bringt eigene Libs in /usr/lib/exteplayer3_deps/."""
-    return os.path.isdir("/usr/lib/exteplayer3_deps")
+    """exteplayer3 >= v181: Ordner /usr/lib/exteplayer3_deps (feedplus) oder
+    Versionszeile beim Start. Das Ergebnis wird pro Sitzung gemerkt."""
+    global _NEW_EXTEPLAYER3
+    if _NEW_EXTEPLAYER3 is None:
+        _NEW_EXTEPLAYER3 = _detect_new_exteplayer3()
+        _log("exteplayer3 >= v181 erkannt: " + str(_NEW_EXTEPLAYER3))
+    return _NEW_EXTEPLAYER3
 
 
 # Felder, die _configure_serviceapp_for_live() live-tunt und die deshalb vor
