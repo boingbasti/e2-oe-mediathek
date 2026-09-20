@@ -1316,7 +1316,10 @@ def _queue_error(msg):
     item = getattr(active, "_oem_queue_item", None) if active else None
     _active_downloader = None
     low = text.lower()
-    cancelled = _user_cancelled_all or "abgebrochen" in low or "cancel" in low
+    # Benutzerabbruch am Flag des Downloaders erkennen, nicht am Meldungstext:
+    # "Verbindung abgebrochen (keine Daten mehr empfangen)" ist ein echter
+    # Fehler und muss wiederholt werden.
+    cancelled = _user_cancelled_all or bool(getattr(active, "_cancelled", False))
     permanent = "404" in low
     if item is not None and not cancelled and not permanent:
         retry = int(item.get("_oem_retry_count", 0)) + 1
