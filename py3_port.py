@@ -394,6 +394,48 @@ _DO_SEARCH_MODE_NEW = '''                    self.current_search = term
                 self.mode = MODE_GROUPS
                 self.page = 0'''
 
+# _fetch_alpha_thread() (A-Z-Picker-Overlay) UND _fetch_thread() im "az"/
+# "za"-Sortiermodus (A-Z direkt in der Gruppenliste) bauen ihre Platzhalter-
+# Items von Hand statt ueber mediathek.py, mit demselben .encode("utf-8")-
+# Muster wie der alte _DIRECT_HITS-Bug oben: unter Python 3 bleiben
+# "group"/"title"/"channel"/"topic" dadurch bytes, waehrend mediathek.py._s()
+# (siehe _S_NEW) fuer alle echten Items laengst str liefert.
+# _start_episode_fetch() stolpert beim Oeffnen einer so gefundenen Sendung
+# dann ueber dieselbe "can only concatenate str (not bytes) to str" bei
+# "title_text = self.source_name + " | " + group_str" - vom on_ok-try/
+# except lautlos verschluckt, Bildschirm reagiert auf OK einfach nicht
+# (matcht GitHub-Issue #1: "Ordner koennen nicht geoeffnet werden", nur
+# ueber A-Z reproduzierbar, Server-Suche war nicht betroffen weil deren
+# Items durch mediathek.py._s() schon str sind). Fix: _b() (in plugin.py
+# fuer py3 bereits auf str gepatcht, siehe _B_NEW) statt manuellem encode().
+_ALPHA_FETCH_OLD = '''            ch_bytes = ch.encode("utf-8") if ch else ""
+            self._fetch_alpha_result = [
+                {"group": t.encode("utf-8"), "title": t.encode("utf-8"),
+                 "channel": ch_bytes, "topic": t.encode("utf-8")}
+                for t in filtered_topics
+            ]'''
+
+_ALPHA_FETCH_NEW = '''            ch_txt = _b(ch) if ch else ""
+            self._fetch_alpha_result = [
+                {"group": _b(t), "title": _b(t),
+                 "channel": ch_txt, "topic": _b(t)}
+                for t in filtered_topics
+            ]'''
+
+_AZ_SORT_FETCH_OLD = '''                ch_str = _AZ_CH_MAP.get(self.source_name)
+                ch_bytes = ch_str.encode("utf-8") if ch_str else ""
+                self._fetch_result = [
+                    {"group": t.encode("utf-8"), "title": t.encode("utf-8"),
+                     "channel": ch_bytes, "topic": t.encode("utf-8")}
+                    for t in page_topics'''
+
+_AZ_SORT_FETCH_NEW = '''                ch_str = _AZ_CH_MAP.get(self.source_name)
+                ch_txt = _b(ch_str) if ch_str else ""
+                self._fetch_result = [
+                    {"group": _b(t), "title": _b(t),
+                     "channel": ch_txt, "topic": _b(t)}
+                    for t in page_topics'''
+
 # write_info_txt() oeffnet die .txt-Begleitdatei bewusst im Text-Modus ("w")
 # und schreibt trotzdem per .encode("utf-8") bytes hinein - unter Python 2
 # ist das folgenlos (str IST bytes dort, "w" vs "wb" macht auf POSIX keinen
@@ -439,6 +481,8 @@ def main():
     _patch(os.path.join(DST, "player.py"), _HTTP_SERVER_OLD, _HTTP_SERVER_NEW)
     _patch(os.path.join(DST, "downloader.py"), _FILEPATH_OLD, _FILEPATH_NEW)
     _patch(os.path.join(DST, "plugin.py"), _DIRECT_HITS_OLD, _DIRECT_HITS_NEW)
+    _patch(os.path.join(DST, "plugin.py"), _ALPHA_FETCH_OLD, _ALPHA_FETCH_NEW)
+    _patch(os.path.join(DST, "plugin.py"), _AZ_SORT_FETCH_OLD, _AZ_SORT_FETCH_NEW)
     _patch(os.path.join(DST, "plugin.py"), _DO_SEARCH_MODE_OLD, _DO_SEARCH_MODE_NEW)
     _patch(os.path.join(DST, "downloader.py"), _WRITE_INFO_TXT_OLD, _WRITE_INFO_TXT_NEW)
 
