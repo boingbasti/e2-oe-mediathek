@@ -933,21 +933,52 @@ def get_zdf_uhd_no_hdr_topics():
     return _load_uhd_static().get("no_hdr_topics", [])
 
 
+def _match_static_topic(topic):
+    """Findet den exakten Topic-Namen in der statischen Liste - direkt, oder
+    per Prefix-Fallback wenn der GraphQL-Titel kürzer ist als der statische
+    Topic-Name (z.B. GraphQL "Schatzinseln im Pazifik" vs. statisch
+    "Schatzinseln im Pazifik – Leben mit dem Ozean"). None wenn das Topic
+    (noch) nicht in der statischen Liste steht."""
+    all_topics = get_zdf_uhd_static_topics()
+    if topic in all_topics:
+        return topic
+    t_lower = topic.lower()
+    for st in all_topics:
+        if st.lower().startswith(t_lower + " ") or st.lower().startswith(t_lower + u" –") or st.lower().startswith(t_lower + u" -"):
+            return st
+    return None
+
+
+def get_zdf_uhd_topic_quality(topic):
+    """Gibt '4K HDR'/'1080p HDR' für ein Topic aus der statischen Liste
+    zurück, rein lokal ohne MVW-Nachladung (im Unterschied zu
+    get_zdf_uhd_static_episodes(), das zusätzlich Beschreibung/Laufzeit
+    per MVW nachlädt - für die reine Qualitätsanzeige in der Sendungsliste
+    unnötig und zu langsam bei vielen Sendungen). Laut Stichprobe hat jede
+    Sendung durchgehend nur eine der beiden Qualitäten, nie gemischt -
+    trotzdem gewinnt defensiv der erste Treffer. Leerer String wenn das
+    Topic noch nicht in der statischen Liste steht."""
+    matched_topic = _match_static_topic(topic)
+    if not matched_topic:
+        return ""
+    for entry in _load_uhd_static()["episodes"]:
+        if entry.get("topic", "") != matched_topic:
+            continue
+        url = entry.get("uhd_url", "")
+        if "_p72v" in url:
+            return "4K HDR"
+        if "_p71v" in url:
+            return "1080p HDR"
+    return ""
+
+
 def get_zdf_uhd_static_episodes(topic, search_term=None):
     """Gibt Episoden für ein Topic aus der statischen Liste im mediathek.py-internen Format zurück."""
     results = []
     all_episodes = _load_uhd_static()["episodes"]
 
-    # Exact match; falls kein Treffer: Prefix-Fallback (GraphQL-Titel kürzer als statischer Topic-Name)
-    matched_topic = topic
-    exact_entries = [e for e in all_episodes if e.get("topic", "") == topic]
-    if not exact_entries:
-        t_lower = topic.lower()
-        for st in get_zdf_uhd_static_topics():
-            if st.lower().startswith(t_lower + " ") or st.lower().startswith(t_lower + u" –") or st.lower().startswith(t_lower + u" -"):
-                matched_topic = st
-                exact_entries = [e for e in all_episodes if e.get("topic", "") == matched_topic]
-                break
+    matched_topic = _match_static_topic(topic) or topic
+    exact_entries = [e for e in all_episodes if e.get("topic", "") == matched_topic]
 
     for entry in exact_entries:
         if entry.get("topic", "") != matched_topic:
@@ -963,7 +994,7 @@ def get_zdf_uhd_static_episodes(topic, search_term=None):
             ts = int(ts)
         except Exception:
             ts = 0
-        quality = "4K UHD" if "_p72v" in uhd_url else "1080p HDR" if "_p71v" in uhd_url else ""
+        quality = "4K HDR" if "_p72v" in uhd_url else "1080p HDR" if "_p71v" in uhd_url else ""
         results.append({
             "title":         _s(title),
             "group":         _s(topic),

@@ -77,6 +77,7 @@ from mediathek import (
     get_zdf_uhd_topic_episodes,
     get_zdf_uhd_static_topics,
     get_zdf_uhd_static_episodes,
+    get_zdf_uhd_topic_quality,
     get_zdf_uhd_no_hdr_topics,
     refresh_uhd_static,
     uhd_url_candidate,
@@ -6104,6 +6105,18 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
         from twisted.internet import reactor
         reactor.callFromThread(self._on_shows, shows, None)
 
+    def _show_label(self, show):
+        """Sendungsname, ergaenzt um die Qualitaet (z.B. "PUSH  [4K HDR]") wenn
+        die Sendung schon in der statischen Liste steht - rein lokal, kein
+        Netzwerkzugriff (siehe get_zdf_uhd_topic_quality). Neue Sendungen, die
+        noch nicht bestaetigt sind (nur GraphQL, siehe self._shows), bekommen
+        kein Tag, bis "Aktualisieren" sie in die statische Liste aufnimmt."""
+        title = show.get("title", "")
+        quality = get_zdf_uhd_topic_quality(title)
+        if quality:
+            return _b(title + "  [" + quality + "]")
+        return _b(title)
+
     def _on_shows(self, shows, err):
         self._shows      = shows
         self._shows_orig = list(shows)
@@ -6115,7 +6128,7 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
         else:
             n = len(shows)
             self["status_label"].setText(_b(str(n) + " Sendung" + ("en" if n != 1 else "")))
-            self._set_list([_b(s.get("title", "")) for s in shows])
+            self._set_list([self._show_label(s) for s in shows])
             self._update_hint_page()
         self._update_dots()
 
@@ -6252,7 +6265,7 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
         else:
             self._shows = list(self._shows_orig)
             self["hint_green"].setText(_b("A-Z"))
-        self._set_list([_b(s.get("title", "")) for s in self._shows])
+        self._set_list([self._show_label(s) for s in self._shows])
         self._update_hint_page()
         self._update_dots()
 
