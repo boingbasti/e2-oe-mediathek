@@ -555,6 +555,17 @@ _FAV_LIST_ENTRIES_OLD = '''            if i == self._fav_grabbed:
 _FAV_LIST_ENTRIES_NEW = '''            if i == self._fav_grabbed:
                 entries.append(_b("» ") + _b(gname))'''
 
+# _browse() wandelte cur per cur.encode("utf-8") in bytes um (fuer Python 2
+# vorgesehen). Unter Python 3 landeten dadurch bytes in OeMediathekDirBrowser,
+# wodurch beim Anlegen eines neuen Ordners (Gelbe Taste, _create_folder)
+# os.path.join(self._cur, name) wegen bytes+str mit "TypeError: Can't mix
+# strings and bytes in path components" abstuerzte. Fix: _b(cur) (str).
+_BROWSE_START_OLD = '''            cur = get_save_dir()
+            start = cur if isinstance(cur, bytes) else cur.encode("utf-8")'''
+
+_BROWSE_START_NEW = '''            cur = get_save_dir()
+            start = _b(cur)'''
+
 
 def main():
     if os.path.exists(DST):
@@ -593,6 +604,7 @@ def main():
     _patch(os.path.join(DST, "mediathek.py"), _FAV_PREFIX_MATCH_OLD, _FAV_PREFIX_MATCH_NEW)
     _patch(os.path.join(DST, "plugin.py"), _START_EP_FETCH_OLD, _START_EP_FETCH_NEW)
     _patch(os.path.join(DST, "plugin.py"), _FAV_LIST_ENTRIES_OLD, _FAV_LIST_ENTRIES_NEW)
+    _patch(os.path.join(DST, "plugin.py"), _BROWSE_START_OLD, _BROWSE_START_NEW)
 
     print("py3-Variante erzeugt unter:", DST)
 
