@@ -453,6 +453,108 @@ _WRITE_INFO_TXT_NEW = '''        if lines:
             with open(txt_path, "wb") as f:
                 f.write(u"\\n\\n".join(lines).encode("utf-8"))'''
 
+# _episode_label() lieferte unter Python 2 per label.encode("utf-8") bytes
+# zurueck. Unter Python 3 landeten dadurch bytes in den UI-Listen und in
+# _ep_fav_list_entries() crashte das Greifen einer Folge zum Sortieren
+# (_b("» ") + label) mit "TypeError: can only concatenate str (not bytes) to str".
+# Fix: Rueckgabe ueber _b(label) (liefert str unter Python 3).
+_EPISODE_LABEL_OLD = '''    try:
+        return label.encode("utf-8")
+    except Exception:
+        return str(label)'''
+
+_EPISODE_LABEL_NEW = '''    return _b(label)'''
+
+# _build_groups() sortierte per k.decode("utf-8", "replace").lower(). Unter
+# Python 3 sind die Gruppennamen k bereits str -> k.decode() wirft AttributeError,
+# der vom try/except lautlos verschluckt wurde -> Gruppen blieben unter Python 3
+# bei Aufruf von _build_groups (Favoriten, "Alle Mediatheken") unsortiert.
+_BUILD_GROUPS_SORT_OLD = '''    if sort_mode == "az":
+        try:
+            groups_order.sort(key=lambda k: k.decode("utf-8", "replace").lower())
+        except Exception:
+            pass
+    elif sort_mode == "za":
+        try:
+            groups_order.sort(key=lambda k: k.decode("utf-8", "replace").lower(), reverse=True)
+        except Exception:
+            pass'''
+
+_BUILD_GROUPS_SORT_NEW = '''    if sort_mode == "az":
+        try:
+            groups_order.sort(key=lambda k: _b(k).lower())
+        except Exception:
+            pass
+    elif sort_mode == "za":
+        try:
+            groups_order.sort(key=lambda k: _b(k).lower(), reverse=True)
+        except Exception:
+            pass'''
+
+# _item_to_bytes() konvertierte alle Stringfelder eines Item-Dicts per
+# v.encode("utf-8") in bytes fuer Python 2. Unter Python 3 wurden dadurch alle
+# Felder von Einzelfolgen-Favoriten zu bytes (im Widerspruch zum restlichen
+# Plugin, wo _s() str liefert). Fuehrte u.a. bei on_download() mit Unterordnern
+# zu TypeError bei show.startswith(">> "). Fix: _s(v) liefert str unter Py3.
+_ITEM_TO_BYTES_OLD = '''def _item_to_bytes(item):
+    """Konvertiert alle String-Werte eines Item-Dicts zurueck zu Bytes fuer Enigma2."""
+    _STR_FIELDS = {"title", "group", "channel", "description", "duration",
+                   "stream_url_hd", "stream_url_sd"}
+    result = {}
+    for k, v in item.items():
+        if k in _STR_FIELDS and isinstance(v, str):
+            try:
+                result[k] = v.encode("utf-8")
+            except Exception:
+                result[k] = v
+        else:
+            result[k] = v
+    return result'''
+
+_ITEM_TO_BYTES_NEW = '''def _item_to_bytes(item):
+    """Gibt alle String-Werte eines Item-Dicts als native Strings zurueck (Python 3)."""
+    _STR_FIELDS = {"title", "group", "channel", "description", "duration",
+                   "stream_url_hd", "stream_url_sd"}
+    result = {}
+    for k, v in item.items():
+        if k in _STR_FIELDS:
+            result[k] = _s(v)
+        else:
+            result[k] = v
+    return result'''
+
+# get_favorites() normalisierte Gruppen mit Sender-Praefix (z.B. "BR: Schnittgut")
+# per group.encode("utf-8") zu bytes (unter Python 2 konsistent mit dem Rest).
+# Unter Python 3 wurden diese Items als einzige zu bytes, was beim Oeffnen in
+# _start_episode_fetch() exakt wie in GitHub-Issue #1 zu TypeError bei
+# self.source_name + " | " + group_str fuehrte. Fix: _s(group) (str).
+_FAV_PREFIX_MATCH_OLD = '''                            item = dict(item)
+                            item["group"] = group if isinstance(group, bytes) else group.encode("utf-8")
+                            matched.append(item)'''
+
+_FAV_PREFIX_MATCH_NEW = '''                            item = dict(item)
+                            item["group"] = _s(group)
+                            matched.append(item)'''
+
+# _start_episode_fetch() wandelte group_str defensiv per
+# gname.decode().encode("utf-8") um - unter Python 3 machte das aus einem
+# versehentlichen bytes-Objekt erneut bytes statt str. Mit _b(gname) ist
+# group_str unter Python 3 garantiert immer ein nativer str.
+_START_EP_FETCH_OLD = '''        try:
+            group_str = gname.decode("utf-8", "replace").encode("utf-8")
+        except Exception:
+            group_str = gname'''
+
+_START_EP_FETCH_NEW = '''        group_str = _b(gname)'''
+
+# In _fav_list_entries() defensive Absicherung: _b(gname) stellt sicher,
+# dass die Pfeil-Markierung auch bei unerwarteten bytes-Objekten nie crasht.
+_FAV_LIST_ENTRIES_OLD = '''            if i == self._fav_grabbed:
+                entries.append(_b("» ") + gname)'''
+
+_FAV_LIST_ENTRIES_NEW = '''            if i == self._fav_grabbed:
+                entries.append(_b("» ") + _b(gname))'''
+
 
 def main():
     if os.path.exists(DST):
@@ -485,6 +587,12 @@ def main():
     _patch(os.path.join(DST, "plugin.py"), _AZ_SORT_FETCH_OLD, _AZ_SORT_FETCH_NEW)
     _patch(os.path.join(DST, "plugin.py"), _DO_SEARCH_MODE_OLD, _DO_SEARCH_MODE_NEW)
     _patch(os.path.join(DST, "downloader.py"), _WRITE_INFO_TXT_OLD, _WRITE_INFO_TXT_NEW)
+    _patch(os.path.join(DST, "plugin.py"), _EPISODE_LABEL_OLD, _EPISODE_LABEL_NEW)
+    _patch(os.path.join(DST, "plugin.py"), _BUILD_GROUPS_SORT_OLD, _BUILD_GROUPS_SORT_NEW)
+    _patch(os.path.join(DST, "mediathek.py"), _ITEM_TO_BYTES_OLD, _ITEM_TO_BYTES_NEW)
+    _patch(os.path.join(DST, "mediathek.py"), _FAV_PREFIX_MATCH_OLD, _FAV_PREFIX_MATCH_NEW)
+    _patch(os.path.join(DST, "plugin.py"), _START_EP_FETCH_OLD, _START_EP_FETCH_NEW)
+    _patch(os.path.join(DST, "plugin.py"), _FAV_LIST_ENTRIES_OLD, _FAV_LIST_ENTRIES_NEW)
 
     print("py3-Variante erzeugt unter:", DST)
 
