@@ -32,6 +32,13 @@ else:
     PLUGIN_SRC = os.path.join(SCRIPT_DIR, "OeMediathek")
     OUTPUT_FILE = os.path.join(SCRIPT_DIR, f"{PLUGIN_NAME}_{VERSION}_{ARCHITECTURE}.ipk")
 
+# Erwartete Anzahl Logo-PNGs (ohne defaults/) zur Build-Zeit ermitteln - postinst
+# prueft damit nach der Installation, ob wirklich alle Dateien angekommen sind.
+# Direkter Verzeichnis-Count statt fester Zahl, damit neue Sender-Logos nie
+# vergessen werden nachzuziehen.
+_LOGO_DIR_SRC = os.path.join(PLUGIN_SRC, "logos")
+_LOGO_COUNT = len([f for f in os.listdir(_LOGO_DIR_SRC) if f.endswith(".png")]) if os.path.isdir(_LOGO_DIR_SRC) else 0
+
 
 PREINST_SCRIPT = f"""#!/bin/sh
 echo "OeMediathek preinst gestartet"
@@ -77,6 +84,19 @@ fi
 if [ -d "$DEFAULTS_DIR" ]; then
     echo "OeMediathek: loesche defaults-Ordner"
     rm -rf "$DEFAULTS_DIR"
+fi
+# Nachtraeglich pruefen, ob wirklich alle Logos angekommen sind - eine
+# abgebrochene/beschaedigte Uebertragung der IPK laesst je nach Abbruchpunkt
+# im tar-Archiv genau diesen hinteren, groessten Teil des Pakets fehlen,
+# waehrend die vorne liegenden Python-Dateien schon geschrieben sind und das
+# Plugin dadurch ohne jede Fehlermeldung startet, nur eben ohne Logos.
+if [ -d "$LOGO_DIR" ]; then
+    ACTUAL_LOGOS=$(ls "$LOGO_DIR"/*.png 2>/dev/null | wc -l)
+else
+    ACTUAL_LOGOS=0
+fi
+if [ "$ACTUAL_LOGOS" -lt {_LOGO_COUNT} ]; then
+    echo "OeMediathek WARNUNG: Logo-Ordner unvollstaendig ($ACTUAL_LOGOS von {_LOGO_COUNT} Dateien) - die IPK-Uebertragung war vermutlich unvollstaendig (z.B. WLAN-Aussetzer oder voller Speicher). Bitte die IPK neu installieren."
 fi
 echo "OeMediathek postinst fertig"
 """
