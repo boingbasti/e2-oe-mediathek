@@ -6,9 +6,10 @@ Jeder Sender hat eine eigene Mediathek-Ansicht. Über „Alle Mediatheken" sind 
 
 Verfügbare Sender: ARD, ZDF, Arte, 3sat, NDR, WDR, BR, MDR, HR, SWR, RBB, SR, ZDFinfo, ZDFneo, KiKA, Phoenix, Radio Bremen, funk, ARD alpha, ONE, tagesschau24, DW, ORF, SRF
 
-Zusätzlich gibt es zwei neue Kacheln:
+Zusätzlich gibt es drei weitere Kacheln:
 - **Live-Streams:** Direktlinks zu den Sender-Livestreams (21 Sender, gruppiert mit regionalen und internationalen Varianten)
 - **Live-Events:** Event-Streams der öffentlich-rechtlichen Sender für Sport und Konzerte (ARD, ZDF, NDR, WDR, HR, MDR, BR, SWR, RBB, Radio Bremen, Arte Concert) mit Live-Status-Anzeige
+- **ZDF UHD:** 4K- und 1080p-HDR-Inhalte des ZDF, gefiltert und direkt aufgelistet, immer in höchster verfügbarer Qualität (erfordert eine ARM-Box mit HEVC-Unterstützung, z.B. VU+ Uno 4K)
 
 ---
 
@@ -51,6 +52,22 @@ Zusätzlich gibt es zwei neue Kacheln:
 - **Live-Events:** Zeigt Event-Stream-Gruppen. Pro Stream wird der Live-Status per HTTP-Check angezeigt: „Stream aktiv" (echtes Live-Signal), „Tafel / Bereitschaft" (Stream läuft, aber kein aktives Event), „kein Event" (HTTP 403), „nicht erreichbar". Arte Concert sendet dauerhaft. (ARD, ZDF, NDR, WDR, HR, MDR, BR, SWR, RBB, Radio Bremen, ORF, Arte Concert)
 - **Stream-Offline-Video:** Wenn ein Kanal offline ist (EOF), zeigt der Player ein Offline-Standbild statt sich zu schließen – CH+/- zum Weiterwechseln bleibt nutzbar.
 - **Sortierung (Gruppenliste):** Per Grün zwischen A-Z und eigener Reihenfolge umschaltbar; eigene Reihenfolge per Rot einstellbar (Einträge per OK greifen und mit Pfeiltasten verschieben, wie bei den Favoriten).
+
+---
+
+### ZDF UHD
+
+| Taste | Funktion |
+|-------|----------|
+| OK | Sendung öffnen |
+| Rot | Liste aktualisieren |
+| Grün | Sortierung wechseln: A-Z / Eigene |
+| Blau | Favorit |
+| EXIT | Zurück |
+
+- Zeigt alle Sendungen mit verifiziertem 4K- oder 1080p-HDR-Stream. Die jeweilige Auflösung steht schon in der Sendungsliste dabei (z.B. „PUSH [1080p HDR]"), ohne die Sendung dafür extra öffnen zu müssen.
+- Episoden werden ohne Qualitätsdialog automatisch in der höchstmöglichen verfügbaren Auflösung abgespielt.
+- Erfordert eine ARM-Box mit HEVC-Unterstützung (z.B. VU+ Uno 4K).
 
 ---
 
@@ -118,13 +135,13 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 Im [Releases-Bereich](../../releases) liegen zwei IPK-Dateien: `enigma2-plugin-extensions-oemediathek_<Version>_all.ipk` für Python 2 (VTi u.ä.) und `enigma2-plugin-extensions-oemediathek_py3_<Version>_all.ipk` für Python 3 (z.B. OpenATV). Die passende Datei herunterladen und auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.9.5_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.9.6_all.ipk
 ```
 
 bzw. für Python 3:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_py3_1.9.5_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_py3_1.9.6_all.ipk
 ```
 
 Anschließend Enigma2 neu starten.
