@@ -4752,10 +4752,15 @@ class OeMediathekScreen(Screen):
                 seasons_found.append(s)
         seasons_found.sort()
 
+        marked = [it for it in self.cur_episodes
+                  if is_watched(it.get("stream_url_hd") or it.get("stream_url_sd") or b"")]
+
         choices = [(_b("Alle Eintr\xc3\xa4ge dieser Seite downloaden (%d)" % len(self.cur_episodes)), ("page", None))]
         for s in seasons_found:
             cnt = sum(1 for it in self.cur_episodes if _effective_season(it) == s)
             choices.append((_b("Staffel %d downloaden (%d Folgen)" % (s, cnt)), ("season", s)))
+        if marked:
+            choices.append((_b("Nur markierte Folgen downloaden (%d)" % len(marked)), ("marked", None)))
 
         def _cb(res):
             self._download_menu_open = False
@@ -4767,6 +4772,8 @@ class OeMediathekScreen(Screen):
             elif kind == "season":
                 matching = [it for it in self.cur_episodes if _effective_season(it) == val]
                 self._do_bulk_download(matching)
+            elif kind == "marked":
+                self._do_bulk_download(marked)
 
         self._download_menu_open = True
         self.session.openWithCallback(_cb, OeMediathekPickerScreen, _b("Download-Optionen"), choices)
