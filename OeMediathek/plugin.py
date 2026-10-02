@@ -6596,7 +6596,7 @@ def Plugins(**kwargs):
     return PluginDescriptor(
         name="ÖR Mediathek",
         description="Alle öffentlich-rechtlichen Mediatheken",
-        where=PluginDescriptor.WHERE_PLUGINMENU,
+        where=[PluginDescriptor.WHERE_PLUGINMENU, PluginDescriptor.WHERE_EXTENSIONSMENU],
         icon="plugin.png",
         fnc=main,
     )
