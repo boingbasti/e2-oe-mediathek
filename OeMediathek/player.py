@@ -86,11 +86,12 @@ class OeStreamPlayerSummary(Screen):
         Screen.__init__(self, session, parent)
         self.skin = (
             '<screen position="0,0" size="400,240" backgroundColor="#000000">'
-            # X-Position wird auf dieser LCD mit Faktor 0,5 interpretiert (per
-            # Webif-Grab/Pixel-Messung verifiziert: deklariert 90, gerendert
-            # bei 45 - Breite/Hoehe/Y-Position dagegen exakt wie deklariert),
-            # daher 180 statt der eigentlich gewuenschten 90, damit es bei
-            # effektiv 90 (zentriert: (400-220)/2) landet.
+            # "center,center" wuerde die korrekte Position (90,10) berechnen
+            # (per Webif-Grab/Pixel-Messung verifiziert), auf dieser Box greift
+            # danach aber derselbe X-Halbierungs-Fehler trotzdem noch (landet
+            # bei 45 statt 90) - das Schluesselwort umgeht den Fehler NICHT,
+            # er sitzt unterhalb der Skin-Berechnung. Deshalb weiterhin der
+            # feste, verdoppelte Wert fuer die verifizierte Box/Displaygroesse.
             '<widget name="icon" position="180,10" size="220,220" alphatest="blend" transparent="1" />'
             '</screen>'
         )
@@ -217,7 +218,24 @@ class OeStreamPlayer(MoviePlayer):
         pass
 
     def createSummary(self):
-        return OeStreamPlayerSummary
+        # Nur auf Displays zeigen, die mindestens so gross sind wie die
+        # einzige bisher verifizierte Farb-LCD (400x240, siehe
+        # OeStreamPlayerSummary) - kleinere/monochrome VFDs (128x64 o.ae.)
+        # wuerden das Icon nur teilweise oder gar nicht zeigen und würden
+        # dabei ihre gewohnte Text-Zusammenfassung (Sendungsname/Restzeit)
+        # verlieren. Boxen ganz ohne Display liefern hier typischerweise
+        # None oder eine 0x0-Groesse, fallen also ebenfalls durch.
+        try:
+            from enigma import getDesktop
+            size = getDesktop(1).size()
+            if size.width() >= 400 and size.height() >= 240:
+                return OeStreamPlayerSummary
+        except Exception:
+            pass
+        try:
+            return MoviePlayer.createSummary(self)
+        except Exception:
+            return None
 
 
 _ORF_USER_AGENT = "OeMediathek/1.0"
