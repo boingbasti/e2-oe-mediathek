@@ -741,7 +741,7 @@ class Downloader(object):
                     # ein einzelner read()-Call bei einer traegen Quelle minutenlang
                     # blockieren, wodurch cancel() (nur ein kooperatives Flag, geprueft
                     # zwischen zwei read()-Aufrufen) entsprechend lange nicht greift.
-                    return opener.open(req, timeout=5)
+                    return opener.open(req, timeout=15)
 
                 resp = _open_mp4(0)
 
@@ -756,7 +756,7 @@ class Downloader(object):
                 downloaded = 0
                 reconnects = 0
                 reconnect_pos = 0
-                MAX_RECONNECTS = 3
+                MAX_RECONNECTS = 5
                 with open(self.filepath, "wb") as f:
                     while not self._cancelled:
                         reconnect_msg = None
@@ -796,7 +796,7 @@ class Downloader(object):
                                     raise Exception(reconnect_msg)
                                 reconnects += 1
                                 _log("Download-Reconnect %d/%d ab Byte %d: %s" % (reconnects, MAX_RECONNECTS, downloaded, self.title))
-                                time.sleep(2)
+                                time.sleep(1)
                                 if self._cancelled:
                                     break
                                 try:
