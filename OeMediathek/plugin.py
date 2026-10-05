@@ -734,6 +734,34 @@ def _effective_season(item):
     return season
 
 
+def _episode_order_key(item, default_index=0):
+    """Sortierschluessel fuer Sammel-Downloads: sortiert nach Staffel und Folge
+    aufsteigend, falls vorhanden (S01E01 vor S01E02 vor S02E01). Ohne Staffel/
+    Folge bleibt die urspruengliche Listenreihenfolge erhalten (default_index).
+    Noetig, weil die Download-Queue bei ZDF UHD (siehe _do_bulk_download) sonst
+    nicht zwingend in derselben Reihenfolge gefuellt wird, in der die Folgen
+    angezeigt werden - die Standard-Sortierung der Liste ist zudem "Neueste
+    zuerst", nicht zwingend S01E01-aufsteigend."""
+    s = _effective_season(item)
+    e = item.get("episode")
+    if e is None:
+        title = item.get("title", b"")
+        try:
+            t_str = title.decode("utf-8", "replace") if isinstance(title, bytes) else title
+        except Exception:
+            t_str = str(title)
+        _, e = _parse_season_episode(t_str)
+    try:
+        e = int(e) if e is not None else None
+    except Exception:
+        e = None
+    if s is not None and e is not None:
+        return (0, s, e)
+    if s is not None:
+        return (1, s, default_index)
+    return (2, default_index, 0)
+
+
 def _episode_label(title_bytes, topic_bytes=None, watched=False, season=None, episode=None):
     """
     Gibt einen Listeneintrag zurueck. Falls der Titel (SXX/EYY) enthaelt,
@@ -4781,10 +4809,16 @@ class OeMediathekScreen(Screen):
     def _do_bulk_download(self, items):
         if not items:
             return
+        # Nach Staffel/Folge sortieren, falls vorhanden, sonst Originalreihenfolge
+        # beibehalten (siehe _episode_order_key).
+        indexed = list(enumerate(items))
+        indexed.sort(key=lambda pair: _episode_order_key(pair[1], pair[0]))
+        sorted_items = [it for _, it in indexed]
+
         target_dir, folder = _show_target_dir(self.cur_group_name)
 
         counts = {"started": 0, "queued": 0, "duplicate": 0, "failed": 0}
-        remaining = [len(items)]
+        remaining = [len(sorted_items)]
 
         def _one_done(state):
             counts[state] = counts.get(state, 0) + 1
@@ -4805,8 +4839,38 @@ class OeMediathekScreen(Screen):
                 self._show_toast(msg, added=bool(added))
                 self._render_list()
 
-        for it in items:
-            self._enqueue_single_episode(it, _one_done, target_dir=target_dir)
+        if self.force_uhd:
+            # Bei ZDF UHD serialisiert im Hintergrund-Thread auflösen und
+            # einreihen: _enqueue_single_episode() würde hier pro Folge einen
+            # eigenen Thread für die Document-API-Auflösung starten, die
+            # Einreihung in die Queue haette dann rein vom Netzwerk-Timing
+            # abgehangen (Race Condition) statt von sorted_items' Reihenfolge.
+            def _bulk_uhd_worker():
+                from twisted.internet import reactor
+                for it in sorted_items:
+                    base = _episode_stream_url(it)
+                    if not base:
+                        reactor.callFromThread(_one_done, "failed")
+                        continue
+                    desc     = it.get("description", b"")
+                    dur      = it.get("duration", b"")
+                    dl_topic = it.get("group") or self.cur_group_name if self.cur_group_name.startswith(b">> Direkte Treffer") else self.cur_group_name
+                    _title   = _download_title(it["title"], it.get("season"), it.get("episode"))
+                    _web     = it.get("url_website", b"")
+                    try:
+                        final = (resolve_uhd_url_via_document_api(_web) if _web else None) or resolve_uhd_url(base)
+                    except Exception:
+                        final = base
+                    def _do(_tl=_title, _f=final, _dt=dl_topic, _d=desc, _dr=dur, _td=target_dir):
+                        st = _enqueue_download(_tl, _f, _dt, _d, _dr, target_dir=_td)
+                        _one_done(st)
+                    reactor.callFromThread(_do)
+            t = threading.Thread(target=_bulk_uhd_worker)
+            t.daemon = True
+            t.start()
+        else:
+            for it in sorted_items:
+                self._enqueue_single_episode(it, _one_done, target_dir=target_dir)
 
     def on_ok(self):
         try:
