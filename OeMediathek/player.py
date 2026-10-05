@@ -52,6 +52,62 @@ try:
 except ImportError:
     from Screens.InfoBar import MoviePlayer
 
+from Screens.Screen import Screen
+
+try:
+    from Components.Pixmap import Pixmap as _Pixmap
+except ImportError:
+    _Pixmap = None
+
+try:
+    from Tools.LoadPixmap import LoadPixmap as _LoadPixmap
+except ImportError:
+    _LoadPixmap = None
+
+# Festes Icon fuer die LCD-Zusammenfassung waehrend der Wiedergabe (siehe
+# OeStreamPlayerSummary) - kein Cover pro Sendung, da unsere "Datei" eine
+# Remote-URL ist, es gibt also keinen echten lokalen Ordner mit einem
+# folder.jpg/folder.png drin (das Muster, das z.B. das mitgelieferte
+# MediaPlayer-Plugin fuer Cover-Art nutzt).
+_DISPLAY_ICON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "display_icon.png")
+
+
+class OeStreamPlayerSummary(Screen):
+    """LCD-Zusammenfassung fuer OeStreamPlayer (siehe createSummary()): zeigt
+    nur ein festes Icon, kein Sendungsname/Fortschritt noetig. Skin als
+    Python-String zur Laufzeit gebaut, kein eigenes XML-File, wie der Rest
+    des Plugins (siehe plugin.py _make_skin()-Konvention). Feste Groesse
+    400x240 (per /proc/stb/lcd/xres+yres auf einer Duo4K lite verifiziert -
+    andere Boxen mit kleinerem/anderem LCD zeigen ggf. nichts oder ein
+    skaliertes Bild, je nachdem wie das jeweilige Image diese Groesse
+    handhabt)."""
+
+    def __init__(self, session, parent):
+        Screen.__init__(self, session, parent)
+        self.skin = (
+            '<screen position="0,0" size="400,240" backgroundColor="#000000">'
+            # X-Position wird auf dieser LCD mit Faktor 0,5 interpretiert (per
+            # Webif-Grab/Pixel-Messung verifiziert: deklariert 90, gerendert
+            # bei 45 - Breite/Hoehe/Y-Position dagegen exakt wie deklariert),
+            # daher 180 statt der eigentlich gewuenschten 90, damit es bei
+            # effektiv 90 (zentriert: (400-220)/2) landet.
+            '<widget name="icon" position="180,10" size="220,220" alphatest="blend" transparent="1" />'
+            '</screen>'
+        )
+        if _Pixmap:
+            self["icon"] = _Pixmap()
+            self.onLayoutFinish.append(self._set_icon)
+
+    def _set_icon(self):
+        if not (_Pixmap and _LoadPixmap):
+            return
+        try:
+            pix = _LoadPixmap(_DISPLAY_ICON)
+            if pix:
+                self["icon"].instance.setPixmap(pix)
+        except Exception:
+            pass
+
 
 class OeStreamPlayer(MoviePlayer):
     ENABLE_RESUME_SUPPORT = False
@@ -159,6 +215,9 @@ class OeStreamPlayer(MoviePlayer):
 
     def showResumePoint(self):
         pass
+
+    def createSummary(self):
+        return OeStreamPlayerSummary
 
 
 _ORF_USER_AGENT = "OeMediathek/1.0"
