@@ -475,6 +475,7 @@ class Downloader(object):
         self._thread     = None
         self._downloaded = 0
         self._total      = 0
+        self._resp       = None
 
         save_dir = target_dir or get_save_dir()
         if isinstance(save_dir, bytes):
@@ -500,6 +501,14 @@ class Downloader(object):
 
     def cancel(self):
         self._cancelled = True
+        # resp.read() blockiert sonst bis zu einem vollen Socket-Timeout
+        # (siehe _open_mp4) - durch Schliessen reagiert der blockierende
+        # read()-Call sofort mit einer Exception statt erst nach bis zu 35s.
+        try:
+            if self._resp:
+                self._resp.close()
+        except Exception:
+            pass
 
     def _download_hls_parallel(self, workers=4):
         """Laedt HLS-Segmente parallel (workers gleichzeitig) und muxiert Audio+Video mit ffmpeg."""
@@ -749,9 +758,10 @@ class Downloader(object):
                     # ein einzelner read()-Call bei einer traegen Quelle minutenlang
                     # blockieren, wodurch cancel() (nur ein kooperatives Flag, geprueft
                     # zwischen zwei read()-Aufrufen) entsprechend lange nicht greift.
-                    return opener.open(req, timeout=15)
+                    return opener.open(req, timeout=35)
 
                 resp = _open_mp4(0)
+                self._resp = resp
 
                 total = 0
                 try:
@@ -765,12 +775,18 @@ class Downloader(object):
                 reconnects = 0
                 reconnect_pos = 0
                 MAX_RECONNECTS = 5
-                with open(self.filepath, "wb") as f:
+                with open(self.filepath, "wb", 1024 * 1024) as f:
                     while not self._cancelled:
                         reconnect_msg = None
                         try:
                             chunk = resp.read(self.CHUNK_SIZE)
                         except Exception as e:
+                            if self._cancelled:
+                                # cancel() hat resp.close() aufgerufen, um den
+                                # blockierenden read() sofort zu unterbrechen -
+                                # die resultierende Exception ist erwartet und
+                                # kein Fehler, einfach saubere Schleife verlassen.
+                                break
                             # Bei HTTPS landet ein Read-Timeout je nach Python-/SSL-
                             # Version als socket.timeout ODER als ssl.SSLError -
                             # ssl.SSLError ist KEIN Subtyp von socket.timeout, daher
@@ -815,6 +831,7 @@ class Downloader(object):
                                 break
                             reconnect_pos = downloaded
                             resp = new_resp
+                            self._resp = resp
                             if resp.getcode() != 206:
                                 # Server ignoriert Range und liefert die Datei komplett
                                 # von vorne - Datei entsprechend zuruecksetzen.
@@ -833,6 +850,16 @@ class Downloader(object):
                         self._total      = total
                         if self.on_progress:
                             self.on_progress(downloaded, total)
+                # Nach erfolgreichem Abschluss blieb die Verbindung zum CDN
+                # bisher offen (geschlossen wurde bisher nur im Reconnect-Fall) -
+                # sie haengt sonst noch waehrend der nachfolgenden ffmpeg-
+                # Konvertierung in _run()'s Stack-Frame herum, bis Python sie
+                # irgendwann per Garbage-Collection einsammelt.
+                try:
+                    resp.close()
+                except Exception:
+                    pass
+                self._resp = None
 
             if self._cancelled:
                 try:

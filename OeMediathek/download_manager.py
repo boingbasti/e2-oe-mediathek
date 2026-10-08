@@ -102,9 +102,10 @@ class OeMediathekDownloadManagerScreen(Screen):
             -1,
         )
 
-        self._oem_rate_bytes = None
-        self._oem_rate_time  = None
-        self._oem_rate_bps   = 0.0
+        self._oem_rate_bytes  = None
+        self._oem_rate_time   = None
+        self._oem_rate_bps    = 0.0
+        self._oem_rate_active = None
 
         self._poll_timer = eTimer()
         self._poll_timer.callback.append(self._poll)
@@ -119,19 +120,28 @@ class OeMediathekDownloadManagerScreen(Screen):
         except Exception:
             pass
 
-    def _oem_rate(self, downloaded):
+    def _oem_rate(self, downloaded, active):
         """Schaetzt die aktuelle Downloadgeschwindigkeit aus der Differenz
         zweier Poll-Zeitpunkte (min. 0.75s Abstand, um Rauschen durch den
-        500ms-Poll-Takt zu glaetten)."""
+        500ms-Poll-Takt zu glaetten). Beim Wechsel auf einen neuen Download
+        (oder einem negativen Delta, z.B. wenn ein Reconnect die Datei
+        zuruecksetzt) wird die Basis sofort neu synchronisiert, statt die
+        Rate des vorigen Downloads kurz eingefroren weiterzuzeigen."""
         now = time.time()
-        if self._oem_rate_bytes is None:
+        if active is not self._oem_rate_active:
+            self._oem_rate_active = active
+            self._oem_rate_bytes, self._oem_rate_time = downloaded, now
+            self._oem_rate_bps = 0.0
+        elif self._oem_rate_bytes is None:
             self._oem_rate_bytes, self._oem_rate_time = downloaded, now
         else:
             elapsed = now - self._oem_rate_time
             delta = downloaded - self._oem_rate_bytes
-            if elapsed >= 0.75:
-                if delta >= 0:
-                    self._oem_rate_bps = float(delta) / elapsed
+            if delta < 0:
+                self._oem_rate_bytes, self._oem_rate_time = downloaded, now
+                self._oem_rate_bps = 0.0
+            elif elapsed >= 0.75:
+                self._oem_rate_bps = float(delta) / elapsed
                 self._oem_rate_bytes, self._oem_rate_time = downloaded, now
         if self._oem_rate_bps >= 1024 * 1024:
             return "  |  %.2f MB/s" % (self._oem_rate_bps / (1024.0 * 1024.0))
@@ -205,7 +215,7 @@ class OeMediathekDownloadManagerScreen(Screen):
                         total      = active._total      if hasattr(active, "_total")      else 0
                         segs_done  = getattr(active, "_segs_done", 0)
                         total_segs = getattr(active, "_total_segs", 0)
-                        rate       = self._oem_rate(dl_bytes)
+                        rate       = self._oem_rate(dl_bytes, active)
                         if total_segs > 0:
                             pct = int(segs_done * 100 / total_segs)
                             self["progress_label"].setText(_b("%d%% (%s)%s" % (pct, format_size(dl_bytes), rate)))
