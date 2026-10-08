@@ -86,7 +86,7 @@ from mediathek import (
     resolve_uhd_url_via_document_api,
 )
 from player import play_stream_async, black_background_ref, _self_heal_all_serviceapp_backups
-from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_force_exteplayer, set_force_exteplayer, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label, get_download_extra_info, set_download_extra_info, get_download_extra_info_label, get_live_tv_background, set_live_tv_background, get_download_subfolder, set_download_subfolder
+from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_force_exteplayer, set_force_exteplayer, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label, get_download_extra_info, set_download_extra_info, get_download_extra_info_label, get_live_tv_background, set_live_tv_background, get_download_subfolder, set_download_subfolder, get_lcd_icon, set_lcd_icon
 from download_manager import OeMediathekDownloadManagerScreen
 from Screens.MessageBox import MessageBox as _MessageBox  # für Download-Notification
 
@@ -6387,6 +6387,8 @@ class OeMediathekSettingsScreen(Screen):
          "Ausf\xc3\xbchrliches Log unter /tmp/OeMediathek/oemediathek.log f\xc3\xbcr die Fehlersuche schreiben."),
         ("exteplayer3 f\xc3\xbcr VOD-Streams:", 8, get_force_exteplayer,
          "Mediathek-Episoden \xc3\xbcber exteplayer3 statt den internen Player abspielen."),
+        ("Icon auf Frontdisplay:",         12, get_lcd_icon,
+         "Zeigt ein Icon auf dem Frontdisplay der Box, solange eine Sendung abgespielt wird."),
         ("Reihenfolge zur\xc3\xbccksetzen", 2, None,
          "Sortierreihenfolge der Kacheln im Hauptmen\xc3\xbc auf Standard zur\xc3\xbccksetzen."),
     ]
@@ -6523,6 +6525,8 @@ class OeMediathekSettingsScreen(Screen):
             self._toggle_live_tv_background()
         elif action_id == 11:
             self._toggle_download_subfolder()
+        elif action_id == 12:
+            self._toggle_lcd_icon()
         elif action_id == 2:
             self._reset_order()
 
@@ -6628,6 +6632,10 @@ class OeMediathekSettingsScreen(Screen):
 
     def _toggle_download_subfolder(self):
         set_download_subfolder(not get_download_subfolder())
+        self._refresh()
+
+    def _toggle_lcd_icon(self):
+        set_lcd_icon(not get_lcd_icon())
         self._refresh()
 
     def _reset_order(self):

@@ -28,7 +28,7 @@ except ImportError:
 
 from enigma import eServiceReference
 
-from downloader import get_debug_logging, get_force_exteplayer, get_live_tv_background, load_settings, save_settings
+from downloader import get_debug_logging, get_force_exteplayer, get_lcd_icon, get_live_tv_background, load_settings, save_settings
 
 _LOG_FILE = "/tmp/OeMediathek/oemediathek.log"
 
@@ -72,6 +72,29 @@ except ImportError:
 _DISPLAY_ICON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "display_icon.png")
 
 
+def _lcd_icon_x(icon_width=220, display_width=400):
+    """X-Position fuer das zentrierte Icon. Normalerweise einfache Zentrierung
+    ((Displaybreite - Iconbreite) / 2 = 90), aber auf der Duo4K lite
+    (Nexus-Treiber) wird die X-Koordinate von Enigma2 beim Rendern halbiert -
+    "center,center" umgeht das NICHT (per Webif-Grab/Pixel-Messung verifiziert:
+    landet dort bei 45 statt 90), ein literaler Wert muss also vorkompensiert
+    werden. Auf der Uno4K SE (alter dvb_bcm7252sse-Treiber) tritt die
+    Halbierung dagegen nicht auf - derselbe verdoppelte Wert landet dort exakt
+    am rechten Displayrand statt mittig (auf echter Hardware bestaetigt).
+    /proc/stb/lcd/bpp korreliert mit der Treiberfamilie (10 = Nexus/betroffen,
+    20 = alter Treiber/unbetroffen, siehe auch die analoge HDR-Treiber-
+    Unterscheidung an anderer Stelle im Plugin) und dient hier als Proxy, da
+    es keine direkte API fuer diesen Rendering-Fehler gibt."""
+    x = (display_width - icon_width) // 2
+    try:
+        with open("/proc/stb/lcd/bpp", "r") as f:
+            if f.read().strip() == "10":
+                x *= 2
+    except Exception:
+        pass
+    return x
+
+
 class OeStreamPlayerSummary(Screen):
     """LCD-Zusammenfassung fuer OeStreamPlayer (siehe createSummary()): zeigt
     nur ein festes Icon, kein Sendungsname/Fortschritt noetig. Skin als
@@ -86,15 +109,9 @@ class OeStreamPlayerSummary(Screen):
         Screen.__init__(self, session, parent)
         self.skin = (
             '<screen position="0,0" size="400,240" backgroundColor="#000000">'
-            # "center,center" wuerde die korrekte Position (90,10) berechnen
-            # (per Webif-Grab/Pixel-Messung verifiziert), auf dieser Box greift
-            # danach aber derselbe X-Halbierungs-Fehler trotzdem noch (landet
-            # bei 45 statt 90) - das Schluesselwort umgeht den Fehler NICHT,
-            # er sitzt unterhalb der Skin-Berechnung. Deshalb weiterhin der
-            # feste, verdoppelte Wert fuer die verifizierte Box/Displaygroesse.
-            '<widget name="icon" position="180,10" size="220,220" alphatest="blend" transparent="1" />'
+            '<widget name="icon" position="%d,10" size="220,220" alphatest="blend" transparent="1" />'
             '</screen>'
-        )
+        ) % _lcd_icon_x()
         if _Pixmap:
             self["icon"] = _Pixmap()
             self.onLayoutFinish.append(self._set_icon)
@@ -226,10 +243,11 @@ class OeStreamPlayer(MoviePlayer):
         # verlieren. Boxen ganz ohne Display liefern hier typischerweise
         # None oder eine 0x0-Groesse, fallen also ebenfalls durch.
         try:
-            from enigma import getDesktop
-            size = getDesktop(1).size()
-            if size.width() >= 400 and size.height() >= 240:
-                return OeStreamPlayerSummary
+            if get_lcd_icon():
+                from enigma import getDesktop
+                size = getDesktop(1).size()
+                if size.width() >= 400 and size.height() >= 240:
+                    return OeStreamPlayerSummary
         except Exception:
             pass
         try:

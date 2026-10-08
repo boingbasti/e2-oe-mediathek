@@ -182,6 +182,14 @@ def set_live_tv_background(enabled):
     s["live_tv_background"] = bool(enabled)
     save_settings(s)
 
+def get_lcd_icon():
+    return load_settings().get("lcd_icon", False)
+
+def set_lcd_icon(enabled):
+    s = load_settings()
+    s["lcd_icon"] = bool(enabled)
+    save_settings(s)
+
 def get_download_subfolder():
     return load_settings().get("download_subfolder", False)
 

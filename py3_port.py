@@ -90,8 +90,8 @@ _RELATIVE_IMPORT_FIXES = {
          "from .downloader import get_debug_logging as _get_debug_logging"),
     ],
     "player.py": [
-        ("from downloader import get_debug_logging, get_force_exteplayer, get_live_tv_background, load_settings, save_settings",
-         "from .downloader import get_debug_logging, get_force_exteplayer, get_live_tv_background, load_settings, save_settings"),
+        ("from downloader import get_debug_logging, get_force_exteplayer, get_lcd_icon, get_live_tv_background, load_settings, save_settings",
+         "from .downloader import get_debug_logging, get_force_exteplayer, get_lcd_icon, get_live_tv_background, load_settings, save_settings"),
     ],
     "plugin.py": [
         ("from mediathek import (", "from .mediathek import ("),
