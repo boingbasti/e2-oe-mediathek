@@ -182,13 +182,22 @@ def set_live_tv_background(enabled):
     s["live_tv_background"] = bool(enabled)
     save_settings(s)
 
-def get_lcd_icon():
-    return load_settings().get("lcd_icon", False)
+def get_lcd_icon_mode():
+    return load_settings().get("lcd_icon_mode", "menu")
 
-def set_lcd_icon(enabled):
+def set_lcd_icon_mode(mode):
     s = load_settings()
-    s["lcd_icon"] = bool(enabled)
+    s["lcd_icon_mode"] = mode
     save_settings(s)
+
+def get_lcd_icon_mode_label():
+    # Kurz halten (wie "Auswahl"/"1080p" bei den anderen Settings) - die
+    # Status-Spalte in OeMediathekSettingsScreen ist schmal (120px FHD /
+    # 80px HD) und bricht laengere Texte zweizeilig um, was dort abgeschnitten
+    # wirkt. Die ausfuehrlichere Bezeichnung steht stattdessen im Auswahl-
+    # Screen selbst (siehe _select_lcd_icon_mode()).
+    v = get_lcd_icon_mode()
+    return {"off": "Aus", "always": "Immer", "menu": "Menü"}.get(v, "Aus")
 
 def get_download_subfolder():
     return load_settings().get("download_subfolder", False)

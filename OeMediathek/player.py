@@ -26,9 +26,9 @@ try:
 except ImportError:
     from urllib.parse import urljoin as _urljoin
 
-from enigma import eServiceReference
+from enigma import eServiceReference, eTimer
 
-from downloader import get_debug_logging, get_force_exteplayer, get_lcd_icon, get_live_tv_background, load_settings, save_settings
+from downloader import get_debug_logging, get_force_exteplayer, get_lcd_icon_mode, get_live_tv_background, load_settings, save_settings
 
 _LOG_FILE = "/tmp/OeMediathek/oemediathek.log"
 
@@ -96,17 +96,28 @@ def _lcd_icon_x(icon_width=220, display_width=400):
 
 
 class OeStreamPlayerSummary(Screen):
-    """LCD-Zusammenfassung fuer OeStreamPlayer (siehe createSummary()): zeigt
-    nur ein festes Icon, kein Sendungsname/Fortschritt noetig. Skin als
-    Python-String zur Laufzeit gebaut, kein eigenes XML-File, wie der Rest
-    des Plugins (siehe plugin.py _make_skin()-Konvention). Feste Groesse
-    400x240 (per /proc/stb/lcd/xres+yres auf einer Duo4K lite verifiziert -
-    andere Boxen mit kleinerem/anderem LCD zeigen ggf. nichts oder ein
-    skaliertes Bild, je nachdem wie das jeweilige Image diese Groesse
-    handhabt)."""
+    """LCD-Zusammenfassung: zeigt nur ein festes Icon, kein Sendungsname/
+    Fortschritt noetig. Skin als Python-String zur Laufzeit gebaut, kein
+    eigenes XML-File, wie der Rest des Plugins (siehe plugin.py
+    _make_skin()-Konvention). Feste Groesse 400x240 (per
+    /proc/stb/lcd/xres+yres auf einer Duo4K lite verifiziert - andere Boxen
+    mit kleinerem/anderem LCD zeigen ggf. nichts oder ein skaliertes Bild,
+    je nachdem wie das jeweilige Image diese Groesse handhabt).
+
+    Wird sowohl waehrend der Wiedergabe (OeStreamPlayer.createSummary()) als
+    auch waehrend des Plugin-Menues (plugin.py _LcdIconSummaryMixin) genutzt.
+    Im Menue-Fall kann der Screen (allen voran das Hauptmenue) sehr lange
+    offen bleiben, ueber mehrere Aenderungen der Einstellung "Icon auf
+    Frontdisplay:" hinweg - eine einmalige Pruefung des Modus bei createSummary()
+    wuerde daher veralten (Icon bleibt an/aus haengen, obwohl laengst
+    umgestellt wurde). Deshalb prueft _poll() den aktuellen Modus per Timer
+    laufend selbst und blendet das Icon dementsprechend ein/aus, statt die
+    Sichtbarkeit nur einmal bei der Erzeugung festzulegen."""
 
     def __init__(self, session, parent):
         Screen.__init__(self, session, parent)
+        self._during_playback = isinstance(parent, OeStreamPlayer)
+        self._visible = None
         self.skin = (
             '<screen position="0,0" size="400,240" backgroundColor="#000000">'
             '<widget name="icon" position="%d,10" size="220,220" alphatest="blend" transparent="1" />'
@@ -115,6 +126,16 @@ class OeStreamPlayerSummary(Screen):
         if _Pixmap:
             self["icon"] = _Pixmap()
             self.onLayoutFinish.append(self._set_icon)
+            self._poll_timer = eTimer()
+            self._poll_timer.callback.append(self._poll)
+            self._poll_timer.start(1000, False)
+            self.onClose.append(self.__stop_poll)
+
+    def __stop_poll(self):
+        try:
+            self._poll_timer.stop()
+        except Exception:
+            pass
 
     def _set_icon(self):
         if not (_Pixmap and _LoadPixmap):
@@ -125,6 +146,67 @@ class OeStreamPlayerSummary(Screen):
                 self["icon"].instance.setPixmap(pix)
         except Exception:
             pass
+        self._poll()
+
+    def _poll(self):
+        try:
+            mode = get_lcd_icon_mode()
+            visible = mode == "always" or (mode == "menu" and not self._during_playback)
+        except Exception:
+            visible = False
+        if visible == self._visible:
+            return
+        self._visible = visible
+        try:
+            if visible:
+                self["icon"].show()
+            else:
+                self["icon"].hide()
+        except Exception:
+            pass
+
+
+def lcd_summary_class():
+    """Fuer OeStreamPlayer.createSummary(): wird bei jedem Wiedergabestart
+    frisch ausgewertet (kein Staleness-Risiko wie beim Menue, siehe
+    OeStreamPlayerSummary). Nur bei Modus "always" erzeugen - bei "menu"
+    oder "off" lieber None liefern, damit MoviePlayer stattdessen seine
+    eigene Text-Zusammenfassung (Titel/Restzeit) zeigt, statt eines leeren
+    schwarzen Icon-Fensters."""
+    try:
+        if get_lcd_icon_mode() != "always":
+            return None
+        if _lcd_display_ok():
+            return OeStreamPlayerSummary
+    except Exception:
+        pass
+    return None
+
+
+def lcd_menu_summary_class():
+    """Fuer plugin.py (_LcdIconSummaryMixin): anders als beim Player bleiben
+    diese Screens oft lange offen (siehe OeStreamPlayerSummary) - deshalb
+    hier unabhaengig vom aktuellen Modus immer erzeugen (nur die
+    Displaygroesse zaehlt), die Sichtbarkeit entscheidet OeStreamPlayerSummary
+    selbst live per Timer."""
+    try:
+        if _lcd_display_ok():
+            return OeStreamPlayerSummary
+    except Exception:
+        pass
+    return None
+
+
+def _lcd_display_ok():
+    """Nur auf Displays zeigen, die mindestens so gross sind wie die einzige
+    bisher verifizierte Farb-LCD (400x240) - kleinere/monochrome VFDs
+    (128x64 o.ae.) wuerden das Icon nur teilweise oder gar nicht zeigen und
+    wuerden dabei ihre gewohnte Text-Zusammenfassung verlieren. Boxen ganz
+    ohne Display liefern hier typischerweise None oder eine 0x0-Groesse,
+    fallen also ebenfalls durch."""
+    from enigma import getDesktop
+    size = getDesktop(1).size()
+    return size.width() >= 400 and size.height() >= 240
 
 
 class OeStreamPlayer(MoviePlayer):
@@ -235,21 +317,9 @@ class OeStreamPlayer(MoviePlayer):
         pass
 
     def createSummary(self):
-        # Nur auf Displays zeigen, die mindestens so gross sind wie die
-        # einzige bisher verifizierte Farb-LCD (400x240, siehe
-        # OeStreamPlayerSummary) - kleinere/monochrome VFDs (128x64 o.ae.)
-        # wuerden das Icon nur teilweise oder gar nicht zeigen und würden
-        # dabei ihre gewohnte Text-Zusammenfassung (Sendungsname/Restzeit)
-        # verlieren. Boxen ganz ohne Display liefern hier typischerweise
-        # None oder eine 0x0-Groesse, fallen also ebenfalls durch.
-        try:
-            if get_lcd_icon():
-                from enigma import getDesktop
-                size = getDesktop(1).size()
-                if size.width() >= 400 and size.height() >= 240:
-                    return OeStreamPlayerSummary
-        except Exception:
-            pass
+        cls = lcd_summary_class()
+        if cls:
+            return cls
         try:
             return MoviePlayer.createSummary(self)
         except Exception:

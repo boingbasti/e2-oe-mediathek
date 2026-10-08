@@ -85,8 +85,8 @@ from mediathek import (
     resolve_uhd_url,
     resolve_uhd_url_via_document_api,
 )
-from player import play_stream_async, black_background_ref, _self_heal_all_serviceapp_backups
-from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_force_exteplayer, set_force_exteplayer, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label, get_download_extra_info, set_download_extra_info, get_download_extra_info_label, get_live_tv_background, set_live_tv_background, get_download_subfolder, set_download_subfolder, get_lcd_icon, set_lcd_icon
+from player import play_stream_async, black_background_ref, _self_heal_all_serviceapp_backups, lcd_menu_summary_class
+from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_force_exteplayer, set_force_exteplayer, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label, get_download_extra_info, set_download_extra_info, get_download_extra_info_label, get_live_tv_background, set_live_tv_background, get_download_subfolder, set_download_subfolder, get_lcd_icon_mode, set_lcd_icon_mode, get_lcd_icon_mode_label
 from download_manager import OeMediathekDownloadManagerScreen
 from Screens.MessageBox import MessageBox as _MessageBox  # für Download-Notification
 
@@ -494,6 +494,16 @@ MODE_EPISODES  = 1
 _LIST_ROWS     = 13   # OeMediathekScreen + Livestream + Live
 _SH_LIST_ROWS  =  7   # SearchHistoryScreen  (420px/56px FHD, 280px/37px HD)
 _DB_LIST_ROWS  =  9   # DirBrowser           (560px/58px FHD, 373px/38px HD)
+
+
+class _LcdIconSummaryMixin(object):
+    """Mixin: zeigt das Frontdisplay-Icon (siehe player.lcd_menu_summary_class())
+    auch ausserhalb der Wiedergabe, solange irgendein Plugin-Screen offen ist
+    - ohne das Mixin bleibt das Display beim Navigieren im Plugin schwarz,
+    weil keiner dieser Screens sonst ein createSummary() definiert."""
+
+    def createSummary(self):
+        return lcd_menu_summary_class()
 
 
 class _CustomListMixin(object):
@@ -1005,7 +1015,7 @@ _ALPHA_X0    = ((1920 - _ALPHA_COLS * _ALPHA_CW) // 2) if IS_FHD else ((1280 - _
 _ALPHA_Y0    = ((1080 - _ALPHA_ROWS * _ALPHA_CH) // 2 + 20) if IS_FHD else ((720 - _ALPHA_ROWS * _ALPHA_CH) // 2 + 13)
 
 
-class OeMediathekAlphaPickerScreen(Screen):
+class OeMediathekAlphaPickerScreen(_LcdIconSummaryMixin, Screen):
 
     def _make_skin(self):
         cells = ""
@@ -1143,7 +1153,7 @@ class OeMediathekAlphaPickerScreen(Screen):
 # ------------------------------------------------------------------
 # Info-Screen (Zeigt Details und Laufzeit zu einer Episode als Popup)
 # ------------------------------------------------------------------
-class OeMediathekInfoScreen(Screen):
+class OeMediathekInfoScreen(_LcdIconSummaryMixin, Screen):
 
     @staticmethod
     def _make_skin():
@@ -1482,7 +1492,7 @@ def _notify_downloads_done():
 # ------------------------------------------------------------------
 # Hauptmenü – Vollbild-Kachelansicht mit Logos (Card Layout)
 # ------------------------------------------------------------------
-class OeMediathekMainScreen(Screen):
+class OeMediathekMainScreen(_LcdIconSummaryMixin, Screen):
 
     _MAX_PAGE_DOTS = 8  # grosszuegiger Puffer, aktuell 3 Seiten (29 Sender / 12 pro Seite)
 
@@ -2147,7 +2157,7 @@ class OeMediathekMainScreen(Screen):
 # ------------------------------------------------------------------
 # Suchverlauf-Screen  (Vorschalt-Dialog vor der Tastatur)
 # ------------------------------------------------------------------
-class OeMediathekSearchHistoryScreen(_CustomListMixin, Screen):
+class OeMediathekSearchHistoryScreen(_LcdIconSummaryMixin, _CustomListMixin, Screen):
 
     _CL_ROWS    = _SH_LIST_ROWS
     _NEW_SEARCH = ">> Neue Suche..."
@@ -2319,7 +2329,7 @@ class OeMediathekSearchHistoryScreen(_CustomListMixin, Screen):
 # Generisches Auswahl-Popup  (Datum, Qualität, …)
 # ------------------------------------------------------------------
 
-class OeMediathekPickerScreen(_CustomListMixin, Screen):
+class OeMediathekPickerScreen(_LcdIconSummaryMixin, _CustomListMixin, Screen):
     """Auswahl-Popup — Panel-Höhe passt sich automatisch der Eintragsanzahl an."""
 
     _CL_ROWS = 8  # Klassenwert, wird pro Instanz überschrieben
@@ -2598,7 +2608,7 @@ def _save_group_state(order_file, mode, groups):
 # ------------------------------------------------------------------
 # Live-Streams-Screen  (flache Liste aller Sender-Livestreams)
 # ------------------------------------------------------------------
-class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
+class OeMediathekLivestreamScreen(_LcdIconSummaryMixin, _CustomListMixin, Screen):
 
     _CL_ROWS = _LIST_ROWS
     _ORDER_FILE = "/etc/enigma2/oemediathek_livestream_order.json"
@@ -2967,7 +2977,7 @@ class OeMediathekLivestreamScreen(_CustomListMixin, Screen):
             pass
 
 
-class OeMediathekLiveScreen(_CustomListMixin, Screen):
+class OeMediathekLiveScreen(_LcdIconSummaryMixin, _CustomListMixin, Screen):
 
     _CL_ROWS = _LIST_ROWS
     _ORDER_FILE = "/etc/enigma2/oemediathek_live_event_order.json"
@@ -3419,7 +3429,7 @@ class OeMediathekLiveScreen(_CustomListMixin, Screen):
 # ------------------------------------------------------------------
 # Inhalts-Screen  (Split-Screen Card Layout mit Deep-Fetch)
 # ------------------------------------------------------------------
-class OeMediathekScreen(Screen):
+class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
 
     @staticmethod
     def _make_skin():
@@ -5837,7 +5847,7 @@ class OeMediathekScreen(Screen):
 # Dateibrowser für Ordnerauswahl
 # --------------------------------------------------------------------------
 
-class OeMediathekDirBrowser(_CustomListMixin, Screen):
+class OeMediathekDirBrowser(_LcdIconSummaryMixin, _CustomListMixin, Screen):
 
     _CL_ROWS = _DB_LIST_ROWS
 
@@ -6028,7 +6038,7 @@ class OeMediathekDirBrowser(_CustomListMixin, Screen):
 # ZDF UHD – Sendungsauswahl-Screen
 # --------------------------------------------------------------------------
 
-class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
+class OeMediathekZdfUhdScreen(_LcdIconSummaryMixin, _CustomListMixin, Screen):
 
     _CL_ROWS = _LIST_ROWS
 
@@ -6360,7 +6370,7 @@ class OeMediathekZdfUhdScreen(_CustomListMixin, Screen):
 # Settings-Screen
 # --------------------------------------------------------------------------
 
-class OeMediathekSettingsScreen(Screen):
+class OeMediathekSettingsScreen(_LcdIconSummaryMixin, Screen):
 
     # Einträge: (label_text, action_id, status_fn_or_None, description_text)
     # action_id: 0=Browse, 1=ToggleConvert, 2=ResetOrder, 3=ToggleWrapLR
@@ -6387,8 +6397,8 @@ class OeMediathekSettingsScreen(Screen):
          "Ausf\xc3\xbchrliches Log unter /tmp/OeMediathek/oemediathek.log f\xc3\xbcr die Fehlersuche schreiben."),
         ("exteplayer3 f\xc3\xbcr VOD-Streams:", 8, get_force_exteplayer,
          "Mediathek-Episoden \xc3\xbcber exteplayer3 statt den internen Player abspielen."),
-        ("Icon auf Frontdisplay:",         12, get_lcd_icon,
-         "Zeigt ein Icon auf dem Frontdisplay der Box, solange eine Sendung abgespielt wird."),
+        ("Icon auf Frontdisplay:",         12, get_lcd_icon_mode_label,
+         "Aus, Immer (auch bei Wiedergabe) oder Nur im Plugin-Men\xc3\xbc (nicht bei Wiedergabe)."),
         ("Reihenfolge zur\xc3\xbccksetzen", 2, None,
          "Sortierreihenfolge der Kacheln im Hauptmen\xc3\xbc auf Standard zur\xc3\xbccksetzen."),
     ]
@@ -6526,7 +6536,7 @@ class OeMediathekSettingsScreen(Screen):
         elif action_id == 11:
             self._toggle_download_subfolder()
         elif action_id == 12:
-            self._toggle_lcd_icon()
+            self._select_lcd_icon_mode()
         elif action_id == 2:
             self._reset_order()
 
@@ -6634,8 +6644,22 @@ class OeMediathekSettingsScreen(Screen):
         set_download_subfolder(not get_download_subfolder())
         self._refresh()
 
-    def _toggle_lcd_icon(self):
-        set_lcd_icon(not get_lcd_icon())
+    def _select_lcd_icon_mode(self):
+        choices = [
+            (_b("Aus"), "off"),
+            (_b("Immer"), "always"),
+            (_b("Nur im Plugin"), "menu"),
+        ]
+        self.session.openWithCallback(
+            self._lcd_icon_mode_chosen,
+            OeMediathekPickerScreen,
+            title="Icon auf Frontdisplay:",
+            choices=choices,
+        )
+
+    def _lcd_icon_mode_chosen(self, value):
+        if value is not None:
+            set_lcd_icon_mode(value)
         self._refresh()
 
     def _reset_order(self):
