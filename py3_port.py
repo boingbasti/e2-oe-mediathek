@@ -93,6 +93,13 @@ _RELATIVE_IMPORT_FIXES = {
     ],
     "plugin.py": [
         ("from mediathek import ", "from .mediathek import "),
+        # Zwei weitere, lokale Re-Imports tief in Methoden (aus v1.4/v1.5,
+        # eigenstaendig von der obigen Praefix-Ersetzung, die wegen count=1
+        # nur den ersten Treffer - den Modulkopf - erwischt):
+        ("from mediathek import load_search_history, SEARCH_HISTORY_FILE",
+         "from .mediathek import load_search_history, SEARCH_HISTORY_FILE"),
+        ("from mediathek import _save_episode_favorites, _item_to_unicode",
+         "from .mediathek import _save_episode_favorites, _item_to_unicode"),
         ("from player import ", "from .player import "),
         ("from downloader import ", "from .downloader import "),
         ("from download_manager import ", "from .download_manager import "),
