@@ -80,7 +80,7 @@ Zusätzlich gibt es drei weitere Kacheln:
 | Grün | Sortierung wechseln (Neueste zuerst / A-Z / Z-A) |
 | Gelb | Suche (Suchverlauf / Bildschirmtastatur) |
 | Blau | Favoriten (Gruppenansicht) / Folge als Favorit speichern (Episodenansicht) |
-| MENU | Sammel-Download: aktuelle Seite oder erkannte Staffel (Episodenansicht) |
+| MENU | Sammel-Download: aktuelle Seite, erkannte Staffel oder markierte Folgen (Episodenansicht) |
 | EXIT | Zurück / Filter aufheben (Sendung verpasst? / Demnächst) |
 | CH+ / CH- | Nächste/vorherige 100 Einträge von der API nachladen |
 | Links / Rechts | Innerhalb der aktuell geladenen Liste bildschirmweise weiterspringen |
@@ -102,10 +102,10 @@ Zusätzlich gibt es drei weitere Kacheln:
 - **Favoriten sortieren:** In der Favoritenliste per Rot in den Sortiermodus wechseln, Einträge per OK greifen und mit Pfeiltasten verschieben, Grün setzt die Reihenfolge zurück, EXIT bricht ab
 - **HD/SD-Auswahl:** Wenn ein Beitrag in HD und SD verfügbar ist, wird vor dem Abspielen gefragt
 - **Download:** Episoden direkt auf die Festplatte laden; startet sofort im Hintergrund ohne Zwischendialog; HLS/m3u8-Streams werden unterstützt; Dateiname ohne Unterstriche und mit Staffel/Folge (SxxEyy) vorn, damit die Dateien nach Folge sortiert sind; zusätzlich werden eine Textdatei mit Sendungsinformationen und eine .meta-Datei erstellt (Datum und Uhrzeit im Enigma2 Movie Player); laufende und wartende Downloads werden in der Episodenliste mit einem Icon markiert; ein laufender oder wartender Download lässt sich mit der gleichen roten Taste, mit der er gestartet wurde, auch direkt wieder abbrechen
-- **Sammel-Download:** Per MENU-Taste lässt sich in der Episodenliste die komplette aktuell geladene Ansicht oder eine erkannte Staffel gesammelt in die Download-Warteschlange stellen; die Folgen landen dabei automatisch in einem eigenen, nach der Sendung benannten Unterordner
+- **Sammel-Download:** Per MENU-Taste lässt sich in der Episodenliste die komplette aktuell geladene Ansicht, eine erkannte Staffel oder nur die zuvor markierten Folgen gesammelt in die Download-Warteschlange stellen; die Folgen landen dabei automatisch in einem eigenen, nach der Sendung benannten Unterordner und werden vor dem Einreihen nach Staffel und Folge sortiert
 - **Download-Warteschlange:** Mehrere Downloads können nacheinander gestartet werden und laufen automatisch der Reihe nach ab; schlägt ein Download durch einen vorübergehenden Fehler fehl, wird er automatisch mit steigender Wartezeit erneut versucht
 - **Download-Manager:** Zeigt laufenden Download mit Fortschritt, Geschwindigkeit und allen wartenden Downloads inkl. Einzel- und Gesamtgröße; Abbrechen einzeln oder gesamt möglich, ein wartender automatischer Neuversuch lässt sich auch vorzeitig starten
-- **Einstellungen:** Speicherort für Downloads, Unterordner pro Sendung für Einzel-Downloads (optional, Sammel-Downloads legen immer einen an), MP4→TS Konvertierung per ffmpeg, Download-Qualität (1080p / 720p), Abspielqualität (Immer fragen / 1080p / 720p), Zusatzinfos bei Downloads (.meta / .txt / Beide), Kachel-Reihenfolge zurücksetzen, Navigation Links/Rechts im Hauptmenü (Seitenwechsel oder Zeilenende), ServiceApp für Live-Streams konfigurieren (A/V-Sync-Optimierung, standardmäßig aktiv), Live TV im Hintergrund (ein/aus) und Debug-Logging aktivieren
+- **Einstellungen:** Speicherort für Downloads, Unterordner pro Sendung für Einzel-Downloads (optional, Sammel-Downloads legen immer einen an), MP4→TS Konvertierung per ffmpeg, Download-Qualität (1080p / 720p), Abspielqualität (Immer fragen / 1080p / 720p), Zusatzinfos bei Downloads (.meta / .txt / Beide), Icon auf Frontdisplay (Aus / Immer / Nur im Plugin), Kachel-Reihenfolge zurücksetzen, Navigation Links/Rechts im Hauptmenü (Seitenwechsel oder Zeilenende), ServiceApp für Live-Streams konfigurieren (A/V-Sync-Optimierung, standardmäßig aktiv), Live TV im Hintergrund (ein/aus) und Debug-Logging aktivieren
 - **Favoriten:** Sendungsgruppen und einzelne Folgen können als Favoriten gespeichert werden; in der Favoritenansicht kann zwischen Gruppen- und Folgenansicht gewechselt werden; einzelne favorisierte Folgen lassen sich direkt per Rot herunterladen, die Sortierfunktion liegt dort auf Grün
 - **Scrollbalken und Seitenanzeige:** Alle Listen zeigen einen Scrollbalken am rechten Rand, der die aktuelle Position anzeigt; im Hauptmenü zeigen kleine Punkte unter den Kacheln zusätzlich die aktuelle Seite an
 - **Markierung:** Einzelne Folgen können markiert werden (INFO/EPG-Taste); markierte Folgen werden in der Liste mit einem Bookmark-Icon hervorgehoben
@@ -135,16 +135,16 @@ ORF-Inhalte erfordern das VTi-Systemplugin **ServiceApp** (im VTi-Feed unter *Sy
 Im [Releases-Bereich](../../releases) liegen zwei IPK-Dateien: `enigma2-plugin-extensions-oemediathek_<Version>_all.ipk` für Python 2 (VTi u.ä.) und `enigma2-plugin-extensions-oemediathek_py3_<Version>_all.ipk` für Python 3 (z.B. OpenATV). Die passende Datei herunterladen und auf die Box übertragen (z.B. per FTP nach `/tmp/`), dann auf der Box:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_1.9.6_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_1.9.7_all.ipk
 ```
 
 bzw. für Python 3:
 
 ```
-opkg install enigma2-plugin-extensions-oemediathek_py3_1.9.6_all.ipk
+opkg install enigma2-plugin-extensions-oemediathek_py3_1.9.7_all.ipk
 ```
 
-Anschließend Enigma2 neu starten.
+Anschließend Enigma2 neu starten. Das Plugin ist danach im Hauptmenü sowie zusätzlich über die blaue Taste (lang drücken) im Erweiterungsmenü erreichbar.
 
 ---
 
