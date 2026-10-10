@@ -74,24 +74,24 @@ _DISPLAY_ICON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "displa
 
 def _lcd_icon_x(icon_width=220, display_width=400):
     """X-Position fuer das zentrierte Icon. Normalerweise einfache Zentrierung
-    ((Displaybreite - Iconbreite) / 2 = 90), aber auf der Duo4K lite
-    (Nexus-Treiber) wird die X-Koordinate von Enigma2 beim Rendern halbiert -
-    "center,center" umgeht das NICHT (per Webif-Grab/Pixel-Messung verifiziert:
-    landet dort bei 45 statt 90), ein literaler Wert muss also vorkompensiert
-    werden. Auf der Uno4K SE (alter dvb_bcm7252sse-Treiber) tritt die
-    Halbierung dagegen nicht auf - derselbe verdoppelte Wert landet dort exakt
-    am rechten Displayrand statt mittig (auf echter Hardware bestaetigt).
-    /proc/stb/lcd/bpp korreliert mit der Treiberfamilie (10 = Nexus/betroffen,
-    20 = alter Treiber/unbetroffen, siehe auch die analoge HDR-Treiber-
-    Unterscheidung an anderer Stelle im Plugin) und dient hier als Proxy, da
-    es keine direkte API fuer diesen Rendering-Fehler gibt."""
+    ((Displaybreite - Iconbreite) / 2 = 90), aber auf VTi wird die X-Koordinate
+    von Enigma2 beim Rendern halbiert - "center,center" umgeht das NICHT (per
+    Webif-Grab/Pixel-Messung auf einer Duo4K lite verifiziert: landet dort bei
+    45 statt 90), ein literaler Wert muss also vorkompensiert werden.
+
+    Zunaechst faelschlich als treiberabhaengig eingestuft (/proc/stb/lcd/bpp,
+    10 = Nexus-Treiber), da die erste Gegenprobe zufaellig gleichzeitig
+    sowohl Image als auch Treiberfamilie wechselte (VTi/Nexus auf der Duo4K
+    lite vs. OpenATV/altem Treiber auf der Uno4K SE). Per Multiboot auf
+    derselben Duo4K-lite-Hardware widerlegt: unter OpenATV (identischer
+    Nexus-Treiber, identisches bpp=10) tritt die Halbierung NICHT auf, der
+    vorkompensierte Wert landete dort stattdessen rechtsbuendig. Der Fehler
+    haengt also am VTi-Image selbst, nicht am Treiber/der Hardware - Pruefung
+    daher auf die VTi-Image-Erkennung umgestellt (/etc/vtiversion.info
+    existiert nur auf VTi, auf OpenATV bestaetigt nicht vorhanden)."""
     x = (display_width - icon_width) // 2
-    try:
-        with open("/proc/stb/lcd/bpp", "r") as f:
-            if f.read().strip() == "10":
-                x *= 2
-    except Exception:
-        pass
+    if os.path.exists("/etc/vtiversion.info"):
+        x *= 2
     return x
 
 
