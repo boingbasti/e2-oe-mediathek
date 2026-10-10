@@ -715,7 +715,7 @@ class Downloader(object):
         if not segments:
             raise Exception("Keine Videosegmente im Stream gefunden")
             
-        # UI-Update: Wir setzen _total auf 0, damit der Ladebalken MB statt % anzeigt
+        # UI-Update: _total auf 0 gesetzt, damit der Ladebalken MB statt % anzeigt
         self._total = 0
         self._downloaded = 0
         

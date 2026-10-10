@@ -65,7 +65,7 @@ except ImportError:
     _LoadPixmap = None
 
 # Festes Icon fuer die LCD-Zusammenfassung waehrend der Wiedergabe (siehe
-# OeStreamPlayerSummary) - kein Cover pro Sendung, da unsere "Datei" eine
+# OeStreamPlayerSummary) - kein Cover pro Sendung, da die "Datei" hier eine
 # Remote-URL ist, es gibt also keinen echten lokalen Ordner mit einem
 # folder.jpg/folder.png drin (das Muster, das z.B. das mitgelieferte
 # MediaPlayer-Plugin fuer Cover-Art nutzt).
@@ -672,7 +672,7 @@ def _restore_serviceapp_settings_from(json_path, settings_subkey):
 # (jeder eServiceReference-Typ, auch normales DVB-Live-TV = Typ 1) blockiert
 # die Selbstheilung praktisch IMMER, weil beim Oeffnen eines Plugins so gut
 # wie nie wirklich NICHTS laeuft - es sei denn man zappt gezielt auf einen
-# toten Kanal. Normales Live-TV kann aber gar keine unserer serviceapp_backup-
+# toten Kanal. Normales Live-TV kann aber gar keine der serviceapp_backup-
 # Dateien erzeugt haben, blockiert die Heilung also nur unnoetig.
 _SERVICEAPP_RELEVANT_REF_TYPES = (4097, 5001, 5002)
 
@@ -815,7 +815,7 @@ def _serve_playlist_via_http(content):
         # reactor callFromThread-Queueing und der exteplayer3-Prozessstart - auf
         # langsameren Boxen/Flash kann das mehrere Sekunden dauern. Bei zu kurzem
         # Timeout schliesst der Server schon, bevor exteplayer3 anfragt ->
-        # "Connection refused" ohne jeden Fehler in unserem Log, Stream startet
+        # "Connection refused" ohne jeden Fehler im Log, Stream startet
         # einfach nicht (gemeldet von einem User mit altem serviceapp.so + neuem
         # exteplayer3 v181+, dieser Zweig servierte bisher nur 5s lang).
         server.timeout = 20.0
