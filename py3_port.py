@@ -83,23 +83,19 @@ def _patch(path, old, new):
 # plugin.py).
 _RELATIVE_IMPORT_FIXES = {
     "download_manager.py": [
-        ("from downloader import format_size", "from .downloader import format_size"),
+        ("from downloader import ", "from .downloader import "),
     ],
     "mediathek.py": [
-        ("from downloader import get_debug_logging as _get_debug_logging",
-         "from .downloader import get_debug_logging as _get_debug_logging"),
+        ("from downloader import ", "from .downloader import "),
     ],
     "player.py": [
-        ("from downloader import get_debug_logging, get_force_exteplayer, get_lcd_icon_mode, get_live_tv_background, load_settings, save_settings",
-         "from .downloader import get_debug_logging, get_force_exteplayer, get_lcd_icon_mode, get_live_tv_background, load_settings, save_settings"),
+        ("from downloader import ", "from .downloader import "),
     ],
     "plugin.py": [
-        ("from mediathek import (", "from .mediathek import ("),
-        ("from player import play_stream_async, black_background_ref, _self_heal_all_serviceapp_backups, lcd_menu_summary_class",
-         "from .player import play_stream_async, black_background_ref, _self_heal_all_serviceapp_backups, lcd_menu_summary_class"),
-        ("from downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_force_exteplayer, set_force_exteplayer, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label, get_download_extra_info, set_download_extra_info, get_download_extra_info_label, get_live_tv_background, set_live_tv_background",
-         "from .downloader import Downloader, get_save_dir, set_save_dir, get_content_length, format_size, get_auto_convert, set_auto_convert, convert_mp4_to_ts, get_tile_wrap_lr, set_tile_wrap_lr, get_serviceapp_autoconfigure, set_serviceapp_autoconfigure, get_debug_logging, set_debug_logging, get_force_exteplayer, set_force_exteplayer, get_download_quality, set_download_quality, get_download_quality_label, get_stream_quality, set_stream_quality, get_stream_quality_label, get_download_extra_info, set_download_extra_info, get_download_extra_info_label, get_live_tv_background, set_live_tv_background"),
-        ("from download_manager import OeMediathekDownloadManagerScreen", "from .download_manager import OeMediathekDownloadManagerScreen"),
+        ("from mediathek import ", "from .mediathek import "),
+        ("from player import ", "from .player import "),
+        ("from downloader import ", "from .downloader import "),
+        ("from download_manager import ", "from .download_manager import "),
     ],
 }
 

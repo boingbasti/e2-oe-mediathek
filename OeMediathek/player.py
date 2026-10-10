@@ -203,9 +203,14 @@ def _lcd_display_ok():
     (128x64 o.ae.) wuerden das Icon nur teilweise oder gar nicht zeigen und
     wuerden dabei ihre gewohnte Text-Zusammenfassung verlieren. Boxen ganz
     ohne Display liefern hier typischerweise None oder eine 0x0-Groesse,
-    fallen also ebenfalls durch."""
+    fallen also ebenfalls durch. Expliziter is-None-Check statt "if not
+    desktop" - SWIG-C++-Wrapper wie getDesktop() verhalten sich bei
+    Truthy-Checks nicht zuverlaessig vorhersagbar."""
     from enigma import getDesktop
-    size = getDesktop(1).size()
+    desktop = getDesktop(1)
+    if desktop is None:
+        return False
+    size = desktop.size()
     return size.width() >= 400 and size.height() >= 240
 
 
