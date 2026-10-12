@@ -74,24 +74,31 @@ _DISPLAY_ICON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "displa
 
 def _lcd_icon_x(icon_width=220, display_width=400):
     """X-Position fuer das zentrierte Icon. Normalerweise einfache Zentrierung
-    ((Displaybreite - Iconbreite) / 2 = 90), aber auf VTi wird die X-Koordinate
-    von Enigma2 beim Rendern halbiert - "center,center" umgeht das NICHT (per
-    Webif-Grab/Pixel-Messung auf einer Duo4K lite verifiziert: landet dort bei
-    45 statt 90), ein literaler Wert muss also vorkompensiert werden.
+    ((Displaybreite - Iconbreite) / 2 = 90), aber in einer bestimmten
+    Image/Treiber-Kombination wird die X-Koordinate von Enigma2 beim Rendern
+    halbiert - "center,center" umgeht das NICHT (per Webif-Grab/Pixel-Messung
+    auf einer Duo4K lite verifiziert: landet dort bei 45 statt 90), ein
+    literaler Wert muss also vorkompensiert werden.
 
-    Zunaechst faelschlich als treiberabhaengig eingestuft (/proc/stb/lcd/bpp,
-    10 = Nexus-Treiber), da die erste Gegenprobe zufaellig gleichzeitig
-    sowohl Image als auch Treiberfamilie wechselte (VTi/Nexus auf der Duo4K
-    lite vs. OpenATV/altem Treiber auf der Uno4K SE). Per Multiboot auf
-    derselben Duo4K-lite-Hardware widerlegt: unter OpenATV (identischer
-    Nexus-Treiber, identisches bpp=10) tritt die Halbierung NICHT auf, der
-    vorkompensierte Wert landete dort stattdessen rechtsbuendig. Der Fehler
-    haengt also am VTi-Image selbst, nicht am Treiber/der Hardware - Pruefung
-    daher auf die VTi-Image-Erkennung umgestellt (/etc/vtiversion.info
-    existiert nur auf VTi, auf OpenATV bestaetigt nicht vorhanden)."""
+    Weder rein treiber- noch rein image-abhaengig, sondern eine Kombination
+    aus beidem - durch zwei Multiboot-Gegenproben auf verschiedener Hardware
+    belegt:
+    - Duo4K lite, VTi16 vs. OpenATV (identischer Nexus-Treiber, identisches
+      bpp=10): nur VTi halbiert, OpenATV nicht - Treiber allein erklaert es
+      nicht.
+    - Uno4K SE, VTi15 (bpp=20, aelterer Treiber): halbiert NICHT, obwohl
+      ebenfalls VTi - Image allein erklaert es also auch nicht.
+    Erst beide Bedingungen zusammen (VTi-Image UND bpp=10/Nexus-Treiber-
+    familie) reproduzieren den Bug zuverlaessig."""
     x = (display_width - icon_width) // 2
     if os.path.exists("/etc/vtiversion.info"):
-        x *= 2
+        try:
+            with open("/proc/stb/lcd/bpp", "r") as f:
+                bpp = f.read().strip()
+        except (IOError, OSError):
+            bpp = None
+        if bpp == "10":
+            x *= 2
     return x
 
 
