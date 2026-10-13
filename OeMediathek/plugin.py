@@ -3427,6 +3427,36 @@ class OeMediathekLiveScreen(_LcdIconSummaryMixin, _CustomListMixin, Screen):
 
 
 # ------------------------------------------------------------------
+# Auto-Scroll fuer lange Beschreibungstexte (ScrollLabel-Widget)
+# ------------------------------------------------------------------
+# Enigma2s ScrollLabel-Komponente unterscheidet sich zwischen Images
+# strukturell (bytecode-verifiziert auf echter Hardware, nicht nur anhand
+# von Build-Sysroot-Quellen): VTi hat weder setPos() noch curPos, Position
+# existiert dort nur als reale Widget-Koordinate (long_text); OpenATV hat
+# ein oeffentliches setPos() und speichert die Gesamthoehe bereits
+# pixelgenau in totalTextHeight. Beide Faelle werden hier abgedeckt, ohne
+# eine der beiden Varianten als Normalfall anzunehmen.
+
+def _scroll_total_height(widget):
+    if hasattr(widget, "long_text") and widget.long_text:
+        return widget.long_text.calculateSize().height()
+    return getattr(widget, "totalTextHeight", 0)
+
+
+def _scroll_max_offset(widget):
+    return max(0, _scroll_total_height(widget) - getattr(widget, "pageHeight", 0))
+
+
+def _scroll_set_pos(widget, pos):
+    if hasattr(widget, "setPos"):
+        widget.setPos(pos)
+    elif hasattr(widget, "long_text") and widget.long_text:
+        widget.long_text.move(ePoint(0, -pos))
+        if hasattr(widget, "updateScrollbar"):
+            widget.updateScrollbar()
+
+
+# ------------------------------------------------------------------
 # Inhalts-Screen  (Split-Screen Card Layout mit Deep-Fetch)
 # ------------------------------------------------------------------
 class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
@@ -3680,6 +3710,11 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
         self._desc_timer.callback.append(self._update_desc)
         self._desc_timer.start(250, False)
 
+        self._desc_scroll_pos = 0
+        self._desc_scroll_max = 0
+        self._desc_scroll_timer = eTimer()
+        self._desc_scroll_timer.callback.append(self._desc_scroll_tick)
+
         self._toast_timer  = eTimer()
         self._toast_timer.callback.append(self._clear_toast)
         self._saved_status = None
@@ -3731,6 +3766,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
         for timer, cb in ((self._start_timer, self._start_fetch),
                           (self._poll_timer,  self._poll_fetch),
                           (self._desc_timer,  self._update_desc),
+                          (self._desc_scroll_timer, self._desc_scroll_tick),
                           (self._toast_timer, self._clear_toast)):
             try:
                 if timer:
@@ -3741,6 +3777,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
         self._start_timer = None
         self._poll_timer  = None
         self._desc_timer  = None
+        self._desc_scroll_timer = None
         self._toast_timer = None
         if getattr(self, "_dl_poll_timer", None):
             try:
@@ -3937,6 +3974,37 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
                         ts_label = "Geplant" if ts > _time.time() else "Hinzugef\xc3\xbcgt"
                         full_text = full_text + _b("\n\n" + ts_label + ": " + ts_str)
                     self["description_text"].setText(full_text)
+            self._desc_scroll_restart()
+        except Exception:
+            pass
+
+    def _desc_scroll_restart(self):
+        """Nach jeder neu gesetzten Beschreibung (Fokuswechsel) Auto-Scroll
+        neu einrichten. Harter Stop+Reset verhindert, dass ein bereits
+        laufender Timer-Tick noch auf die neue Beschreibung durchschlaegt,
+        wenn der User schnell durch die Liste blaettert."""
+        self._desc_scroll_timer.stop()
+        self._desc_scroll_pos = 0
+        self._desc_scroll_max = _scroll_max_offset(self["description_text"])
+        if self._desc_scroll_max > 0:
+            self._desc_scroll_timer.start(5000, True)
+
+    def _desc_scroll_tick(self):
+        """Scrollt description_text in 2px-Schritten alle 60ms (~1 Zeile/s),
+        5s Lesepause oben, 4s Pause unten, dann zurueck auf Anfang. Nur
+        ueber _desc_scroll_restart() gestartet, daher hier kein erneuter
+        Laengencheck noetig."""
+        try:
+            widget = self["description_text"]
+            if self._desc_scroll_pos >= self._desc_scroll_max:
+                self._desc_scroll_pos = 0
+                _scroll_set_pos(widget, 0)
+                self._desc_scroll_timer.start(5000, True)
+                return
+            self._desc_scroll_pos = min(self._desc_scroll_pos + 2, self._desc_scroll_max)
+            _scroll_set_pos(widget, self._desc_scroll_pos)
+            at_bottom = self._desc_scroll_pos >= self._desc_scroll_max
+            self._desc_scroll_timer.start(4000 if at_bottom else 60, True)
         except Exception:
             pass
 
