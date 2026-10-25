@@ -290,6 +290,7 @@ LIVE_EVENT_GROUPS = [
         ("SWR Event 2",               "https://swrevent02hls.akamaized.net/hls/live/2016767/event02/master.m3u8"),
         ("SWR Event 3",               "https://swrevent03hls.akamaized.net/hls/live/2016768/event03/master.m3u8"),
         ("SWR Event 4",               "https://swrevent04hls.akamaized.net/hls/live/2016769/event04/master.m3u8"),
+        ("SWR Event 5",               "https://swrevent05hls.akamaized.net/hls/live/2016929/event05/master.m3u8"),
     ]),
     ("RBB Event", [
         ("RBB Event 1",               "https://rbbevent01-hls.akamaized.net/hls/live/685984/rbbevent01/master.m3u8"),
