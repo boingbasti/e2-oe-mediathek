@@ -106,7 +106,7 @@ _AZ_CH_MAP = {
     "BR Mediathek": "BR", "MDR Mediathek": "MDR", "HR Mediathek": "HR",
     "SWR Mediathek": "SWR", "rbb Mediathek": "RBB", "SR Mediathek": "SR",
     "ZDF Info": "ZDFinfo", "ZDF Neo": "ZDFneo", "KiKA": "KiKA",
-    "Phoenix": "PHOENIX", "Radio Bremen": "Radio Bremen TV", "funk": "Funk.net",
+    "Phoenix": "PHOENIX", "Radio Bremen": "rbtv", "funk": "Funk.net",
     "ARD alpha": "ARD-alpha", "ONE": "ONE", "tagesschau24": "tagesschau24",
     "DW": "DW", "ORF": "ORF", "SRF": "SRF",
 }
@@ -482,7 +482,7 @@ CHANNEL_MAP = {
     "ZDF Neo":       "ZDFneo",
     "KiKA":          "KiKA",
     "Phoenix":       "PHOENIX",
-    "Radio Bremen":  "Radio Bremen TV",
+    "Radio Bremen":  "rbtv",
     "funk":          "Funk.net",
     "ARD alpha":     "ARD-alpha",
     "ONE":           "ONE",
@@ -4017,7 +4017,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
 
     # Sender mit zu wenigen Eintraegen fuer "Sendung verpasst?" / "Demnaechst" (< 50/Woche)
     _NO_SN_SOURCES = frozenset([
-        "Radio Bremen", "funk", "DW", "ZDF Info", "ZDF Neo",
+        "funk", "DW", "ZDF Info", "ZDF Neo",
         "KiKA", "tagesschau24", "ORF", "SRF",
     ])
 

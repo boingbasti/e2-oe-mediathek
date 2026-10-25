@@ -27,7 +27,10 @@ except ImportError:
 _KNOWN_CHANNELS = {
     "ARD", "ZDF", "ARTE", "3Sat", "NDR", "WDR", "BR", "MDR", "HR", "SWR",
     "RBB", "SR", "ZDFinfo", "ZDFneo", "KiKA", "PHOENIX",
-    "Radio Bremen TV", "Funk.net", "ARD-alpha", "ONE", "tagesschau24", "DW",
+    # "Radio Bremen TV" (bis August 2022) und "rbtv" (seitdem) sind hier beide
+    # gelistet, damit sowohl alte als auch neue gespeicherte Favoriten erkannt
+    # werden.
+    "Radio Bremen TV", "rbtv", "Funk.net", "ARD-alpha", "ONE", "tagesschau24", "DW",
 }
 
 # Generische Film/Doku-Container: topic ist nur ein Genre-Label, Titel direkt als Gruppe nutzen.
@@ -369,7 +372,11 @@ def get_phoenix_highlights(offset=0, size=100, search_term=None, min_duration=0,
     return _mvw_query("PHOENIX", size=size, offset=offset, search_term=search_term, min_duration=min_duration, sort_by=sort_by)
 
 def get_radio_bremen_highlights(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp"):
-    return _mvw_query("Radio Bremen TV", size=size, offset=offset, search_term=search_term, min_duration=min_duration, sort_by=sort_by)
+    # MediathekViewWeb hat die Senderkennung im August 2022 von "Radio Bremen TV"
+    # auf "rbtv" umgestellt - unter dem alten Namen liegen seitdem nur noch
+    # archivierte Alt-Eintraege bis zur Umstellung, aktuelle Sendungen laufen
+    # ausschliesslich unter "rbtv".
+    return _mvw_query("rbtv", size=size, offset=offset, search_term=search_term, min_duration=min_duration, sort_by=sort_by)
 
 def get_funk_highlights(offset=0, size=100, search_term=None, min_duration=0, sort_by="timestamp"):
     return _mvw_query("Funk.net", size=size, offset=offset, search_term=search_term, min_duration=min_duration, sort_by=sort_by)
