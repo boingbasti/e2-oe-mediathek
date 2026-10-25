@@ -3573,6 +3573,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
         self._sv_mode        = False   # True = Sendung-verpasst?-Filter aktiv
         self._sv_sn_items    = []      # gefilterte Items des aktiven Datumsfilters
         self._sv_sn_pending  = None    # "sv" oder "sn" — wartet auf Prefetch
+        self._pre_sv_sn_state = None   # Backup von (all_items, groups, groups_filtered) vor dem SV/SN-Prefetch
         self._fav_sort_mode  = False   # True = Favoriten-Sortiermodus aktiv
         self._fav_grabbed    = None    # Index des gegriffenen Favoriten
         self._fav_order_backup = None  # Backup der Reihenfolge vor dem Sortieren
@@ -4162,6 +4163,12 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
             _log("SV/SN Prefetch Fehler: " + self._fetch_error)
             self["status_label"].setText("Fehler beim Laden!")
             return
+        # Normale Gruppenansicht sichern, bevor sie fuer die Datumsfilterung mit dem
+        # groesseren SV/SN-Batch ueberschrieben wird - sonst zeigt die Ansicht nach dem
+        # Verlassen von Sendung verpasst?/Demnaechst dauerhaft mehr/andere Gruppen als
+        # vorher, je nachdem ob dieser Prefetch schon gelaufen ist oder nicht.
+        if self._pre_sv_sn_state is None:
+            self._pre_sv_sn_state = (self.all_items, self.groups, self.groups_filtered)
         self.all_items = self._fetch_result
         self.groups = _build_groups(self.all_items, self.sort_mode)
         self.groups_filtered = list(self.groups)
@@ -4208,6 +4215,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
 
     def _on_sv_date_chosen(self, date_str):
         if not date_str:
+            self._sv_reset()
             return
         try:
             import time as _time
@@ -4267,6 +4275,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
 
     def _on_sn_date_chosen(self, date_str):
         if not date_str:
+            self._sv_reset()
             return
         try:
             import time as _time
@@ -4296,6 +4305,9 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
         """SV/SN-Filter aufheben — zurück zur vollständigen Gruppenansicht."""
         self._sv_mode = False
         self._sn_mode = False
+        if self._pre_sv_sn_state is not None:
+            self.all_items, self.groups, _ = self._pre_sv_sn_state
+            self._pre_sv_sn_state = None
         self.groups_filtered = _relevance_sort(self.groups, self.current_search)
         self._show_groups()
 
