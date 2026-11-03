@@ -773,7 +773,36 @@ def _episode_order_key(item, default_index=0):
     return (2, default_index, 0)
 
 
-def _episode_label(title_bytes, topic_bytes=None, watched=False, season=None, episode=None):
+def _group_channel(screen, group_idx):
+    """Liest den Sender des ersten Items einer groups_filtered-Gruppe aus,
+    fuer den Favoriten-Key (_fav_group_key()) - leere Bytes bei ungueltigem
+    Index oder leerer Gruppe statt eines Fehlers."""
+    gf = getattr(screen, "groups_filtered", None)
+    if not gf or group_idx < 0 or group_idx >= len(gf):
+        return b""
+    gitems = gf[group_idx][1]
+    if not gitems:
+        return b""
+    return gitems[0].get("channel", b"") or b""
+
+
+def _fav_group_key(gname, channel):
+    """Favoriten-Identitaet statt reinem Titel: Der blanke Titel kollidiert
+    zwischen gleichnamigen Sendungen verschiedener Sender (z.B. "Die
+    Bergretter" in der ZDF Mediathek UND in der ZDF-UHD-Kachel) - ohne
+    Praefix ueberschreiben sich solche Favoriten gegenseitig. "Alle
+    Mediatheken" liefert Gruppennamen bereits vorpraefixt (siehe
+    _mvw_query()-Gruppierung in mediathek.py), einzelne Sender-Kacheln
+    liefern den blanken Titel - hier fuer beide Faelle einheitlich."""
+    if not channel:
+        return gname
+    prefix = channel + b": "
+    if gname.startswith(prefix):
+        return gname
+    return prefix + gname
+
+
+def _episode_label(title_bytes, topic_bytes=None, watched=False, season=None, episode=None, channel_bytes=None):
     """
     Gibt einen Listeneintrag zurueck. Falls der Titel (SXX/EYY) enthaelt,
     wird 'S12E08  <Titel ohne Tag>' vorangestellt, sonst unveraendert.
@@ -783,6 +812,10 @@ def _episode_label(title_bytes, topic_bytes=None, watched=False, season=None, ep
     season/episode: falls bereits als Zahlen bekannt (z.B. ZDF UHD ueber die
     ZDF Document API, siehe [[project_zdf_uhd]]), werden diese statt der
     Regex-Erkennung aus dem Titeltext verwendet.
+    channel_bytes: haengt "(Sender)" an - nur gesetzt in der flachen
+    Einzelfolgen-Favoritenliste, wo sich sonst die gleiche Folge aus einer
+    Sender-Kachel und deren UHD-Variante (z.B. ZDF / ZDF UHD) nicht
+    unterscheiden laesst.
     """
     import re
     try:
@@ -813,6 +846,20 @@ def _episode_label(title_bytes, topic_bytes=None, watched=False, season=None, ep
             topic = str(topic_bytes)
         if topic.lower() not in label.lower():
             label = topic + ": " + label
+    if channel_bytes:
+        try:
+            channel = channel_bytes.decode("utf-8", "replace")
+        except Exception:
+            channel = str(channel_bytes)
+        suffix = " (" + channel + ")"
+        # Listenzeile ist auf ca. 58 Zeichen begrenzt (FHD/HD-Spaltenbreite, grob
+        # geschaetzt) - ohne Kuerzung faellt der Sender-Zusatz bei langen Titeln
+        # aus dem sichtbaren Bereich, genau der Fall der die Unterscheidung
+        # ueberhaupt noetig macht (siehe channel_bytes oben).
+        max_core = 58 - len(suffix)
+        if max_core > 10 and len(label) > max_core:
+            label = label[:max_core - 1].rstrip() + u"…"
+        label = label + suffix
     if watched:
         label = "* " + label
     try:
@@ -4607,6 +4654,10 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
             # eine echte, nicht zurueckgezogene Teil-Seite sein (leere Zeilen
             # statt Ueberlappung mit der vorherigen Seite), siehe _list_step().
             self._list_scroll = max(0, self._list_scroll)
+        # Offset der echten Gruppen in der MenuList (SV/SN-Sondereintraege davor,
+        # siehe _sv_sn_offset()) - fuer den Favoriten-Check unten gebraucht, um
+        # abs_idx auf den passenden groups_filtered-Eintrag (und damit Sender) abzubilden.
+        group_offset = self._sv_sn_offset() if not self.current_search else 0
         for i in range(_LIST_ROWS):
             abs_idx = self._list_scroll + i
             if abs_idx < total:
@@ -4624,7 +4675,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
                             pass
                     self["list_dot_%d" % i].show()
                     item = item[2:]
-                elif self.mode == MODE_GROUPS and is_favorite(_b(item)):
+                elif self.mode == MODE_GROUPS and is_favorite(_fav_group_key(_b(item), _group_channel(self, abs_idx - group_offset))):
                     if self._fav_pix:
                         try:
                             self["list_dot_%d" % i].instance.setPixmap(self._fav_pix)
@@ -5334,9 +5385,13 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
             channel = b""
             if gitems:
                 channel = gitems[0].get("channel", b"") or b""
+            # Praefixierter Key statt blossem Titel - sonst kollidieren gleichnamige
+            # Sendungen verschiedener Sender (z.B. "Die Bergretter" in ZDF Mediathek
+            # UND ZDF UHD), siehe _fav_group_key().
+            fav_key = _fav_group_key(gname, channel)
 
-            if is_favorite(gname):
-                remove_favorite(gname)
+            if is_favorite(fav_key):
+                remove_favorite(fav_key)
                 self._show_toast("Favorit entfernt", added=False)
                 # In der Favoriten-Ansicht den Eintrag sofort aus der Liste entfernen
                 if self.source_name == "Meine Favoriten":
@@ -5349,7 +5404,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
                         new_pos = min(real_idx, new_len - 1)
                         self._list_focus(new_pos)
             else:
-                add_favorite(gname, channel)
+                add_favorite(fav_key, channel)
                 self._show_toast("Favorit hinzugefügt!", added=True)
             self._update_red_hint()
             self._update_blue_hint()
@@ -5459,11 +5514,12 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
                     return
                 real_idx = idx - offset
                 if real_idx < len(self.groups_filtered):
-                    gname, _ = self.groups_filtered[real_idx]
+                    gname, gitems = self.groups_filtered[real_idx]
                     if gname.startswith(b">> "):
                         self["hint_blue"].setText(_b(""))
                         return
-                    if is_favorite(gname):
+                    channel = (gitems[0].get("channel", b"") or b"") if gitems else b""
+                    if is_favorite(_fav_group_key(gname, channel)):
                         self["hint_blue"].setText(_b("Favorit l\xc3\xb6schen"))
                         return
         except Exception:
@@ -5717,7 +5773,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
             toggle_watched(url)
             is_direct_hits = self.cur_group_name.startswith(b">> Direkte Treffer")
             show_group = is_direct_hits or self.source_name == "Meine Favoriten"
-            self._list_items = [_episode_label(i["title"], i.get("group") if show_group else None, watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""), season=i.get("season"), episode=i.get("episode")) for i in self.cur_episodes]
+            self._list_items = [_episode_label(i["title"], i.get("group") if show_group else None, watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""), season=i.get("season"), episode=i.get("episode"), channel_bytes=i.get("channel") if self._fav_show_episodes else None) for i in self.cur_episodes]
             self._list_focus(idx)
             self._update_info_hint()
         except Exception:
@@ -5737,7 +5793,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
                 self._show_toast(_b("Favorit entfernt"), added=False)
                 if self.source_name == "Meine Favoriten" and self._fav_show_episodes:
                     self.cur_episodes = [i for i in self.cur_episodes if (i.get("stream_url_hd") or i.get("stream_url_sd") or b"") != url]
-                    self._list_items = [_episode_label(i["title"], i.get("group"), watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""), season=i.get("season"), episode=i.get("episode")) for i in self.cur_episodes]
+                    self._list_items = self._ep_fav_list_entries()
                     self["status_label"].setText(_b("%d Einzelfolgen" % len(self.cur_episodes)))
                     new_idx = min(idx, len(self.cur_episodes) - 1)
                     if new_idx >= 0:
@@ -5786,11 +5842,11 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
         # fehlte der Stern beim ersten Anzeigen komplett.
         self.cur_episodes = items
         self.mode = MODE_EPISODES
-        self._set_list([_episode_label(i["title"], i.get("group"), watched=is_watched(i.get("stream_url_hd") or i.get("stream_url_sd") or b""), season=i.get("season"), episode=i.get("episode")) for i in items])
-        self.last_index = -1
         self._ep_fav_sort_mode = False
         self._ep_fav_grabbed   = None
         self._ep_fav_order_backup = None
+        self._set_list(self._ep_fav_list_entries())
+        self.last_index = -1
         self._ep_fav_update_hints()
         self._update_info_hint()
 
@@ -5835,7 +5891,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
     def _ep_fav_list_entries(self):
         entries = []
         for i, item in enumerate(self.cur_episodes):
-            label = _episode_label(item["title"], item.get("group"), watched=is_watched(item.get("stream_url_hd") or item.get("stream_url_sd") or b""), season=item.get("season"), episode=item.get("episode"))
+            label = _episode_label(item["title"], item.get("group"), watched=is_watched(item.get("stream_url_hd") or item.get("stream_url_sd") or b""), season=item.get("season"), episode=item.get("episode"), channel_bytes=item.get("channel"))
             if i == self._ep_fav_grabbed:
                 label = _b("\xc2\xbb ") + label
             entries.append(label)
@@ -6308,7 +6364,7 @@ class OeMediathekZdfUhdScreen(_LcdIconSummaryMixin, _CustomListMixin, Screen):
             self["hint_blue"].setText(_b("Favorit"))
             return
         title = self._shows[idx].get("title", "")
-        if is_favorite(_b(title)):
+        if is_favorite(_fav_group_key(_b(title), b"ZDF UHD")):
             self["hint_blue"].setText(_b("Favorit l\xc3\xb6schen"))
         else:
             self["hint_blue"].setText(_b("Favorit"))
@@ -6338,7 +6394,7 @@ class OeMediathekZdfUhdScreen(_LcdIconSummaryMixin, _CustomListMixin, Screen):
                 self["list_dot_%d" % i].hide()
                 continue
             title = self._shows[abs_idx].get("title", "")
-            if is_favorite(_b(title)):
+            if is_favorite(_fav_group_key(_b(title), b"ZDF UHD")):
                 if self._dot_pix:
                     try:
                         self["list_dot_%d" % i].instance.setPixmap(self._dot_pix)
@@ -6436,11 +6492,11 @@ class OeMediathekZdfUhdScreen(_LcdIconSummaryMixin, _CustomListMixin, Screen):
         if idx is None or not self._shows or idx >= len(self._shows):
             return
         title = self._shows[idx].get("title", "")
-        title_b = _b(title)
-        if is_favorite(title_b):
-            remove_favorite(title_b)
+        fav_key = _fav_group_key(_b(title), b"ZDF UHD")
+        if is_favorite(fav_key):
+            remove_favorite(fav_key)
         else:
-            add_favorite(title_b, b"ZDF UHD")
+            add_favorite(fav_key, b"ZDF UHD")
         self._update_dots()
 
     def key_cancel(self):

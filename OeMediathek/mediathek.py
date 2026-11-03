@@ -417,7 +417,19 @@ def _load_favorites_raw():
                 if isinstance(data, list):
                     # Sondereintraege (SV/SN) bereinigen falls versehentlich gespeichert
                     cleaned = [e for e in data if e.get("group") not in _SV_SN_NAMES]
-                    if len(cleaned) != len(data):
+                    changed = len(cleaned) != len(data)
+                    # Migration: Favoriten von vor diesem Fix hatten keinen Sender-
+                    # Praefix im group-Feld, wodurch gleichnamige Sendungen
+                    # verschiedener Sender (z.B. "Die Bergretter" in der ZDF
+                    # Mediathek UND der ZDF-UHD-Kachel) sich beim Favorisieren
+                    # gegenseitig ueberschrieben haben - einmalig nachpraefixen.
+                    for e in cleaned:
+                        channel = e.get("channel") or ""
+                        group = e.get("group", "")
+                        if channel and not group.startswith(channel + ": "):
+                            e["group"] = channel + ": " + group
+                            changed = True
+                    if changed:
                         save_favorites(cleaned)
                     return cleaned
     except Exception:
@@ -659,6 +671,13 @@ def get_favorites(offset=0, size=100, search_term=None, min_duration=0, sort_by=
         # ZDF UHD Topics: Statische Liste verwenden statt MVW
         if channel == "ZDF UHD":
             items, _, _ = get_zdf_uhd_static_episodes(pure_topic)
+            # group-Feld auf den gespeicherten (praefixierten) Namen normalisieren,
+            # sonst landen diese Items unter dem blossen Topic-Namen in einer eigenen
+            # Gruppe statt in der erwarteten Favoriten-Gruppe (gleiche Normalisierung
+            # wie im Zweig unten fuer reguläre Sender).
+            group_bytes = group if isinstance(group, bytes) else group.encode("utf-8")
+            for item in items:
+                item["group"] = group_bytes
             results[idx] = items
             return
 
