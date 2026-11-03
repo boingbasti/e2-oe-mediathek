@@ -198,9 +198,12 @@ LIVE_EVENT_GROUPS = [
         ("WDR Spezial 7",             "https://wdrspezial.akamaized.net/hls/live/2013622/wdr_spezial7/index.m3u8"),
     ]),
     ("WDR Event", [
+        ("WDR Event 1",               "https://wdrevent.akamaized.net/hls/live/2016696/wdr_msl4_wdrevent1/master.m3u8"),
+        ("WDR Event 2",               "https://wdrevent.akamaized.net/hls/live/2016697/wdr_msl4_wdrevent2/master.m3u8"),
         ("WDR Event 3",               "https://wdrevent.akamaized.net/hls/live/2016698/wdr_msl4_wdrevent3/master.m3u8"),
         ("WDR Event 4",               "https://wdrevent.akamaized.net/hls/live/2016699/wdr_msl4_wdrevent4/master.m3u8"),
         ("WDR Event 5",               "https://wdrevent.akamaized.net/hls/live/2016700/wdr_msl4_wdrevent5/master.m3u8"),
+        ("WDR Event 6",               "https://wdrevent.akamaized.net/hls/live/2016701/wdr_msl4_wdrevent6/master.m3u8"),
         ("WDR Event 7",               "https://wdrevent.akamaized.net/hls/live/2020357/wdr_msl4_wdrevent7/master.m3u8"),
         ("WDR Event 8",               "https://wdrevent.akamaized.net/hls/live/2020358/wdr_msl4_wdrevent8/master.m3u8"),
         ("WDR Event 9",               "https://wdrevent.akamaized.net/hls/live/2020359/wdr_msl4_wdrevent9/master.m3u8"),
@@ -284,6 +287,7 @@ LIVE_EVENT_GROUPS = [
         ("BR Event 3",                "https://brevent.akamaized.net/hls/live/2028220/event_03/master.m3u8"),
         ("BR Event 4",                "https://brevent.akamaized.net/hls/live/2028221/event_04/master.m3u8"),
         ("BR Event 5",                "https://brevent.akamaized.net/hls/live/2028222/event_05/master.m3u8"),
+        ("BR Event 6",                "https://brevent.akamaized.net/hls/live/2028223/event_06/master.m3u8"),
     ]),
     ("SWR Event", [
         ("SWR Event 1",               "https://swrevent01hls.akamaized.net/hls/live/2016766/event01/master.m3u8"),
@@ -291,10 +295,17 @@ LIVE_EVENT_GROUPS = [
         ("SWR Event 3",               "https://swrevent03hls.akamaized.net/hls/live/2016768/event03/master.m3u8"),
         ("SWR Event 4",               "https://swrevent04hls.akamaized.net/hls/live/2016769/event04/master.m3u8"),
         ("SWR Event 5",               "https://swrevent05hls.akamaized.net/hls/live/2016929/event05/master.m3u8"),
+        ("SWR Event 6",               "https://swrevent06hls.akamaized.net/hls/live/2016930/event06/master.m3u8"),
+        ("SWR Event 7",               "https://swrevent07hls.akamaized.net/hls/live/2016931/event07/master.m3u8"),
     ]),
     ("RBB Event", [
         ("RBB Event 1",               "https://rbbevent01-hls.akamaized.net/hls/live/685984/rbbevent01/master.m3u8"),
         ("RBB Event 2",               "https://rbbevent02-hls.akamaized.net/hls/live/685985/rbbevent02/master.m3u8"),
+        ("RBB Event 3",               "https://rbbevent03-hls.akamaized.net/hls/live/685986/rbbevent03/master.m3u8"),
+        ("RBB Event 4",               "https://rbbevent04-hls.akamaized.net/hls/live/685987/rbbevent04/master.m3u8"),
+        ("RBB Event 5",               "https://rbbevent05-hls.akamaized.net/hls/live/685988/rbbevent05/master.m3u8"),
+        ("RBB Event 6",               "https://rbbevent06-hls.akamaized.net/hls/live/685989/rbbevent06/master.m3u8"),
+        ("RBB Event 7",               "https://rbbevent07-hls.akamaized.net/hls/live/6859810/rbbevent07/master.m3u8"),
     ]),
     # Wie ORF III unverschluesselt (is_drm_protected=false laut offizieller ORF-API),
     # braucht AT-IP. Anonyme Zusatzkanaele ohne festen Namen, werden fuer Sport-/
@@ -303,6 +314,7 @@ LIVE_EVENT_GROUPS = [
         ("ORF Event 1",               "https://web03.mdn.ors.at/orf/web03/qxa/manifest.m3u8"),
         ("ORF Event 2",               "https://web04.mdn.ors.at/orf/web04/qxa/manifest.m3u8"),
         ("ORF Event 3",               "https://web05.mdn.ors.at/orf/web05/qxa/manifest.m3u8"),
+        ("ORF Event 4",               "https://web06.mdn.ors.at/orf/web06/qxa/manifest.m3u8"),
     ]),
     ("Radio Bremen", [
         ("Radio Bremen Event 1",      "https://rbhlsevent1.akamaized.net/hls/live/2027612/event1/master.m3u8"),
