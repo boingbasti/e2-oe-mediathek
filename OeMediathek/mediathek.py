@@ -27,11 +27,31 @@ except ImportError:
 _KNOWN_CHANNELS = {
     "ARD", "ZDF", "ARTE", "3Sat", "NDR", "WDR", "BR", "MDR", "HR", "SWR",
     "RBB", "SR", "ZDFinfo", "ZDFneo", "KiKA", "PHOENIX",
-    # "Radio Bremen TV" (bis August 2022) und "rbtv" (seitdem) sind hier beide
-    # gelistet, damit sowohl alte als auch neue gespeicherte Favoriten erkannt
-    # werden.
-    "Radio Bremen TV", "rbtv", "Funk.net", "ARD-alpha", "ONE", "tagesschau24", "DW",
+    # "Radio Bremen TV" (bis August 2022), "rbtv" (seitdem, roher API-Kanalname)
+    # und "Radio Bremen" (Anzeigename, siehe _CHANNEL_DISPLAY_NAMES) sind hier
+    # alle drei gelistet, damit alte wie neue gespeicherte Favoriten erkannt werden.
+    "Radio Bremen TV", "rbtv", "Radio Bremen", "Funk.net", "ARD-alpha", "ONE", "tagesschau24", "DW",
 }
+
+# Rohe API-Kanalnamen, die fuer die Anzeige (Gruppierung bei "Alle Mediatheken",
+# Favoriten-Praefix) auf einen lesbaren Namen abgebildet werden - bei den
+# meisten Sendern ist der rohe API-Name schon lesbar (z.B. "ARD", "ZDF"), bei
+# Radio Bremen liefert MVW seit der Umstellung 2022 nur noch das technische
+# Kuerzel "rbtv" (siehe [[technical_mvw_data_quality]]).
+_CHANNEL_DISPLAY_NAMES = {
+    "rbtv": "Radio Bremen",
+}
+
+def _channel_display_name(channel):
+    """Nimmt sowohl Unicode- als auch Byte-Strings an (mediathek.py arbeitet
+    intern mit Unicode, plugin.py reicht ueberwiegend Bytes durch) und gibt
+    den Anzeigenamen im selben Typ zurueck wie das Argument."""
+    if not channel:
+        return channel
+    is_bytes = isinstance(channel, bytes)
+    key = channel.decode("utf-8", "replace") if is_bytes else channel
+    display = _CHANNEL_DISPLAY_NAMES.get(key, key)
+    return display.encode("utf-8") if is_bytes else display
 
 # Generische Film/Doku-Container: topic ist nur ein Genre-Label, Titel direkt als Gruppe nutzen.
 _FILM_TOPICS = {
@@ -264,12 +284,13 @@ def _mvw_query(channel=None, size=100, offset=0, search_term=None, min_duration=
         topic_lower = topic.lower() if topic else ""
         is_film_container = topic_lower in _FILM_TOPICS
 
+        ch_display = _channel_display_name(ch)
         if is_film_container:
-            group_key = title if channel else ch + ": " + title
+            group_key = title if channel else ch_display + ": " + title
         elif topic and topic != title:
-            group_key = topic if channel else ch + ": " + topic
+            group_key = topic if channel else ch_display + ": " + topic
         else:
-            group_key = title if channel else ch + ": " + title
+            group_key = title if channel else ch_display + ": " + title
 
         _log("URL [%s] HD=%s SD=%s" % (ch, url_hd if url_hd else "-", url_sd if url_sd else "-"))
         try:
@@ -426,8 +447,12 @@ def _load_favorites_raw():
                     for e in cleaned:
                         channel = e.get("channel") or ""
                         group = e.get("group", "")
-                        if channel and not group.startswith(channel + ": "):
-                            e["group"] = channel + ": " + group
+                        # Praefix-Pruefung gegen Anzeigename UND rohen Kanalnamen (z.B.
+                        # "Radio Bremen" vs. "rbtv") - sonst wuerde hier faelschlich ein
+                        # zweites Mal praefixt, wenn beide voneinander abweichen.
+                        display = _channel_display_name(channel)
+                        if channel and not group.startswith(channel + ": ") and not (display and group.startswith(display + ": ")):
+                            e["group"] = display + ": " + group
                             changed = True
                     if changed:
                         save_favorites(cleaned)

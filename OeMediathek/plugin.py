@@ -62,6 +62,7 @@ from mediathek import (
     add_favorite,
     remove_favorite,
     is_favorite,
+    _channel_display_name,
     reorder_favorites,
     is_watched,
     toggle_watched,
@@ -804,11 +805,12 @@ def _fav_group_key(gname, channel):
     Bergretter" in der ZDF Mediathek UND in der ZDF-UHD-Kachel) - ohne
     Praefix ueberschreiben sich solche Favoriten gegenseitig. "Alle
     Mediatheken" liefert Gruppennamen bereits vorpraefixt (siehe
-    _mvw_query()-Gruppierung in mediathek.py), einzelne Sender-Kacheln
-    liefern den blanken Titel - hier fuer beide Faelle einheitlich."""
+    _mvw_query()-Gruppierung in mediathek.py, nutzt denselben Anzeigenamen
+    ueber _channel_display_name()), einzelne Sender-Kacheln liefern den
+    blanken Titel - hier fuer beide Faelle einheitlich."""
     if not channel:
         return gname
-    prefix = channel + b": "
+    prefix = _channel_display_name(channel) + b": "
     if gname.startswith(prefix):
         return gname
     return prefix + gname
@@ -860,7 +862,7 @@ def _episode_label(title_bytes, topic_bytes=None, watched=False, season=None, ep
             label = topic + ": " + label
     if channel_bytes:
         try:
-            channel = channel_bytes.decode("utf-8", "replace")
+            channel = _channel_display_name(channel_bytes).decode("utf-8", "replace")
         except Exception:
             channel = str(channel_bytes)
         suffix = " (" + channel + ")"
