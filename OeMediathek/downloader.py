@@ -324,8 +324,9 @@ def convert_mp4_to_ts(mp4_path, on_done=None, on_error=None):
 def _sanitize(text):
     if isinstance(text, bytes):
         text = text.decode("utf-8", "replace")
-    allowed = set(u"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_\xe4\xf6\xfc\xc4\xd6\xdc\xdf")
-    return u"".join(c for c in text if c in allowed).strip()
+    for ch in u'\\/:*?"<>|':
+        text = text.replace(ch, u'_')
+    return u' '.join(text.split()).strip(u' .')
 
 def _make_filename(title, url, topic=None):
     # m3u8 Playlisten werden als Enigma2-freundliche .ts Datei gespeichert
