@@ -6871,46 +6871,117 @@ def _resolve_running_show(session):
         return None
 
 
+def _open_mediathek_search(session, title):
+    """Oeffnet OeMediathekScreen mit title als vorausgefuelltem Suchbegriff in
+    "Alle Mediatheken" - MediathekViewWeb ordnet Sendungen dem produzierenden
+    Sender zu, nicht dem Ausstrahlungs-/Regionalkanal, ein Mapping vom
+    Enigma2-Kanalnamen waere also nur scheinbar praeziser und in der Praxis
+    oft falsch (z.B. "In aller Freundschaft" laeuft ueberall in der ARD, ist
+    bei MVW aber nur unter "MDR" gelistet). Faellt bei leerem/fehlendem Titel
+    auf das normale Hauptmenue zurueck."""
+    if isinstance(title, bytes):
+        title = title.decode("utf-8", "replace")
+    try:
+        if isinstance(title, unicode):
+            title = title.encode("utf-8")
+    except NameError:
+        pass
+    if title:
+        import re
+        # Folgennummer am Ende des EPG-Titels abschneiden (z.B. "In aller
+        # Freundschaft (349)") - verfaelscht sonst die Suche, da MVW die
+        # Folgennummer nicht im Titel fuehrt.
+        title = re.sub(r"\s*\(\d+\)\s*$", "", title).strip()
+
+    if not title:
+        _log("_open_mediathek_search: kein Titel, Standardmenue")
+        main(session)
+        return
+
+    _self_heal_all_serviceapp_backups(session)
+    OeMediathekMainScreen.load_order()
+    _log("_open_mediathek_search: oeffne 'Alle Mediatheken' mit Suchbegriff '%s'" % title)
+    session.open(OeMediathekScreen, "Alle Mediatheken", get_all_highlights, initial_search=title)
+
+
 def main_from_eventinfo(session, **kwargs):
-    """Einstieg ueber WHERE_EVENTINFO (INFO lang druecken): sucht direkt nach der
-    gerade laufenden Sendung, senderuebergreifend ueber "Alle Mediatheken" -
-    MediathekViewWeb ordnet Sendungen dem produzierenden Sender zu, nicht dem
-    Ausstrahlungs-/Regionalkanal, ein Mapping vom Enigma2-Kanalnamen waere also
-    nur scheinbar praeziser und in der Praxis oft falsch (z.B. "In aller
-    Freundschaft" laeuft ueberall in der ARD, ist bei MVW aber nur unter "MDR"
-    gelistet). Faellt bei jedem Fehler (kein EPG, Exception) sauber auf das
-    normale Hauptmenue zurueck."""
+    """Einstieg ueber WHERE_EVENTINFO (INFO lang druecken): sucht direkt nach
+    der gerade laufenden Sendung. Faellt bei jedem Fehler (kein EPG,
+    Exception) sauber auf das normale Hauptmenue zurueck."""
     try:
         title = _resolve_running_show(session)
-        if isinstance(title, bytes):
-            title = title.decode("utf-8", "replace")
-        try:
-            if isinstance(title, unicode):
-                title = title.encode("utf-8")
-        except NameError:
-            pass
-        if title:
-            import re
-            # Folgennummer am Ende des EPG-Titels abschneiden (z.B. "In aller
-            # Freundschaft (349)") - verfaelscht sonst die Suche, da MVW die
-            # Folgennummer nicht im Titel fuehrt.
-            title = re.sub(r"\s*\(\d+\)\s*$", "", title).strip()
-
-        if not title:
-            _log("main_from_eventinfo: kein EPG-Titel ermittelbar, Standardmenue")
-            main(session, **kwargs)
-            return
-
-        _self_heal_all_serviceapp_backups(session)
-        OeMediathekMainScreen.load_order()
-        _log("main_from_eventinfo: oeffne 'Alle Mediatheken' mit Suchbegriff '%s'" % title)
-        session.open(OeMediathekScreen, "Alle Mediatheken", get_all_highlights, initial_search=title)
+        _open_mediathek_search(session, title)
     except Exception:
         _log("main_from_eventinfo: " + _fmt_exc())
         try:
             main(session, **kwargs)
         except Exception:
             _log("main_from_eventinfo: Fallback auf main() ebenfalls fehlgeschlagen: " + _fmt_exc())
+
+
+def _resolve_upcoming_shows(session, window_minutes=10080):
+    """Liste (label, titel) kommender Sendungen auf dem aktuell laufenden
+    Sender (ohne das gerade laufende Event), oder leere Liste. Wirft nie eine
+    Exception. window_minutes=10080 (7 Tage) analog zur "Demnaechst"-Funktion
+    des Plugins."""
+    try:
+        ref = session.nav.getCurrentlyPlayingServiceReference()
+        if ref is None:
+            return []
+        from enigma import eEPGCache
+        import time as _time
+        now = int(_time.time())
+        events = eEPGCache.getInstance().lookupEvent(
+            ['ITBD', (ref.toString(), 0, -1, window_minutes)]
+        ) or []
+        choices = []
+        for ev in events:
+            try:
+                title, begin = ev[1], ev[2]
+            except Exception:
+                continue
+            if not title or begin is None or begin <= now:
+                continue
+            try:
+                t = _time.localtime(begin)
+                label = u"%02d.%02d. %02d:%02d  %s" % (t.tm_mday, t.tm_mon, t.tm_hour, t.tm_min, title)
+            except Exception:
+                label = title
+            choices.append((label, title))
+        return choices
+    except Exception:
+        _log("_resolve_upcoming_shows: " + _fmt_exc())
+        return []
+
+
+def main_from_eventinfo_upcoming(session, **kwargs):
+    """Einstieg ueber WHERE_EVENTINFO: zeigt kommende Sendungen des aktuell
+    laufenden Senders zur Auswahl, startet danach die Suche wie bei
+    main_from_eventinfo. Faellt bei jedem Fehler auf das normale Hauptmenue
+    zurueck."""
+    try:
+        choices = _resolve_upcoming_shows(session)
+        if not choices:
+            _log("main_from_eventinfo_upcoming: keine kommenden Sendungen gefunden, Standardmenue")
+            main(session, **kwargs)
+            return
+
+        def _on_chosen(title):
+            if title:
+                _open_mediathek_search(session, title)
+
+        session.openWithCallback(
+            _on_chosen,
+            OeMediathekPickerScreen,
+            title="Kommende Sendung w\xc3\xa4hlen:",
+            choices=choices,
+        )
+    except Exception:
+        _log("main_from_eventinfo_upcoming: " + _fmt_exc())
+        try:
+            main(session, **kwargs)
+        except Exception:
+            _log("main_from_eventinfo_upcoming: Fallback auf main() ebenfalls fehlgeschlagen: " + _fmt_exc())
 
 
 def Plugins(**kwargs):
@@ -6926,4 +6997,10 @@ def Plugins(**kwargs):
         where=[PluginDescriptor.WHERE_EVENTINFO],
         icon="plugin.png",
         fnc=main_from_eventinfo,
+    ), PluginDescriptor(
+        name="ÖR Mediathek: kommende Sendung suchen",
+        description="Zeigt kommende Sendungen des aktuellen Senders zur Mediathek-Suche",
+        where=[PluginDescriptor.WHERE_EVENTINFO],
+        icon="plugin.png",
+        fnc=main_from_eventinfo_upcoming,
     )]
