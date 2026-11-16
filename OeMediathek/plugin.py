@@ -972,7 +972,10 @@ def _inject_direct_hits(groups, search_term):
     except Exception:
         return groups
 
-    terms = term.split()
+    # Reine Satzzeichen-Tokens (z.B. "&") rausfiltern - muessten sonst als
+    # Substring woertlich im Titel vorkommen, obwohl z.B. "Law & Order" als
+    # "Law and Order" geschrieben sein kann und der Treffer sonst verloren geht.
+    terms = [w for w in term.split() if any(c.isalnum() for c in w)]
     if not terms:
         return groups
 
