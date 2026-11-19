@@ -3606,7 +3606,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
                 '</screen>'
             )
 
-    def __init__(self, session, source_name, loader, force_uhd=False, zdf_uhd_static=False):
+    def __init__(self, session, source_name, loader, force_uhd=False, zdf_uhd_static=False, initial_search=None):
         self.skin = self._make_skin()
         _log("ContentScreen init: " + source_name)
         Screen.__init__(self, session)
@@ -3628,7 +3628,7 @@ class OeMediathekScreen(_LcdIconSummaryMixin, Screen):
         self.ep_total        = 0
         self.ep_has_more     = False
 
-        self.current_search  = None
+        self.current_search  = initial_search if initial_search else None
         self.min_duration    = 0
         self.sort_mode       = "timestamp"
         self._sv_mode        = False   # True = Sendung-verpasst?-Filter aktiv
@@ -6839,11 +6839,88 @@ def main(session, **kwargs):
     session.open(OeMediathekMainScreen)
 
 
+def _resolve_running_show(session):
+    """EPG-Titel des aktuell laufenden Events, oder None. Wirft nie eine Exception."""
+    try:
+        ref = session.nav.getCurrentlyPlayingServiceReference()
+        if ref is None:
+            return None
+        title = None
+        try:
+            from enigma import eEPGCache
+            evt = eEPGCache.getInstance().lookupEventTime(ref, -1, 0)
+            if evt is not None:
+                title = evt.getEventName()
+        except Exception:
+            pass
+        if not title:
+            try:
+                cur = session.nav.getCurrentService()
+                info = cur.info() if cur else None
+                evt = info.getEvent(0) if info else None
+                if evt is not None:
+                    title = evt.getEventName()
+            except Exception:
+                pass
+        return title
+    except Exception:
+        _log("_resolve_running_show: " + _fmt_exc())
+        return None
+
+
+def main_from_eventinfo(session, **kwargs):
+    """Einstieg ueber WHERE_EVENTINFO (INFO lang druecken): sucht direkt nach der
+    gerade laufenden Sendung, senderuebergreifend ueber "Alle Mediatheken" -
+    MediathekViewWeb ordnet Sendungen dem produzierenden Sender zu, nicht dem
+    Ausstrahlungs-/Regionalkanal, ein Mapping vom Enigma2-Kanalnamen waere also
+    nur scheinbar praeziser und in der Praxis oft falsch (z.B. "In aller
+    Freundschaft" laeuft ueberall in der ARD, ist bei MVW aber nur unter "MDR"
+    gelistet). Faellt bei jedem Fehler (kein EPG, Exception) sauber auf das
+    normale Hauptmenue zurueck."""
+    try:
+        title = _resolve_running_show(session)
+        if isinstance(title, bytes):
+            title = title.decode("utf-8", "replace")
+        try:
+            if isinstance(title, unicode):
+                title = title.encode("utf-8")
+        except NameError:
+            pass
+        if title:
+            import re
+            # Folgennummer am Ende des EPG-Titels abschneiden (z.B. "In aller
+            # Freundschaft (349)") - verfaelscht sonst die Suche, da MVW die
+            # Folgennummer nicht im Titel fuehrt.
+            title = re.sub(r"\s*\(\d+\)\s*$", "", title).strip()
+
+        if not title:
+            _log("main_from_eventinfo: kein EPG-Titel ermittelbar, Standardmenue")
+            main(session, **kwargs)
+            return
+
+        _self_heal_all_serviceapp_backups(session)
+        OeMediathekMainScreen.load_order()
+        _log("main_from_eventinfo: oeffne 'Alle Mediatheken' mit Suchbegriff '%s'" % title)
+        session.open(OeMediathekScreen, "Alle Mediatheken", get_all_highlights, initial_search=title)
+    except Exception:
+        _log("main_from_eventinfo: " + _fmt_exc())
+        try:
+            main(session, **kwargs)
+        except Exception:
+            _log("main_from_eventinfo: Fallback auf main() ebenfalls fehlgeschlagen: " + _fmt_exc())
+
+
 def Plugins(**kwargs):
-    return PluginDescriptor(
+    return [PluginDescriptor(
         name="ÖR Mediathek",
         description="Alle öffentlich-rechtlichen Mediatheken",
         where=[PluginDescriptor.WHERE_PLUGINMENU, PluginDescriptor.WHERE_EXTENSIONSMENU],
         icon="plugin.png",
         fnc=main,
-    )
+    ), PluginDescriptor(
+        name="ÖR Mediathek: laufende Sendung suchen",
+        description="Sucht die aktuell laufende Sendung in der Mediathek",
+        where=[PluginDescriptor.WHERE_EVENTINFO],
+        icon="plugin.png",
+        fnc=main_from_eventinfo,
+    )]
